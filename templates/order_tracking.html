@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Tra Cứu Đơn Hàng & Vận Chuyển · LUNA BELLE{% endblock %}
+
+{% block content %}
+<div class="lb-container" style="padding: 4rem 1.5rem 6.5rem; max-width: 900px;">
+    <!-- Page Header -->
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <div class="lb-section-tag" style="justify-content: center;"><i class="fa-solid fa-truck-fast"></i> Hành Trình Chế Tác & Giao Nhận</div>
+        <h1 class="lb-section-title">Tra Cứu Tiến Độ Đơn Hàng</h1>
+        <p style="color: var(--lb-text-muted); font-size: 0.95rem; max-width: 580px; margin: 0 auto 1.8rem; line-height: 1.6;">
+            Quý khách vui lòng nhập Mã đơn hàng (VD: AURA... hoặc LB...) hoặc Số điện thoại đặt hàng để kiểm tra lộ trình thực tế.
+        </p>
+
+        <!-- Search Form -->
+        <form action="{{ url_for('order_tracking') }}" method="GET" style="display: flex; gap: 0.6rem; max-width: 550px; margin: 0 auto;">
+            <input type="text" name="search_query" class="lb-form-input" placeholder="Nhập mã đơn hàng hoặc số điện thoại..." 
+                   value="{{ search_val }}" required style="padding: 0.85rem 1.3rem; font-size: 0.95rem; border-radius: var(--lb-r-full); background: #FFFFFF;">
+            <button type="submit" class="lb-btn lb-btn-primary" style="white-space: nowrap; padding: 0.85rem 1.8rem; border-radius: var(--lb-r-full);">
+                <i class="fa-solid fa-magnifying-glass"></i> Tra Cứu
+            </button>
+        </form>
+    </div>
+
+    {% if order %}
+        {% set st_info = order.TrangThaiDonHang|order_status_info %}
+        {% set pay_info = order.TrangThaiThanhToan|payment_status_info %}
+
+        <div class="lb-card-white" style="padding: 3rem 2.5rem; border-radius: var(--lb-r-xl); box-shadow: var(--lb-shadow-lg);">
+            <!-- Order Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--lb-border-card); padding-bottom: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span style="font-size: 0.78rem; color: var(--lb-text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Mã đơn hàng LUNA BELLE</span>
+                    <h2 style="font-family: var(--lb-font-serif); font-size: 2rem; color: var(--lb-rg-primary); margin: 0.2rem 0;">{{ order.MaDonHangCode }}</h2>
+                    <span style="font-size: 0.82rem; color: var(--lb-text-muted);">
+                        <i class="fa-regular fa-clock"></i> Ngày đặt: {{ order.NgayDatHang.strftime('%d/%m/%Y %H:%M') }}
+                    </span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; background: var(--lb-blush-200); color: var(--lb-rg-dark); font-size: 0.86rem; font-weight: 700; padding: 6px 16px; border-radius: 99px; border: 1px solid var(--lb-rg-pale);">
+                        {{ st_info.text }}
+                    </span>
+                    <div style="margin-top: 8px;">
+                        <span style="display: inline-block; background: var(--lb-blush-100); color: var(--lb-text-body); font-size: 0.78rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--lb-border-soft);">
+                            {{ pay_info.text }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Tracker -->
+            {% if order.TrangThaiDonHang != 'DaHuy' %}
+                <div style="margin-bottom: 3.5rem; padding: 0.5rem 0;">
+                    <div class="lb-stepper">
+                        <!-- Step 1 -->
+                        <div class="lb-step-item {% if st_info.step >= 1 %}active{% endif %}">
+                            <div class="lb-step-circle">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </div>
+                            <span class="lb-step-label">Chờ xác nhận</span>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="lb-step-item {% if st_info.step >= 2 %}active{% endif %}">
+                            <div class="lb-step-circle">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <span class="lb-step-label">Xác nhận & Chế tác</span>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="lb-step-item {% if st_info.step >= 3 %}active{% endif %}">
+                            <div class="lb-step-circle">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </div>
+                            <span class="lb-step-label">Đang giao hàng</span>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="lb-step-item {% if st_info.step >= 4 %}active{% endif %}">
+                            <div class="lb-step-circle">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="lb-step-label">Giao thành công</span>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div style="background: #FEF2F2; border: 1.5px solid #F87171; border-radius: var(--lb-r-md); padding: 1.4rem; text-align: center; margin-bottom: 2rem; color: #DC2626;">
+                    <i class="fa-solid fa-ban" style="font-size: 1.6rem; margin-bottom: 0.5rem;"></i>
+                    <p style="margin: 0; font-weight: 600;">Đơn hàng này hiện đã bị hủy theo yêu cầu.</p>
+                </div>
+            {% endif %}
+
+            <!-- Shipping Recipient Details -->
+            <div style="background: var(--lb-blush-100); border: 1px solid var(--lb-border-card); border-radius: var(--lb-r-md); padding: 1.5rem; margin-bottom: 2rem;">
+                <h4 style="color: var(--lb-rg-primary); font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.9rem; font-weight: 700;">
+                    <i class="fa-solid fa-location-dot"></i> Địa Chỉ Giao Hàng & Người Nhận
+                </h4>
+                <div style="font-size: 0.9rem; line-height: 1.7; color: var(--lb-text-body);">
+                    <div>Họ tên người nhận: <strong style="color: var(--lb-text-dark);">{{ order.TenNguoiNhan }}</strong></div>
+                    <div>Số điện thoại: <strong style="color: var(--lb-text-dark);">{{ order.SoDienThoaiNguoiNhan }}</strong></div>
+                    <div>Địa chỉ giao nhận: <strong style="color: var(--lb-text-dark);">{{ order.DiaChiGiaoHang }}</strong></div>
+                    <div>Hình thức thanh toán: <strong style="color: var(--lb-rg-primary);">{{ order.PhuongThucThanhToan }}</strong></div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div style="background: #FFFFFF; border: 1px solid var(--lb-border-card); border-radius: var(--lb-r-md); padding: 1.5rem;">
+                <h4 style="color: var(--lb-text-dark); font-size: 0.95rem; font-family: var(--lb-font-serif); margin-bottom: 1rem;">
+                    Sản Phẩm Trong Đơn Hàng
+                </h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                    <thead>
+                        <tr style="border-bottom: 1.5px solid var(--lb-border-card); color: var(--lb-text-muted); text-align: left;">
+                            <th style="padding: 8px 0;">Tên sản phẩm</th>
+                            <th style="padding: 8px 0; text-align: center;">SL</th>
+                            <th style="padding: 8px 0; text-align: right;">Đơn giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for it in items %}
+                            <tr style="border-bottom: 1px solid var(--lb-border-soft);">
+                                <td style="padding: 10px 0; color: var(--lb-text-dark);">
+                                    <strong>{{ it.TenSanPhamSnap }}</strong>
+                                    {% if it.KichThuocSnap %}<span style="color: var(--lb-rg-primary); font-size: 0.78rem;"> (Size: {{ it.KichThuocSnap }})</span>{% endif %}
+                                </td>
+                                <td style="padding: 10px 0; text-align: center; color: var(--lb-text-body);">x{{ it.SoLuong }}</td>
+                                <td style="padding: 10px 0; text-align: right; color: var(--lb-rg-primary); font-weight: 600;">{{ it.DonGia|currency }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="2" style="padding-top: 15px; font-weight: 700; color: var(--lb-text-dark); font-size: 1rem;">Tổng Tiền Thanh Toán:</td>
+                            <td style="padding-top: 15px; text-align: right; font-weight: 700; color: var(--lb-rg-primary); font-size: 1.35rem; font-family: var(--lb-font-serif);">
+                                {{ order.TongThanhToan|currency }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    {% elif search_val %}
+        <!-- Search with no results handled by flash notification -->
+    {% else %}
+        <!-- Search Prompt -->
+        <div class="lb-card-white" style="padding: 3.5rem 2rem; text-align: center; border-radius: var(--lb-r-lg);">
+            <div style="width: 64px; height: 64px; margin: 0 auto 1.2rem; background: var(--lb-blush-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--lb-rg-primary); font-size: 1.8rem;">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <h3 style="font-family: var(--lb-font-serif); color: var(--lb-text-dark); font-size: 1.35rem; margin-bottom: 0.5rem;">Tra Cứu Nhanh Chóng</h3>
+            <p style="color: var(--lb-text-muted); font-size: 0.88rem; max-width: 440px; margin: 0 auto; line-height: 1.6;">
+                Quý khách có thể xem lại mã đơn hàng trong email thông báo hoặc tại mục "Đơn hàng đã mua" trong trang thông tin cá nhân.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

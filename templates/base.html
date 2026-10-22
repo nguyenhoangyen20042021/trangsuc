@@ -1,0 +1,355 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LUNA BELLE | Trang Sức Moissanite Cao Cấp{% endblock %}</title>
+    <meta name="description" content="LUNA BELLE - Thương hiệu trang sức Moissanite, Vàng 18K và Lab Grown Diamond hàng đầu. Bảo hành trọn đời, giao hàng toàn quốc.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/luna_belle.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Flash Notifications -->
+    <div class="lb-flash-container" id="flashContainer">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="lb-flash-alert lb-flash-{{ category }}">
+                        <i class="fa-solid {% if category == 'success' %}fa-circle-check" style="color:#22c55e{% elif category == 'danger' %}fa-circle-xmark" style="color:#ef4444{% else %}fa-circle-info" style="color:var(--lb-rg-primary){% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════════════════════ -->
+    <header class="lb-header" id="lbHeader">
+        <div class="lb-container lb-header-inner">
+
+            <!-- Logo -->
+            <a href="{{ url_for('index') }}" class="lb-logo" aria-label="LUNA BELLE Trang Chủ">
+                <div class="lb-logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L9.5 6.5H4l4.5 3.3-1.7 5.2L12 12l5.2 3 -1.7-5.2L20 6.5h-5.5L12 1z"/>
+                        <path d="M5 18 Q12 14 19 18" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        <path d="M3 21 h18" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="lb-logo-text">
+                    <span class="lb-logo-name">LUNA BELLE</span>
+                    <span class="lb-logo-tagline">Elite Jewelry</span>
+                </div>
+            </a>
+
+            <!-- Search Bar -->
+            <form class="lb-search" action="{{ url_for('products') }}" method="GET" role="search">
+                <i class="fa-solid fa-magnifying-glass lb-search-icon"></i>
+                <input type="text" name="q" id="headerSearch"
+                       placeholder="Tìm nhẫn, dây chuyền, bông tai..."
+                       value="{{ request.args.get('q', '') }}"
+                       autocomplete="off"
+                       aria-label="Tìm kiếm sản phẩm">
+            </form>
+
+            <!-- Header Actions -->
+            <div class="lb-header-actions">
+
+                <!-- Login -->
+                {% if current_user %}
+                    <div class="lb-nav-item" style="position:relative;">
+                        <button class="lb-action-btn lb-btn-login" id="userMenuBtn" aria-label="Tài khoản">
+                            <i class="fa-regular fa-user"></i>
+                            <span>{{ current_user.HoTen.split()[0] }}</span>
+                            <i class="fa-solid fa-angle-down" style="font-size:0.62rem;"></i>
+                        </button>
+                        <div class="lb-dropdown" id="userDropdown" style="right:0;left:auto;min-width:200px;">
+                            <div style="padding:0.6rem 1.15rem 0.7rem;border-bottom:1px solid var(--lb-border-soft);">
+                                <strong style="display:block;font-size:0.88rem;color:var(--lb-text-dark);">{{ current_user.HoTen }}</strong>
+                                <small style="color:var(--lb-text-muted);font-size:0.73rem;">{{ current_user.TenVaiTro }}</small>
+                            </div>
+                            <a href="{{ url_for('profile') }}"><i class="fa-solid fa-user-circle"></i> Tài khoản của tôi</a>
+                            <a href="{{ url_for('profile') }}#orders"><i class="fa-solid fa-receipt"></i> Đơn hàng đã mua</a>
+                            <a href="{{ url_for('wishlist') }}"><i class="fa-solid fa-heart"></i> Yêu thích</a>
+                            {% if current_user.TenVaiTro in ['ADMIN', 'STAFF'] %}
+                                <a href="{{ url_for('admin_dashboard') }}" style="color:var(--lb-rg-primary);"><i class="fa-solid fa-gauge"></i> Quản trị</a>
+                            {% endif %}
+                            <a href="{{ url_for('logout') }}" style="color:#ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="lb-action-btn lb-btn-login" id="btnLogin">
+                        <i class="fa-regular fa-user"></i>
+                        <span>Đăng nhập</span>
+                    </a>
+                {% endif %}
+
+                <!-- Cart -->
+                <a href="{{ url_for('cart') }}" class="lb-action-btn lb-btn-cart" id="btnCart" aria-label="Giỏ hàng">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span>Giỏ hàng</span>
+                    <span class="lb-cart-badge cart-count-badge">{{ cart_count }}</span>
+                </a>
+
+                <!-- AI Advisor -->
+                <a href="{{ url_for('ai_consultant') }}" class="lb-action-btn lb-btn-ai" id="btnAI" aria-label="Tư vấn AI">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Tư vấn AI</span>
+                </a>
+
+                <!-- Mobile Toggle -->
+                <button class="lb-action-btn lb-btn-login" id="mobileToggle" aria-label="Menu" style="display:none;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         NAVIGATION BAR
+    ═══════════════════════════════════════════════════════════ -->
+    <nav class="lb-navbar" aria-label="Danh mục sản phẩm">
+        <div class="lb-container">
+            <div class="lb-nav-inner" id="navMenu">
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('index') }}" class="lb-nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                        TRANG CHỦ
+                    </a>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', category='bac') }}" class="lb-nav-link">
+                        BẠC <i class="fa-solid fa-angle-down"></i>
+                    </a>
+                    <div class="lb-dropdown">
+                        <a href="{{ url_for('products', category='nhan-bac') }}">Nhẫn Bạc</a>
+                        <a href="{{ url_for('products', category='day-chuyen-bac') }}">Dây Chuyền Bạc</a>
+                        <a href="{{ url_for('products', category='bong-tai-bac') }}">Bông Tai Bạc</a>
+                        <a href="{{ url_for('products', category='vong-bac') }}">Vòng Bạc</a>
+                    </div>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', category='vang') }}" class="lb-nav-link">
+                        VÀNG <i class="fa-solid fa-angle-down"></i>
+                    </a>
+                    <div class="lb-dropdown">
+                        <a href="{{ url_for('products', category='nhan-vang') }}">Nhẫn Vàng 18K</a>
+                        <a href="{{ url_for('products', category='day-chuyen-vang') }}">Dây Chuyền Vàng</a>
+                        <a href="{{ url_for('products', category='bong-tai-vang') }}">Bông Tai Vàng</a>
+                        <a href="{{ url_for('products', category='lac-tay-vang') }}">Lắc Tay Vàng</a>
+                    </div>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', category='da-moissanite') }}" class="lb-nav-link {% if request.args.get('category','').startswith('moissanite') %}active{% endif %}">
+                        ĐÁ MOISSANITE <i class="fa-solid fa-angle-down"></i>
+                    </a>
+                    <div class="lb-dropdown">
+                        <a href="{{ url_for('products', category='nhan-moissanite') }}">Nhẫn Moissanite</a>
+                        <a href="{{ url_for('products', category='day-chuyen-moissanite') }}">Dây Chuyền</a>
+                        <a href="{{ url_for('products', category='bong-tai-moissanite') }}">Bông Tai</a>
+                        <a href="{{ url_for('products', category='set-moissanite') }}">Bộ Trang Sức Set</a>
+                    </div>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', category='lab-grown-diamond') }}" class="lb-nav-link">
+                        LAB GROWN DIAMOND
+                    </a>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', category='da-phong-thuy') }}" class="lb-nav-link">
+                        ĐÁ PHONG THỦY <i class="fa-solid fa-angle-down"></i>
+                    </a>
+                    <div class="lb-dropdown">
+                        <a href="{{ url_for('products', category='da-thach-anh') }}">Thạch Anh</a>
+                        <a href="{{ url_for('products', category='da-obsidian') }}">Obsidian</a>
+                        <a href="{{ url_for('products', category='da-jade') }}">Ngọc Bích</a>
+                    </div>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="{{ url_for('products', sort='discount') }}" class="lb-nav-link" style="color:var(--lb-rg-primary);">
+                        <i class="fa-solid fa-tag" style="font-size:0.7rem;"></i>
+                        SẢN PHẨM KHUYẾN MÃI
+                    </a>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="#footer" class="lb-nav-link">LIÊN HỆ</a>
+                </div>
+
+                <div class="lb-nav-item">
+                    <a href="#about" class="lb-nav-link">GIỚI THIỆU</a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="flex:1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════════ -->
+    <footer class="lb-footer" id="footer">
+        <div class="lb-container">
+            <div class="lb-footer-grid">
+
+                <!-- Col 1: Brand Info -->
+                <div class="lb-footer-col">
+                    <div class="lb-footer-brand-name">LUNA BELLE</div>
+                    <div class="lb-footer-brand-tag">Elite Jewelry</div>
+                    <p class="lb-footer-desc">
+                        Thương hiệu trang sức cao cấp chuyên về Moissanite, Lab Grown Diamond và Vàng 18K. Mỗi thiết kế là một tác phẩm nghệ thuật tôn vinh vẻ đẹp phụ nữ Việt.
+                    </p>
+                    <div class="lb-footer-contact">
+                        <p><i class="fa-solid fa-location-dot"></i> 123 Nguyễn Ái Quốc, Biên Hòa, Đồng Nai</p>
+                        <p><i class="fa-solid fa-phone"></i> Hotline: <strong style="color:var(--lb-blush-300);">1900 9999</strong></p>
+                        <p><i class="fa-solid fa-envelope"></i> contact@lunabelle.vn</p>
+                        <p><i class="fa-solid fa-clock"></i> Mở cửa: 08:00 – 21:00 hàng ngày</p>
+                    </div>
+                </div>
+
+                <!-- Col 2: Chính Sách -->
+                <div class="lb-footer-col">
+                    <h4>Chính Sách</h4>
+                    <div class="lb-footer-links">
+                        <a href="#"><i class="fa-solid fa-shield-halved" style="width:14px;"></i> Chính sách bảo hành</a>
+                        <a href="#"><i class="fa-solid fa-rotate-left" style="width:14px;"></i> Chính sách đổi trả</a>
+                        <a href="#"><i class="fa-solid fa-truck-fast" style="width:14px;"></i> Chính sách vận chuyển</a>
+                        <a href="#"><i class="fa-solid fa-lock" style="width:14px;"></i> Bảo mật thông tin</a>
+                        <a href="#"><i class="fa-solid fa-file-contract" style="width:14px;"></i> Điều khoản sử dụng</a>
+                    </div>
+                </div>
+
+                <!-- Col 3: Hỗ Trợ Khách Hàng -->
+                <div class="lb-footer-col">
+                    <h4>Hỗ Trợ Khách Hàng</h4>
+                    <div class="lb-footer-links">
+                        <a href="{{ url_for('order_tracking') }}"><i class="fa-solid fa-magnifying-glass" style="width:14px;"></i> Tra cứu đơn hàng</a>
+                        <a href="#" onclick="document.getElementById('sizeModal').classList.add('lb-active');return false;"><i class="fa-solid fa-ruler-horizontal" style="width:14px;"></i> Hướng dẫn đo size nhẫn</a>
+                        <a href="#"><i class="fa-solid fa-certificate" style="width:14px;"></i> Giấy chứng nhận sản phẩm</a>
+                        <a href="{{ url_for('ai_consultant') }}"><i class="fa-solid fa-robot" style="width:14px;"></i> Tư vấn AI miễn phí</a>
+                        <a href="#"><i class="fa-solid fa-star" style="width:14px;"></i> Chương trình khách VIP</a>
+                        <a href="#"><i class="fa-solid fa-gem" style="width:14px;"></i> Chính sách thu đổi kim cương</a>
+                    </div>
+                </div>
+
+                <!-- Col 4: Newsletter + Social -->
+                <div class="lb-footer-col">
+                    <h4>Đăng Ký Nhận Tin</h4>
+                    <p style="font-size:0.83rem;color:rgba(255,255,255,0.62);margin-bottom:1rem;line-height:1.6;">
+                        Nhận ngay ưu đãi độc quyền và cập nhật bộ sưu tập mới nhất từ LUNA BELLE.
+                    </p>
+                    <form class="lb-newsletter-form" onsubmit="return false;">
+                        <input type="email" class="lb-newsletter-input" placeholder="Email của bạn..." aria-label="Email đăng ký newsletter">
+                        <button type="submit" class="lb-newsletter-btn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    <p style="font-size:0.75rem;color:rgba(255,255,255,0.42);margin-bottom:1.2rem;">
+                        Theo dõi chúng tôi trên mạng xã hội
+                    </p>
+                    <div class="lb-social-icons">
+                        <a href="#" class="lb-social-icon" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="lb-social-icon" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="lb-social-icon" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" class="lb-social-icon" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="lb-footer-bottom">
+                <p>&copy; 2026 LUNA BELLE Elite Jewelry. Mọi quyền được bảo lưu. | Thanh toán: VNPAY · MoMo · VietQR · COD</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Float Button -->
+    <div class="lb-ai-float" id="aiFloatBtn" title="Tư vấn AI LUNA BELLE" role="button" tabindex="0" aria-label="Mở chat tư vấn AI">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <!-- AI Chat Window -->
+    <div class="lb-ai-chat" id="aiChatWindow" role="dialog" aria-label="Chat tư vấn AI">
+        <div class="lb-ai-chat-header">
+            <div class="lb-ai-chat-header-info">
+                <div class="lb-ai-avatar"><i class="fa-solid fa-gem"></i></div>
+                <div>
+                    <div class="lb-ai-chat-title">LunaStylist AI <span style="font-size:0.65rem;background:rgba(255,255,255,0.2);padding:1px 7px;border-radius:99px;font-weight:500;margin-left:4px;">DeepSeek</span></div>
+                    <div class="lb-ai-chat-online">● Trực tuyến – Sẵn sàng tư vấn</div>
+                </div>
+            </div>
+            <button class="lb-ai-chat-close" id="aiChatClose" aria-label="Đóng chat"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="lb-ai-messages" id="aiMessages">
+            <div class="lb-chat-msg lb-msg-ai">
+                Xin chào! Tôi là <strong>LunaStylist</strong> – trợ lý AI tư vấn trang sức của LUNA BELLE. 
+                Tôi có thể giúp bạn chọn nhẫn Moissanite, hướng dẫn đo size, hoặc gợi ý quà tặng phù hợp ngân sách! 💎
+            </div>
+        </div>
+        <div class="lb-ai-chips">
+            <button class="lb-chip" data-query="Tư vấn nhẫn Moissanite">💍 Nhẫn Moissanite</button>
+            <button class="lb-chip" data-query="Cách đo size nhẫn">📏 Đo size nhẫn</button>
+            <button class="lb-chip" data-query="Trang sức dưới 5 triệu">💰 Dưới 5 triệu</button>
+            <button class="lb-chip" data-query="Quà tặng bạn gái">🎁 Quà tặng</button>
+        </div>
+        <form class="lb-ai-input-bar" id="aiChatForm">
+            <input type="text" class="lb-ai-input" id="aiChatInput" placeholder="Hỏi chuyên gia AI..." autocomplete="off">
+            <button type="submit" class="lb-ai-send" aria-label="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+
+    <!-- Size Guide Modal -->
+    <div style="display:none;position:fixed;inset:0;background:rgba(44,31,32,0.6);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(4px);" id="sizeModal" class="">
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai_chat.js') }}"></script>
+    <script>
+    // AI Float Chat Toggle
+    const aiFloatBtn = document.getElementById('aiFloatBtn');
+    const aiChatWindow = document.getElementById('aiChatWindow');
+    const aiChatClose = document.getElementById('aiChatClose');
+    if(aiFloatBtn && aiChatWindow) {
+        aiFloatBtn.addEventListener('click', () => aiChatWindow.classList.toggle('lb-open'));
+        if(aiChatClose) aiChatClose.addEventListener('click', () => aiChatWindow.classList.remove('lb-open'));
+    }
+
+    // Quick chips
+    document.querySelectorAll('.lb-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const input = document.getElementById('aiChatInput');
+            if(input) { input.value = chip.dataset.query; input.focus(); }
+        });
+    });
+
+    // Flash auto-dismiss
+    setTimeout(() => {
+        document.querySelectorAll('.lb-flash-alert').forEach(el => {
+            el.style.transition = 'opacity 0.4s ease';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 400);
+        });
+    }, 4500);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

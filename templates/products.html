@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if selected_category %}{{ selected_category.TenDanhMuc }} · {% elif current_filters.q %}Tìm kiếm "{{ current_filters.q }}" · {% endif %}Bộ Sưu Tập Trang Sức LUNA BELLE
+{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<section style="background: linear-gradient(135deg, #FFF0F1 0%, #FDF0EE 50%, #FAD4D8 100%); padding: 3rem 0 2.2rem; border-bottom: 1px solid var(--lb-border-soft); text-align: center; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -30px; right: 5%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(183,110,121,0.12) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -40px; left: 3%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(212,147,154,0.15) 0%, transparent 70%); pointer-events: none;"></div>
+
+    <div class="lb-container" style="position: relative; z-index: 2;">
+        <div class="lb-section-tag" style="justify-content: center; margin-bottom: 0.4rem;">
+            <i class="fa-solid fa-crown" style="color: var(--lb-rg-primary);"></i> Tuyển Tập Hoàng Gia · LUNA BELLE
+        </div>
+        <h1 class="lb-section-title" style="font-size: 2.2rem; margin-bottom: 0.6rem; color: var(--lb-text-dark);">
+            {% if selected_category %}
+                {{ selected_category.TenDanhMuc }}
+            {% elif current_filters.q %}
+                Kết Quả Tìm Kiếm: "{{ current_filters.q }}"
+            {% else %}
+                Bộ Sưu Tập Trang Sức Cao Cấp
+            {% endif %}
+        </h1>
+        <p style="font-size: 0.92rem; color: var(--lb-text-muted); max-width: 650px; margin: 0 auto; line-height: 1.55;">
+            {% if selected_category and selected_category.MoTa %}
+                {{ selected_category.MoTa }}
+            {% else %}
+                Khám phá tuyệt tác nhẫn đính hôn, dây chuyền Moissanite, trang sức Bạc 925 & Vàng hồng 18K chế tác thủ công tinh xảo từ nghệ nhân LUNA BELLE.
+            {% endif %}
+        </p>
+
+        <!-- Breadcrumb -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; font-size: 0.82rem; color: var(--lb-text-muted);">
+            <a href="{{ url_for('index') }}" style="color: var(--lb-rg-primary); font-weight: 500; text-decoration: none;">Trang Chủ</a>
+            <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem; opacity: 0.6;"></i>
+            <a href="{{ url_for('products') }}" style="color: var(--lb-rg-primary); font-weight: 500; text-decoration: none;">Sản Phẩm</a>
+            {% if selected_category %}
+                <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem; opacity: 0.6;"></i>
+                <span style="color: var(--lb-text-dark); font-weight: 600;">{{ selected_category.TenDanhMuc }}</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Main Catalog Layout -->
+<section style="padding: 2.5rem 0 5rem;">
+    <div class="lb-container">
+        <div class="lb-shop-layout">
+            
+            <!-- Left Sidebar Filter -->
+            <aside class="lb-sidebar">
+                <div class="lb-sidebar-header">
+                    <span class="lb-sidebar-title">
+                        <i class="fa-solid fa-sliders" style="color: var(--lb-rg-primary);"></i> BỘ LỌC TÌM KIẾM
+                    </span>
+                    {% if current_filters.category or current_filters.material or current_filters.style or current_filters.audience or current_filters.min_price or current_filters.max_price or current_filters.q %}
+                    <a href="{{ url_for('products') }}" class="lb-sidebar-reset" title="Xóa tất cả bộ lọc">
+                        <i class="fa-solid fa-rotate-left"></i> Đặt lại
+                    </a>
+                    {% endif %}
+                </div>
+
+                <form action="{{ url_for('products') }}" method="GET" id="catalogFilterForm">
+                    <!-- Giữ từ khóa tìm kiếm & sắp xếp hiện tại -->
+                    {% if current_filters.q %}
+                        <input type="hidden" name="q" value="{{ current_filters.q }}">
+                    {% endif %}
+                    {% if current_filters.sort %}
+                        <input type="hidden" name="sort" id="filterSortInput" value="{{ current_filters.sort }}">
+                    {% endif %}
+
+                    <!-- 1. Danh Mục Sản Phẩm -->
+                    <div class="lb-filter-group">
+                        <div class="lb-filter-title">
+                            <span><i class="fa-solid fa-layer-group" style="color: var(--lb-rg-primary);"></i> Danh Mục</span>
+                        </div>
+                        <div class="lb-category-filter-list">
+                            <a href="{{ url_for('products', **dict(request.args, category='')) }}" 
+                               class="lb-category-item {% if not current_filters.category %}active{% endif %}">
+                                <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 0.4rem; opacity: 0.7;"></i> Tất Cả Sản Phẩm</span>
+                                <span class="lb-category-count">{{ products|length }}</span>
+                            </a>
+                            {% for cat in (categories or nav_categories) %}
+                                <a href="{{ url_for('products', **dict(request.args, category=cat.Slug)) }}" 
+                                   class="lb-category-item {% if current_filters.category == cat.Slug %}active{% endif %}">
+                                    <span><i class="fa-solid fa-chevron-right" style="font-size: 0.65rem; margin-right: 0.45rem; opacity: 0.5;"></i> {{ cat.TenDanhMuc }}</span>
+                                    {% if cat.SoLuongSP is defined %}
+                                        <span class="lb-category-count">{{ cat.SoLuongSP }}</span>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="category" id="filterCategoryInput" value="{{ current_filters.category or '' }}">
+                    </div>
+
+                    <!-- 2. Khoảng Giá (VNĐ) - Phong Cách Đại Trà -->
+                    <div class="lb-filter-group">
+                        <div class="lb-filter-title">
+                            <span><i class="fa-solid fa-tags" style="color: var(--lb-rg-primary);"></i> Khoảng Giá (VNĐ)</span>
+                        </div>
+                        
+                        <!-- 2 ô nhập khoảng giá tự do -->
+                        <div class="lb-price-inputs">
+                            <input type="number" name="min_price" id="inputMinPrice" placeholder="Từ..." value="{{ current_filters.min_price|int if current_filters.min_price else '' }}" class="lb-price-input" min="0" step="500000">
+                            <span style="color: var(--lb-text-muted); font-weight: 600;">-</span>
+                            <input type="number" name="max_price" id="inputMaxPrice" placeholder="Đến..." value="{{ current_filters.max_price|int if current_filters.max_price else '' }}" class="lb-price-input" min="0" step="500000">
+                        </div>
+
+                        <!-- Các mức giá chọn nhanh chuẩn đại trà -->
+                        <div class="lb-quick-price-list">
+                            <button type="button" class="lb-quick-price-btn {% if current_filters.max_price == 2000000 and not current_filters.min_price %}active{% endif %}" onclick="setQuickPrice('', 2000000)">
+                                <i class="fa-regular fa-circle-dot" style="font-size: 0.7rem; margin-right: 0.35rem;"></i> Dưới 2.000.000₫
+                            </button>
+                            <button type="button" class="lb-quick-price-btn {% if current_filters.min_price == 2000000 and current_filters.max_price == 5000000 %}active{% endif %}" onclick="setQuickPrice(2000000, 5000000)">
+                                <i class="fa-regular fa-circle-dot" style="font-size: 0.7rem; margin-right: 0.35rem;"></i> 2.000.000₫ - 5.000.000₫
+                            </button>
+                            <button type="button" class="lb-quick-price-btn {% if current_filters.min_price == 5000000 and current_filters.max_price == 15000000 %}active{% endif %}" onclick="setQuickPrice(5000000, 15000000)">
+                                <i class="fa-regular fa-circle-dot" style="font-size: 0.7rem; margin-right: 0.35rem;"></i> 5.000.000₫ - 15.000.000₫
+                            </button>
+                            <button type="button" class="lb-quick-price-btn {% if current_filters.min_price == 15000000 and current_filters.max_price == 30000000 %}active{% endif %}" onclick="setQuickPrice(15000000, 30000000)">
+                                <i class="fa-regular fa-circle-dot" style="font-size: 0.7rem; margin-right: 0.35rem;"></i> 15.000.000₫ - 30.000.000₫
+                            </button>
+                            <button type="button" class="lb-quick-price-btn {% if current_filters.min_price == 30000000 and not current_filters.max_price %}active{% endif %}" onclick="setQuickPrice(30000000, '')">
+                                <i class="fa-regular fa-circle-dot" style="font-size: 0.7rem; margin-right: 0.35rem;"></i> Trên 30.000.000₫
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Chất Liệu Kim Hoàn -->
+                    <div class="lb-filter-group">
+                        <div class="lb-filter-title">
+                            <span><i class="fa-solid fa-gem" style="color: var(--lb-rg-primary);"></i> Chất Liệu</span>
+                        </div>
+                        <div class="lb-filter-chip-list">
+                            <a href="{{ url_for('products', **dict(request.args, material='')) }}" 
+                               class="lb-filter-chip {% if not current_filters.material %}active{% endif %}">
+                                Tất cả
+                            </a>
+                            {% for mat in materials %}
+                                <a href="{{ url_for('products', **dict(request.args, material=mat.ChatLieu)) }}" 
+                                   class="lb-filter-chip {% if current_filters.material == mat.ChatLieu %}active{% endif %}">
+                                    {{ mat.ChatLieu }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="material" id="filterMaterialInput" value="{{ current_filters.material or '' }}">
+                    </div>
+
+                    <!-- 4. Dành Cho (Đối Tượng) -->
+                    {% if audiences %}
+                    <div class="lb-filter-group">
+                        <div class="lb-filter-title">
+                            <span><i class="fa-solid fa-user-group" style="color: var(--lb-rg-primary);"></i> Dành Cho</span>
+                        </div>
+                        <div class="lb-filter-chip-list">
+                            <a href="{{ url_for('products', **dict(request.args, audience='')) }}" 
+                               class="lb-filter-chip {% if not current_filters.audience %}active{% endif %}">
+                                Tất cả
+                            </a>
+                            {% for aud in audiences %}
+                                <a href="{{ url_for('products', **dict(request.args, audience=aud.DoiTuong)) }}" 
+                                   class="lb-filter-chip {% if current_filters.audience == aud.DoiTuong %}active{% endif %}">
+                                    {{ aud.DoiTuong }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="audience" id="filterAudienceInput" value="{{ current_filters.audience or '' }}">
+                    </div>
+                    {% endif %}
+
+                    <!-- 5. Phong Cách -->
+                    {% if styles %}
+                    <div class="lb-filter-group">
+                        <div class="lb-filter-title">
+                            <span><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--lb-rg-primary);"></i> Phong Cách</span>
+                        </div>
+                        <div class="lb-filter-chip-list">
+                            <a href="{{ url_for('products', **dict(request.args, style='')) }}" 
+                               class="lb-filter-chip {% if not current_filters.style %}active{% endif %}">
+                                Tất cả
+                            </a>
+                            {% for sty in styles %}
+                                <a href="{{ url_for('products', **dict(request.args, style=sty.PhongCach)) }}" 
+                                   class="lb-filter-chip {% if current_filters.style == sty.PhongCach %}active{% endif %}">
+                                    {{ sty.PhongCach }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="style" id="filterStyleInput" value="{{ current_filters.style or '' }}">
+                    </div>
+                    {% endif %}
+
+                    <!-- Nút Thao Tác Áp Dụng / Xóa Bộ Lọc -->
+                    <div class="lb-filter-action-btns">
+                        <button type="submit" class="lb-btn-apply-filter">
+                            <i class="fa-solid fa-filter"></i> Áp Dụng Bộ Lọc
+                        </button>
+                        <a href="{{ url_for('products') }}" class="lb-btn-reset-filter" title="Xóa tất cả">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Box Tư Vấn AI Thông Minh -->
+                <div style="background: linear-gradient(135deg, #FFF0F2 0%, #FDF4F5 100%); border-radius: 12px; padding: 1.15rem; margin-top: 1.5rem; text-align: center; border: 1px solid rgba(183,110,121,0.25);">
+                    <div style="width: 40px; height: 40px; margin: 0 auto 0.6rem; background: var(--lb-rg-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(183,110,121,0.3);">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h4 style="font-family: var(--lb-font-serif); font-size: 0.95rem; color: var(--lb-text-dark); margin-bottom: 0.3rem;">Chưa Chọn Được Mẫu?</h4>
+                    <p style="font-size: 0.77rem; color: var(--lb-text-muted); margin-bottom: 0.8rem; line-height: 1.45;">Trợ lý AI LUNA BELLE sẵn sàng tư vấn mẫu nhẫn, dây chuyền phù hợp ngân sách & cung mệnh!</p>
+                    <a href="{{ url_for('ai_consultant') }}" class="lb-btn lb-btn-primary lb-btn-sm" style="width: 100%; font-size: 0.78rem;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Tư Vấn AI Ngay
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Product Grid Area -->
+            <main>
+                <!-- Shop Controls Bar (Chuẩn phong cách TMĐT đại trà) -->
+                <div class="lb-shop-controls-bar">
+                    <div class="lb-shop-controls-inner">
+                        <div class="lb-shop-count">
+                            Hiển thị <strong>{{ products|length }}</strong> sản phẩm trang sức cao cấp
+                        </div>
+                        
+                        <!-- Dải Tab Sắp Xếp chuẩn mực -->
+                        <div class="lb-sort-tabs">
+                            <span class="lb-sort-tab-label">
+                                <i class="fa-solid fa-arrow-down-wide-short" style="color: var(--lb-rg-primary);"></i> Sắp xếp:
+                            </span>
+                            <a href="{{ url_for('products', **dict(request.args, sort='newest')) }}" 
+                               class="lb-sort-tab-btn {% if not current_filters.sort or current_filters.sort == 'newest' %}active{% endif %}">
+                                Mới nhất
+                            </a>
+                            <a href="{{ url_for('products', **dict(request.args, sort='bestseller')) }}" 
+                               class="lb-sort-tab-btn {% if current_filters.sort == 'bestseller' %}active{% endif %}">
+                                Bán chạy nhất
+                            </a>
+                            <a href="{{ url_for('products', **dict(request.args, sort='price_asc')) }}" 
+                               class="lb-sort-tab-btn {% if current_filters.sort == 'price_asc' %}active{% endif %}">
+                                Giá: Thấp → Cao
+                            </a>
+                            <a href="{{ url_for('products', **dict(request.args, sort='price_desc')) }}" 
+                               class="lb-sort-tab-btn {% if current_filters.sort == 'price_desc' %}active{% endif %}">
+                                Giá: Cao → Thấp
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Dải Active Filter Chips (Tags đang được lọc) -->
+                    {% set has_active_filters = current_filters.category or current_filters.material or current_filters.style or current_filters.audience or current_filters.min_price or current_filters.max_price or current_filters.q %}
+                    {% if has_active_filters %}
+                    <div class="lb-active-filter-strip">
+                        <span class="lb-active-filter-title">Đang lọc theo:</span>
+                        
+                        {% if selected_category %}
+                            <a href="{{ url_for('products', **dict(request.args, category='')) }}" class="lb-active-chip" title="Bỏ lọc danh mục">
+                                Danh mục: {{ selected_category.TenDanhMuc }} <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if current_filters.material %}
+                            <a href="{{ url_for('products', **dict(request.args, material='')) }}" class="lb-active-chip" title="Bỏ lọc chất liệu">
+                                Chất liệu: {{ current_filters.material }} <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if current_filters.audience %}
+                            <a href="{{ url_for('products', **dict(request.args, audience='')) }}" class="lb-active-chip" title="Bỏ lọc đối tượng">
+                                Dành cho: {{ current_filters.audience }} <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if current_filters.style %}
+                            <a href="{{ url_for('products', **dict(request.args, style='')) }}" class="lb-active-chip" title="Bỏ lọc phong cách">
+                                Phong cách: {{ current_filters.style }} <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if current_filters.min_price or current_filters.max_price %}
+                            <a href="{{ url_for('products', **dict(request.args, min_price='', max_price='')) }}" class="lb-active-chip" title="Bỏ lọc giá">
+                                Giá: 
+                                {% if current_filters.min_price and current_filters.max_price %}
+                                    {{ current_filters.min_price|currency }} - {{ current_filters.max_price|currency }}
+                                {% elif current_filters.min_price %}
+                                    Từ {{ current_filters.min_price|currency }}
+                                {% elif current_filters.max_price %}
+                                    Đến {{ current_filters.max_price|currency }}
+                                {% endif %}
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if current_filters.q %}
+                            <a href="{{ url_for('products', **dict(request.args, q='')) }}" class="lb-active-chip" title="Bỏ lọc từ khóa">
+                                Từ khóa: "{{ current_filters.q }}" <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('products') }}" class="lb-active-chip-clear-all">
+                            Xóa tất cả bộ lọc
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Product Grid (Phong Cách Đại Trà Chuẩn Mực) -->
+                {% if products %}
+                    <div class="lb-product-grid">
+                        {% for p in products %}
+                        <article class="lb-product-card">
+                            <!-- Thumbnail & Badges -->
+                            <div class="lb-product-thumb">
+                                <a href="{{ url_for('product_detail', slug=p.Slug) }}" style="display: block; width: 100%; height: 100%;">
+                                    <img src="{{ p.HinhAnhChinh or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80' }}" alt="{{ p.TenSanPham }}" loading="lazy">
+                                </a>
+                                
+                                {% if p.LaNoiBat %}
+                                    <span class="lb-discount-badge">
+                                        <i class="fa-solid fa-crown" style="font-size: 0.62rem;"></i> Bán Chạy
+                                    </span>
+                                {% else %}
+                                    <span class="lb-discount-badge" style="background: linear-gradient(135deg, #B76E79, #C9956C);">
+                                        Mới
+                                    </span>
+                                {% endif %}
+
+                                <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ p.MaSanPham }}" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                
+                                <div class="lb-product-overlay">
+                                    <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-quick-view-btn">
+                                        <i class="fa-solid fa-eye"></i> Xem Chi Tiết
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Product Info -->
+                            <div class="lb-product-info">
+                                <div class="lb-product-cat">{{ p.TenDanhMuc }}</div>
+                                
+                                <h3 class="lb-product-name" title="{{ p.TenSanPham }}">
+                                    <a href="{{ url_for('product_detail', slug=p.Slug) }}">{{ p.TenSanPham }}</a>
+                                </h3>
+
+                                <div class="lb-product-stars-sold">
+                                    <div class="lb-stars">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <span style="font-size: 0.72rem; color: var(--lb-text-muted); margin-left: 2px;">(5.0)</span>
+                                    </div>
+                                    <div class="lb-sold-count">
+                                        Đã bán {{ (p.MaSanPham * 17 % 85) + 32 }}
+                                    </div>
+                                </div>
+
+                                <div class="lb-product-material">
+                                    <i class="fa-solid fa-gem" style="color: var(--lb-rg-primary); font-size: 0.7rem;"></i>
+                                    {{ p.ChatLieu or 'Kim hoàn cao cấp' }}{% if p.PhongCach %} · {{ p.PhongCach }}{% endif %}
+                                </div>
+
+                                <div class="lb-product-pricing">
+                                    <span class="lb-price-current">
+                                        {{ (p.GiaMin or p.GiaCoSo)|currency }}
+                                    </span>
+                                    <span class="lb-price-original">
+                                        {{ (((p.GiaMin or p.GiaCoSo)|float) * 1.15)|currency }}
+                                    </span>
+                                </div>
+
+                                <div class="lb-product-actions">
+                                    <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-btn-detail-main">
+                                        <i class="fa-solid fa-eye"></i> Xem Chi Tiết
+                                    </a>
+                                    <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-btn-cart-icon" title="Chọn mua">
+                                        <i class="fa-solid fa-bag-shopping"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- Empty State -->
+                    <div style="background: #ffffff; border: 1.5px dashed rgba(183,110,121,0.3); border-radius: 16px; padding: 4.5rem 2rem; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+                        <div style="width: 72px; height: 72px; margin: 0 auto 1.3rem; background: #FFF0F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--lb-rg-primary); font-size: 2rem;">
+                            <i class="fa-solid fa-gem"></i>
+                        </div>
+                        <h3 style="font-family: var(--lb-font-serif); font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--lb-text-dark);">Không Tìm Thấy Sản Phẩm Phù Hợp</h3>
+                        <p style="color: var(--lb-text-muted); max-width: 460px; margin: 0 auto 1.8rem; font-size: 0.9rem; line-height: 1.6;">
+                            Rất tiếc, không có sản phẩm nào khớp với bộ lọc bạn đã chọn. Hãy thử nới rộng khoảng giá hoặc bỏ bớt tiêu chí lọc.
+                        </p>
+                        <a href="{{ url_for('products') }}" class="lb-btn lb-btn-primary">
+                            <i class="fa-solid fa-rotate-left"></i> Xóa Bộ Lọc & Xem Tất Cả
+                        </a>
+                    </div>
+                {% endif %}
+            </main>
+
+        </div>
+    </div>
+</section>
+
+<!-- Script xử lý chọn nhanh mức giá -->
+<script>
+function setQuickPrice(minPrice, maxPrice) {
+    const minInput = document.getElementById('inputMinPrice');
+    const maxInput = document.getElementById('inputMaxPrice');
+    if (minInput) minInput.value = minPrice;
+    if (maxInput) maxInput.value = maxPrice;
+    document.getElementById('catalogFilterForm').submit();
+}
+</script>
+{% endblock %}

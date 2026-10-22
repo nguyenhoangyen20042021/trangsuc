@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Đặt Hàng Thành Công #{{ order.MaDonHangCode }} · LUNA BELLE{% endblock %}
+
+{% block content %}
+<div class="lb-container" style="padding: 4rem 1.5rem 6.5rem; max-width: 900px;">
+    <div class="lb-card-white" style="padding: 3.5rem 2.5rem; text-align: center; border-radius: var(--lb-r-xl); position: relative; overflow: hidden; box-shadow: var(--lb-shadow-lg);">
+        
+        <!-- Top Rose Gold Accent Bar -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: var(--lb-rg-gradient);"></div>
+
+        <div style="width: 84px; height: 84px; border-radius: 50%; background: #ECFDF5; border: 2.5px solid #10B981; display: inline-flex; align-items: center; justify-content: center; font-size: 2.4rem; color: #10B981; margin-bottom: 1.5rem; box-shadow: 0 4px 18px rgba(16,185,129,0.25);">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <div class="lb-section-tag" style="justify-content: center; margin-bottom: 0.5rem;">
+            <i class="fa-solid fa-crown"></i> Giao Dịch Thành Công
+        </div>
+        <h1 style="font-family: var(--lb-font-serif); font-size: 2.2rem; color: var(--lb-text-dark); margin-bottom: 0.8rem;">
+            Cảm Ơn Quý Khách Đã Lựa Chọn LUNA BELLE
+        </h1>
+        <p style="color: var(--lb-text-muted); max-width: 600px; margin: 0 auto 2rem; font-size: 0.95rem; line-height: 1.6;">
+            Mã đơn hàng kiệt tác của bạn: <strong style="color: var(--lb-rg-primary); font-size: 1.25rem; letter-spacing: 0.05em; font-family: var(--lb-font-serif);">{{ order.MaDonHangCode }}</strong>.<br>
+            Bộ phận CSKH LUNA BELLE tại Đồng Nai sẽ liên hệ xác nhận và tiến hành đóng gói bảo hiểm ngay.
+        </p>
+
+        <!-- VietQR Transfer section if Bank Transfer -->
+        {% if order.PhuongThucThanhToan == 'BANK_TRANSFER' %}
+            <div style="background: linear-gradient(135deg, #FFF0F1 0%, #FFFBF9 100%); border: 1.5px solid var(--lb-border-card); border-radius: var(--lb-r-lg); padding: 2rem; margin-bottom: 2.5rem; text-align: left; box-shadow: var(--lb-shadow-sm);">
+                <h3 style="font-family: var(--lb-font-serif); color: var(--lb-rg-primary); font-size: 1.35rem; margin-bottom: 1.2rem; text-align: center;">
+                    <i class="fa-solid fa-qrcode"></i> Quét Mã VietQR Chuyển Khoản 24/7
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: center;">
+                    <div style="background: #fff; padding: 14px; border-radius: 14px; text-align: center; box-shadow: var(--lb-shadow-sm); border: 1px solid var(--lb-border-soft);">
+                        <img src="{{ vietqr_url }}" alt="VietQR" style="width: 210px; height: 210px; object-fit: contain;">
+                        <span style="font-size: 0.74rem; color: var(--lb-rg-primary); font-weight: 600; display: block; margin-top: 6px;">Quét bằng mọi App Ngân Hàng</span>
+                    </div>
+                    <div style="font-size: 0.9rem; line-height: 1.85; color: var(--lb-text-body);">
+                        <div>Ngân hàng thụ hưởng: <strong style="color: var(--lb-text-dark);">MBBank (Ngân Hàng Quân Đội)</strong></div>
+                        <div>Số tài khoản: <strong style="color: var(--lb-rg-primary); font-size: 1.15rem; font-family: var(--lb-font-serif);">0901234567</strong></div>
+                        <div>Chủ tài khoản: <strong style="color: var(--lb-text-dark);">LUNA BELLE JEWELRY</strong></div>
+                        <div>Số tiền chuyển: <strong style="color: #059669; font-size: 1.2rem; font-weight: 700;">{{ order.TongThanhToan|currency }}</strong></div>
+                        <div>Nội dung chuyển khoản: <strong style="color: var(--lb-rg-primary); font-size: 1.1rem;">{{ order.MaDonHangCode }}</strong></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Order Summary Detail -->
+        <div style="background: var(--lb-blush-100); border: 1px solid var(--lb-border-card); border-radius: var(--lb-r-lg); padding: 1.6rem; margin-bottom: 2.2rem; text-align: left;">
+            <h4 style="font-size: 0.88rem; color: var(--lb-rg-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">
+                <i class="fa-solid fa-receipt"></i> Thông Tin Giao Nhận & Chi Tiết Đơn Hàng
+            </h4>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; font-size: 0.88rem;">
+                <div>
+                    <span style="color: var(--lb-text-muted); display: block; font-size: 0.78rem;">Người nhận:</span>
+                    <strong style="color: var(--lb-text-dark);">{{ order.TenNguoiNhan }} ({{ order.SoDienThoaiNguoiNhan }})</strong>
+                    <span style="color: var(--lb-text-body); display: block; margin-top: 3px; font-size: 0.82rem;">{{ order.DiaChiGiaoHang }}</span>
+                </div>
+                <div>
+                    <span style="color: var(--lb-text-muted); display: block; font-size: 0.78rem;">Hình thức thanh toán:</span>
+                    <strong style="color: var(--lb-rg-primary);">{{ order.PhuongThucThanhToan }}</strong>
+                    <span style="color: var(--lb-text-muted); display: block; margin-top: 3px; font-size: 0.82rem;">Ngày đặt: {{ order.NgayDatHang.strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                <thead>
+                    <tr style="border-bottom: 1.5px solid var(--lb-border-card); color: var(--lb-text-muted); text-align: left;">
+                        <th style="padding: 9px 0;">Sản phẩm chế tác</th>
+                        <th style="padding: 9px 0; text-align: center;">SL</th>
+                        <th style="padding: 9px 0; text-align: right;">Đơn giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for it in items %}
+                        <tr style="border-bottom: 1px solid var(--lb-border-soft);">
+                            <td style="padding: 10px 0; color: var(--lb-text-dark);">
+                                <strong>{{ it.TenSanPhamSnap }}</strong>
+                                {% if it.KichThuocSnap %}
+                                    <span style="font-size: 0.75rem; color: var(--lb-rg-primary); display: block;">Size: {{ it.KichThuocSnap }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 10px 0; text-align: center; color: var(--lb-text-body);">{{ it.SoLuong }}</td>
+                            <td style="padding: 10px 0; text-align: right; color: var(--lb-rg-primary); font-weight: 600;">{{ it.DonGia|currency }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="2" style="padding-top: 15px; font-weight: 700; font-size: 1.05rem; color: var(--lb-text-dark);">Tổng Thanh Toán:</td>
+                        <td style="padding-top: 15px; text-align: right; font-weight: 700; font-size: 1.35rem; color: var(--lb-rg-primary); font-family: var(--lb-font-serif);">
+                            {{ order.TongThanhToan|currency }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="{{ url_for('order_tracking', search_query=order.MaDonHangCode) }}" class="lb-btn lb-btn-primary">
+                <i class="fa-solid fa-truck-fast"></i> Tra Cứu Tiến Độ Vận Chuyển
+            </a>
+            <a href="{{ url_for('index') }}" class="lb-btn lb-btn-outline" style="border-color: var(--lb-rg-primary); color: var(--lb-rg-primary);">
+                <i class="fa-solid fa-house"></i> Trở Về Trang Chủ
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

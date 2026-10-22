@@ -1,0 +1,621 @@
+/* =================================================================
+   LUNA BELLE - LUXURY JEWELRY ADMIN DASHBOARD STYLESHEET
+   Phong Cách Hoàng Gia Nền Trắng Sang Trọng (White & Rose Gold Luxury)
+   Palette: Nền Trắng Ngọc Trai (#FFFBF9, #FFFFFF) · Rose Gold (#B76E79, #C9956C) · Chữ Đen Mận (#2C1F20)
+   ================================================================= */
+:root {
+  --admin-bg: #FFFBF9;
+  --admin-bg-alt: #FFF5F4;
+  --admin-sidebar: #FFFFFF;
+  --admin-card: #FFFFFF;
+  --admin-card-hover: #FFF9FA;
+  --admin-border: rgba(183, 110, 121, 0.20);
+  --admin-border-light: rgba(183, 110, 121, 0.12);
+  --admin-gold: #B76E79;
+  --admin-gold-light: #D4939A;
+  --admin-rose: #B76E79;
+  --admin-rose-dark: #8B3A48;
+  --admin-text: #2C1F20;
+  --admin-text-sub: #5A3F42;
+  --admin-muted: #8E7275;
+  --admin-gradient: linear-gradient(135deg, #C9956C 0%, #B76E79 40%, #9B4D62 100%);
+  --admin-gradient-hover: linear-gradient(135deg, #D4A37A 0%, #C47B86 40%, #A85A6F 100%);
+  --admin-shadow: 0 4px 20px rgba(183, 110, 121, 0.08);
+  --admin-shadow-glow: 0 8px 30px rgba(183, 110, 121, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.admin-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden !important;
+  background-color: var(--admin-bg) !important;
+  color: var(--admin-text) !important;
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Master Layout Wrapper - Nền Trắng Hoàng Gia */
+.admin-layout-wrapper {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--admin-bg);
+  background: radial-gradient(circle at 85% 10%, rgba(183, 110, 121, 0.08) 0%, transparent 60%), var(--admin-bg);
+}
+
+/* =================================================================
+   SIDEBAR - NỀN TRẮNG TINH KHIẾT VIỀN ROSE GOLD
+   ================================================================= */
+.admin-sidebar {
+  width: 275px;
+  min-width: 275px;
+  max-width: 275px;
+  height: 100vh;
+  background: var(--admin-sidebar);
+  border-right: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+  box-shadow: 4px 0 20px rgba(183, 110, 121, 0.06);
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.admin-brand {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+  margin-bottom: 1.25rem;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0 1rem;
+}
+
+/* LINK MENU SIDEBAR: CHỮ ĐEN MẬN SẮC NÉT TRÊN NỀN TRẮNG */
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 0.85rem 1.15rem;
+  color: var(--admin-text) !important;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.admin-nav a i {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+  color: var(--admin-rose) !important;
+  transition: transform 0.25s ease;
+}
+
+.admin-nav a:hover {
+  background: #FFF0F2;
+  color: var(--admin-rose) !important;
+  border-color: rgba(183, 110, 121, 0.25);
+  transform: translateX(4px);
+}
+
+.admin-nav a:hover i {
+  color: var(--admin-rose) !important;
+  transform: scale(1.15);
+}
+
+/* ACTIVE LINK - GRADIENT ROSE GOLD HOÀNG GIA CHỮ TRẮNG RỰC RỠ */
+.admin-nav a.active {
+  background: var(--admin-gradient) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(183, 110, 121, 0.35);
+  border-color: transparent;
+}
+
+.admin-nav a.active i {
+  color: #FFFFFF !important;
+}
+
+/* =================================================================
+   MAIN CONTENT AREA - NỀN TRẮNG NGỌC TRAI
+   ================================================================= */
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+.admin-topbar {
+  height: 68px;
+  min-height: 68px;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  flex-shrink: 0;
+  color: var(--admin-text) !important;
+  box-shadow: 0 2px 10px rgba(183, 110, 121, 0.04);
+}
+
+.admin-content {
+  padding: 2.2rem 2.8rem 4rem 2.8rem;
+  flex: 1;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Overwrite all headings in admin-main to dark luxury color */
+.admin-main h1, .admin-main h2, .admin-main h3, .admin-main h4 {
+  color: #2C1F20 !important;
+}
+
+/* =================================================================
+   STAT CARDS GRID - NỀN TRẮNG & VIỀN ROSE GOLD
+   ================================================================= */
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 1.6rem 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--admin-shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--admin-gradient);
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--admin-rose);
+  box-shadow: var(--admin-shadow-glow);
+  background: var(--admin-card-hover);
+}
+
+.stat-val {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #2C1F20 !important;
+  margin-top: 0.35rem;
+  font-family: 'Playfair Display', serif;
+}
+
+.stat-label {
+  font-size: 0.84rem;
+  color: var(--admin-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* =================================================================
+   ADMIN CARD BOX - KHỐI NỘI DUNG NỀN TRẮNG
+   ================================================================= */
+.admin-card-box {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 2.2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--admin-shadow);
+  color: var(--admin-text);
+}
+
+/* =================================================================
+   TABLES - NỀN TRẮNG, TIÊU ĐỀ HỒNG PHẤN, CHỮ RÕ NÉT
+   ================================================================= */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  padding: 1.1rem 1.25rem;
+  font-size: 0.82rem;
+  color: #5A3F42 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--admin-border);
+  background: #FFF5F6;
+}
+
+.admin-table td {
+  padding: 1.15rem 1.25rem;
+  border-bottom: 1px solid rgba(183, 110, 121, 0.12);
+  font-size: 0.94rem;
+  vertical-align: middle;
+  color: #2C1F20 !important;
+}
+
+.admin-table td strong {
+  color: #2C1F20 !important;
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.admin-table tbody tr:hover td {
+  background: #FFF8F9;
+}
+
+/* Product Thumbnail */
+.admin-prod-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--admin-border);
+  background: #FFF5F6;
+  display: block;
+  box-shadow: 0 2px 8px rgba(183, 110, 121, 0.12);
+}
+
+/* =================================================================
+   BUTTONS - GRADIENT ROSE GOLD CHỮ TRẮNG
+   ================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.65rem 1.35rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border: none;
+  outline: none;
+  line-height: 1.4;
+  color: #FFFFFF !important;
+}
+
+.btn-gold {
+  background: var(--admin-gradient) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(183, 110, 121, 0.35);
+  border: none;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  background: var(--admin-gradient-hover) !important;
+  box-shadow: 0 6px 22px rgba(183, 110, 121, 0.45);
+  color: #ffffff !important;
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-outline-gold {
+  background: #FFFFFF;
+  border: 1.5px solid var(--admin-rose);
+  color: var(--admin-rose) !important;
+}
+
+.btn-outline-gold:hover {
+  background: var(--admin-rose);
+  color: #ffffff !important;
+  border-color: var(--admin-rose);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(183, 110, 121, 0.25);
+}
+
+.btn-glass {
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.btn-glass:hover {
+  background: #FFF5F6;
+  color: var(--admin-rose) !important;
+  border-color: var(--admin-rose);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626 !important;
+}
+
+.btn-danger:hover {
+  background: #DC2626;
+  color: #ffffff !important;
+}
+
+.btn-sm {
+  padding: 0.42rem 0.95rem;
+  font-size: 0.84rem;
+  border-radius: 6px;
+}
+
+.btn-lg {
+  padding: 0.85rem 1.85rem;
+  font-size: 1.05rem;
+  border-radius: 10px;
+}
+
+/* =================================================================
+   BADGES
+   ================================================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+}
+
+.badge-gold {
+  background: #FFF0F2;
+  color: var(--admin-rose);
+  border: 1px solid rgba(183, 110, 121, 0.3);
+}
+
+.badge-success {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.badge-warning {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.badge-danger {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.badge-info {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.badge-secondary {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
+.badge-primary {
+  background: #FFF0F2;
+  color: var(--admin-rose-dark);
+  border: 1px solid var(--admin-rose);
+}
+
+/* =================================================================
+   FORM CONTROLS - NỀN TRẮNG & VIỀN MỀM MẠI
+   ================================================================= */
+.form-group {
+  margin-bottom: 1.4rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--admin-text) !important;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-control {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 0.8rem 1.1rem;
+  color: var(--admin-text) !important;
+  font-size: 0.94rem;
+  font-family: inherit;
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--admin-rose);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.15);
+}
+
+.form-control::placeholder {
+  color: #A8969A;
+}
+
+select.form-control {
+  cursor: pointer;
+  background-color: #FFFFFF;
+  color: var(--admin-text) !important;
+}
+
+select.form-control option {
+  background-color: #FFFFFF;
+  color: var(--admin-text);
+  padding: 10px;
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+/* =================================================================
+   ORDER PROGRESS STEPPER - SANG TRỌNG NỀN TRẮNG
+   ================================================================= */
+.admin-order-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.8rem 0;
+  position: relative;
+}
+
+.admin-order-steps::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: rgba(183, 110, 121, 0.18);
+  z-index: 1;
+}
+
+.admin-order-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.admin-order-step-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid rgba(183, 110, 121, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: var(--admin-muted);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.admin-order-step-title {
+  font-size: 0.82rem;
+  color: var(--admin-text) !important;
+  font-weight: 600;
+  max-width: 95px;
+}
+
+.admin-order-step.completed .admin-order-step-icon {
+  background: #FFF0F2;
+  border-color: var(--admin-rose);
+  color: var(--admin-rose);
+  box-shadow: 0 0 12px rgba(183, 110, 121, 0.25);
+}
+
+.admin-order-step.completed .admin-order-step-title {
+  color: var(--admin-rose) !important;
+  font-weight: 700;
+}
+
+.admin-order-step.active .admin-order-step-icon {
+  background: var(--admin-gradient);
+  border-color: transparent;
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(183, 110, 121, 0.4);
+  transform: scale(1.15);
+}
+
+.admin-order-step.active .admin-order-step-title {
+  color: var(--admin-rose-dark) !important;
+  font-weight: 800;
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 768px) {
+  .admin-layout-wrapper {
+    flex-direction: column !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+  body.admin-body {
+    overflow: auto !important;
+    height: auto !important;
+  }
+  .admin-sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    padding: 1rem;
+  }
+  .admin-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .admin-main {
+    height: auto;
+    overflow: visible;
+  }
+  .admin-content {
+    padding: 1.25rem;
+  }
+}

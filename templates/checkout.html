@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Thanh Toán Đơn Hàng · LUNA BELLE Quý Phái{% endblock %}
+
+{% block content %}
+<div class="lb-container" style="padding-top: 3.5rem; padding-bottom: 5.5rem;">
+    <!-- Page Header & Stepper -->
+    <div style="border-bottom: 1px solid var(--lb-border-soft); padding-bottom: 1.5rem; margin-bottom: 2.5rem; text-align: center;">
+        <div class="lb-section-tag" style="justify-content: center;"><i class="fa-solid fa-shield-heart"></i> Bảo Mật Đặt Hàng</div>
+        <h1 class="lb-section-title" style="margin-bottom: 0.8rem;">Thông Tin Giao Hàng & Thanh Toán</h1>
+        
+        <!-- Stepper -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; font-size: 0.84rem; color: var(--lb-text-muted);">
+            <span style="color: var(--lb-text-dark);"><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 1. Giỏ Hàng</span>
+            <i class="fa-solid fa-arrow-right" style="font-size: 0.65rem; opacity: 0.5;"></i>
+            <span style="color: var(--lb-rg-primary); font-weight: 700;"><i class="fa-solid fa-circle-dot"></i> 2. Giao Hàng & Thanh Toán</span>
+            <i class="fa-solid fa-arrow-right" style="font-size: 0.65rem; opacity: 0.5;"></i>
+            <span>3. Hoàn Tất Đơn Hàng</span>
+        </div>
+    </div>
+
+    <form action="{{ url_for('checkout') }}" method="POST">
+        <div class="lb-checkout-grid">
+            
+            <!-- Left: Delivery Information & Payment Method -->
+            <div>
+                <!-- Shipping Info Card -->
+                <div class="lb-card-white" style="margin-bottom: 2rem;">
+                    <h3 style="font-family: var(--lb-font-serif); font-size: 1.25rem; color: var(--lb-text-dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="fa-solid fa-truck-ramp-box" style="color: var(--lb-rg-primary);"></i> 1. Thông Tin Nhận Hàng
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem;">
+                        <div>
+                            <label class="lb-form-label">Họ và tên người nhận <span style="color: #EF4444;">*</span></label>
+                            <input type="text" name="fullname" class="lb-form-input" placeholder="Ví dụ: Lê Hoàng Yến Nhi" 
+                                   value="{{ (saved_address.TenNguoiNhan if saved_address else (current_user.HoTen if current_user else '')) }}" required>
+                        </div>
+                        <div>
+                            <label class="lb-form-label">Số điện thoại liên hệ <span style="color: #EF4444;">*</span></label>
+                            <input type="tel" name="phone" class="lb-form-input" placeholder="Ví dụ: 0987654321" 
+                                   value="{{ (saved_address.SoDienThoai if saved_address else (current_user.SoDienThoai if current_user else '')) }}" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+                        <div>
+                            <label class="lb-form-label">Tỉnh / Thành phố <span style="color: #EF4444;">*</span></label>
+                            <input type="text" name="city" class="lb-form-input" placeholder="Đồng Nai" 
+                                   value="{{ saved_address.TinhThanh if saved_address else 'Đồng Nai' }}" required>
+                        </div>
+                        <div>
+                            <label class="lb-form-label">Quận / Huyện <span style="color: #EF4444;">*</span></label>
+                            <input type="text" name="district" class="lb-form-input" placeholder="TP. Biên Hòa" 
+                                   value="{{ saved_address.QuanHuyen if saved_address else 'TP. Biên Hòa' }}" required>
+                        </div>
+                        <div>
+                            <label class="lb-form-label">Phường / Xã <span style="color: #EF4444;">*</span></label>
+                            <input type="text" name="ward" class="lb-form-input" placeholder="Phường Tân Phong" 
+                                   value="{{ saved_address.PhuongXa if saved_address else 'Phường Tân Phong' }}" required>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.2rem;">
+                        <label class="lb-form-label">Địa chỉ chi tiết (Số nhà, đường, khu dân cư) <span style="color: #EF4444;">*</span></label>
+                        <input type="text" name="address" class="lb-form-input" placeholder="Ví dụ: Số 88 Đường Nguyễn Ái Quốc" 
+                               value="{{ saved_address.DiaChiChiTiet if saved_address else '' }}" required>
+                    </div>
+
+                    <div>
+                        <label class="lb-form-label">Ghi chú đặc biệt (Tùy chọn)</label>
+                        <textarea name="note" rows="2" class="lb-form-input" placeholder="Yêu cầu giờ giao, thiệp chúc mừng, đóng gói quà bí mật..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Card -->
+                <div class="lb-card-white">
+                    <h3 style="font-family: var(--lb-font-serif); font-size: 1.25rem; color: var(--lb-text-dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="fa-solid fa-credit-card" style="color: var(--lb-rg-primary);"></i> 2. Phương Thức Thanh Toán
+                    </h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+                        <!-- COD -->
+                        <label class="lb-payment-option">
+                            <input type="radio" name="payment_method" value="COD" checked style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
+                            <div>
+                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
+                                    <i class="fa-solid fa-hand-holding-dollar" style="color: var(--lb-rg-primary); margin-right: 4px;"></i> Thanh Toán Khi Nhận Hàng (COD)
+                                </strong>
+                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
+                                    Quý khách được đồng kiểm niêm phong, kiểm tra hộp nhung và chứng thư kiểm định trước khi thanh toán.
+                                </span>
+                            </div>
+                        </label>
+
+                        <!-- Bank Transfer -->
+                        <label class="lb-payment-option">
+                            <input type="radio" name="payment_method" value="BANK_TRANSFER" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
+                            <div>
+                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
+                                    <i class="fa-solid fa-qrcode" style="color: var(--lb-rg-primary); margin-right: 4px;"></i> Chuyển Khoản Ngân Hàng (Quét Mã VietQR 24/7)
+                                </strong>
+                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
+                                    Quét mã QR chuyển khoản nhanh chóng qua ứng dụng ngân hàng. Đơn hàng ưu tiên chế tác lập tức.
+                                </span>
+                            </div>
+                        </label>
+
+                        <!-- MoMo -->
+                        <label class="lb-payment-option">
+                            <input type="radio" name="payment_method" value="MOMO" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
+                            <div>
+                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
+                                    <i class="fa-solid fa-wallet" style="color: #A50064; margin-right: 4px;"></i> Ví Điện Tử MoMo
+                                </strong>
+                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
+                                    Thanh toán tức thì và bảo mật qua ứng dụng Ví MoMo.
+                                </span>
+                            </div>
+                        </label>
+
+                        <!-- VNPAY -->
+                        <label class="lb-payment-option">
+                            <input type="radio" name="payment_method" value="VNPAY" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
+                            <div>
+                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
+                                    <i class="fa-solid fa-credit-card" style="color: #005BAA; margin-right: 4px;"></i> Cổng Thanh Toán VNPAY (ATM / Visa / Mastercard)
+                                </strong>
+                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
+                                    Hỗ trợ thẻ ATM nội địa và thẻ quốc tế bảo mật theo tiêu chuẩn PCI DSS quốc tế.
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary Sidebar -->
+            <aside>
+                <div class="lb-card-white" style="position: sticky; top: 100px;">
+                    <h3 style="font-family: var(--lb-font-serif); font-size: 1.3rem; color: var(--lb-text-dark); border-bottom: 1px solid var(--lb-border-soft); padding-bottom: 0.8rem; margin-bottom: 1.25rem;">
+                        Chi Tiết Đơn Hàng ({{ items|length }} món)
+                    </h3>
+
+                    <!-- Mini items list -->
+                    <div style="display: flex; flex-direction: column; gap: 0.9rem; max-height: 280px; overflow-y: auto; margin-bottom: 1.3rem; padding-right: 4px;">
+                        {% for item in items %}
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <div style="width: 52px; height: 52px; border-radius: var(--lb-r-sm); overflow: hidden; border: 1px solid var(--lb-border-card); flex-shrink: 0; background: #fff;">
+                                    <img src="{{ item.image }}" alt="{{ item.product_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div style="flex: 1; font-size: 0.84rem;">
+                                    <strong style="color: var(--lb-text-dark); display: block; line-height: 1.25;">{{ item.product_name }}</strong>
+                                    <span style="color: var(--lb-text-muted); font-size: 0.74rem;">Size: {{ item.size or 'Chuẩn' }} x {{ item.quantity }}</span>
+                                </div>
+                                <span style="font-weight: 700; color: var(--lb-rg-primary); font-size: 0.88rem;">{{ item.line_total|currency }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem;">
+                        <span style="color: var(--lb-text-muted);">Tạm tính:</span>
+                        <strong style="color: var(--lb-text-dark);">{{ subtotal|currency }}</strong>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem;">
+                        <span style="color: var(--lb-text-muted);">Vận chuyển bảo hiểm:</span>
+                        <span>
+                            {% if shipping_fee == 0 %}
+                                <strong style="color: #10B981;"><i class="fa-solid fa-truck-fast"></i> Miễn phí</strong>
+                            {% else %}
+                                <strong style="color: var(--lb-text-dark);">{{ shipping_fee|currency }}</strong>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if discount_amount > 0 %}
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem; color: #059669;">
+                            <span>Ưu đãi voucher:</span>
+                            <strong>-{{ discount_amount|currency }}</strong>
+                        </div>
+                    {% endif %}
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px dashed var(--lb-border-card); padding-top: 1rem; margin-top: 0.8rem; margin-bottom: 1.5rem;">
+                        <span style="font-weight: 600; color: var(--lb-text-dark); font-size: 1rem;">Tổng Thanh Toán:</span>
+                        <span style="font-family: var(--lb-font-serif); font-size: 1.55rem; font-weight: 700; color: var(--lb-rg-primary);">
+                            {{ grand_total|currency }}
+                        </span>
+                    </div>
+
+                    <button type="submit" class="lb-btn lb-btn-primary" style="width: 100%; padding: 0.95rem; font-size: 0.95rem; justify-content: center; border-radius: var(--lb-r-full);">
+                        <i class="fa-solid fa-circle-check"></i> Xác Nhận Đặt Hàng
+                    </button>
+
+                    <p style="text-align: center; font-size: 0.73rem; color: var(--lb-text-muted); margin-top: 1rem; line-height: 1.5;">
+                        Nhấn "Xác Nhận Đặt Hàng" đồng nghĩa quý khách đồng ý với các Điều Khoản Mua Hàng & Cam Kết Kim Hoàn của LUNA BELLE.
+                    </p>
+                </div>
+            </aside>
+
+        </div>
+    </form>
+</div>
+{% endblock %}

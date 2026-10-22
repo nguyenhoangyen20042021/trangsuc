@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Giỏ Hàng Quý Phái · LUNA BELLE{% endblock %}
+
+{% block content %}
+<div class="lb-container" style="padding-top: 3.5rem; padding-bottom: 5.5rem;">
+    <!-- Page Header -->
+    <div style="border-bottom: 1px solid var(--lb-border-soft); padding-bottom: 1.5rem; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div class="lb-section-tag"><i class="fa-solid fa-bag-shopping"></i> Túi Trang Sức</div>
+            <h1 class="lb-section-title" style="margin-bottom: 0;">Giỏ Hàng Của Quý Khách</h1>
+        </div>
+        <a href="{{ url_for('products') }}" class="lb-btn lb-btn-ghost lb-btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Tiếp tục chọn trang sức
+        </a>
+    </div>
+
+    {% if items %}
+        <div style="display: grid; grid-template-columns: 1.35fr 0.85fr; gap: 2.5rem; align-items: start;">
+            
+            <!-- Left: Items Table -->
+            <div class="lb-cart-table-wrap">
+                <table class="lb-cart-table">
+                    <thead>
+                        <tr>
+                            <th>Sản Phẩm</th>
+                            <th>Đơn Giá</th>
+                            <th style="text-align: center;">Số Lượng</th>
+                            <th>Thành Tiền</th>
+                            <th style="text-align: center;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 1.2rem;">
+                                        <div style="width: 72px; height: 72px; border-radius: var(--lb-r-md); overflow: hidden; border: 1.5px solid var(--lb-border-card); flex-shrink: 0; background: #fff; box-shadow: var(--lb-shadow-sm);">
+                                            <img src="{{ item.image }}" alt="{{ item.product_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                        <div>
+                                            <a href="{{ url_for('product_detail', slug=item.slug) }}" style="font-family: var(--lb-font-serif); font-size: 0.98rem; font-weight: 600; color: var(--lb-text-dark); display: block; margin-bottom: 0.25rem;">
+                                                {{ item.product_name }}
+                                            </a>
+                                            <div style="font-size: 0.78rem; color: var(--lb-rg-primary); font-weight: 500;">
+                                                <span>Size: <strong>{{ item.size or 'Chuẩn' }}</strong></span>
+                                                {% if item.gemstone %}
+                                                    <span style="margin-left: 8px; color: var(--lb-text-muted);">| Đá: <strong>{{ item.gemstone }}</strong></span>
+                                                {% endif %}
+                                            </div>
+                                            <span style="font-size: 0.72rem; color: var(--lb-text-muted); display: block; margin-top: 2px;">SKU: {{ item.sku }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600; color: var(--lb-text-body); font-size: 0.92rem;">{{ item.price|currency }}</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <form action="{{ url_for('update_cart') }}" method="POST" style="display: inline-flex; align-items: center; gap: 0.2rem; background: var(--lb-blush-100); border-radius: var(--lb-r-full); padding: 2px 6px; border: 1px solid var(--lb-border-card);">
+                                        <input type="hidden" name="variant_id" value="{{ item.variant_id }}">
+                                        <button type="submit" name="quantity" value="{{ item.quantity - 1 }}" style="width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 1px solid var(--lb-border-soft); color: var(--lb-rg-primary); cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">-</button>
+                                        <span style="display: inline-block; width: 28px; font-weight: 700; text-align: center; font-size: 0.88rem; color: var(--lb-text-dark);">{{ item.quantity }}</span>
+                                        <button type="submit" name="quantity" value="{{ item.quantity + 1 }}" style="width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 1px solid var(--lb-border-soft); color: var(--lb-rg-primary); cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">+</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <span style="font-weight: 700; color: var(--lb-rg-primary); font-size: 1.05rem; font-family: var(--lb-font-serif);">{{ item.line_total|currency }}</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <form action="{{ url_for('remove_from_cart') }}" method="POST">
+                                        <input type="hidden" name="variant_id" value="{{ item.variant_id }}">
+                                        <button type="submit" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.05rem; opacity: 0.7; transition: var(--lb-ease);" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" title="Xóa món này">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Right: Order Summary Box -->
+            <aside class="lb-card-white" style="position: sticky; top: 100px;">
+                <h3 style="font-family: var(--lb-font-serif); font-size: 1.35rem; color: var(--lb-text-dark); border-bottom: 1px solid var(--lb-border-soft); padding-bottom: 0.9rem; margin-bottom: 1.3rem;">
+                    Tóm Tắt Đơn Hàng
+                </h3>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.88rem;">
+                    <span style="color: var(--lb-text-muted);">Tạm tính tiền hàng:</span>
+                    <strong style="color: var(--lb-text-dark);">{{ subtotal|currency }}</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.1rem; font-size: 0.88rem;">
+                    <span style="color: var(--lb-text-muted);">Vận chuyển bảo hiểm:</span>
+                    <span>
+                        {% if shipping_fee == 0 %}
+                            <strong style="color: #10B981;"><i class="fa-solid fa-truck-fast"></i> Miễn phí toàn quốc</strong>
+                        {% else %}
+                            <strong style="color: var(--lb-text-dark);">{{ shipping_fee|currency }}</strong>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Voucher Form -->
+                <form action="{{ url_for('apply_voucher') }}" method="POST" style="display: flex; gap: 0.4rem; margin-bottom: 1rem;">
+                    <input type="text" name="voucher_code" placeholder="Mã ưu đãi (VD: LUNABELLE15)" value="{{ applied_voucher.MaCode if applied_voucher else '' }}"
+                           style="flex: 1; background: var(--lb-blush-100); border: 1.5px solid var(--lb-border-soft); border-radius: var(--lb-r-full); padding: 0.55rem 1rem; font-size: 0.82rem; color: var(--lb-text-dark); text-transform: uppercase;">
+                    <button type="submit" class="lb-btn lb-btn-primary lb-btn-sm" style="border-radius: var(--lb-r-full); white-space: nowrap;">Áp Dụng</button>
+                </form>
+
+                {% if applied_voucher %}
+                    <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--lb-r-md); padding: 0.6rem 0.9rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.82rem; color: #065F46; font-weight: 500;">
+                            <i class="fa-solid fa-tag"></i> Mã: <strong>{{ applied_voucher.MaCode }}</strong>
+                        </span>
+                        <span style="color: #047857; font-weight: 700; font-size: 0.92rem;">-{{ discount_amount|currency }}</span>
+                    </div>
+                {% endif %}
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px dashed var(--lb-border-card); padding-top: 1.1rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+                    <span style="font-weight: 600; color: var(--lb-text-dark); font-size: 1rem;">Tổng Thanh Toán:</span>
+                    <span style="font-family: var(--lb-font-serif); font-size: 1.6rem; font-weight: 700; color: var(--lb-rg-primary);">
+                        {{ grand_total|currency }}
+                    </span>
+                </div>
+
+                <a href="{{ url_for('checkout') }}" class="lb-btn lb-btn-primary" style="width: 100%; padding: 0.95rem; font-size: 0.95rem; justify-content: center; border-radius: var(--lb-r-full);">
+                    <i class="fa-solid fa-shield-heart"></i> Tiến Hành Đặt Hàng
+                </a>
+
+                <div style="margin-top: 1.4rem; text-align: center; font-size: 0.74rem; color: var(--lb-text-muted); display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                    <i class="fa-solid fa-lock" style="color: var(--lb-rg-primary);"></i> Bảo mật thanh toán SSL 256-bit chuẩn Quốc tế
+                </div>
+            </aside>
+        </div>
+    {% else %}
+        <!-- Empty Cart -->
+        <div style="background: #FFFFFF; border: 1.5px dashed var(--lb-border-card); border-radius: var(--lb-r-xl); padding: 5.5rem 2rem; text-align: center; box-shadow: var(--lb-shadow-sm);">
+            <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: var(--lb-blush-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--lb-rg-primary); font-size: 2.2rem;">
+                <i class="fa-solid fa-bag-shopping"></i>
+            </div>
+            <h2 style="font-family: var(--lb-font-serif); font-size: 1.8rem; margin-bottom: 0.6rem; color: var(--lb-text-dark);">Túi Trang Sức Đang Trống</h2>
+            <p style="color: var(--lb-text-muted); max-width: 440px; margin: 0 auto 2rem; font-size: 0.92rem; line-height: 1.6;">
+                Khám phá ngay bộ sưu tập nhẫn đính hôn, dây chuyền Moissanite và trang sức vàng hồng độc bản từ LUNA BELLE.
+            </p>
+            <a href="{{ url_for('products') }}" class="lb-btn lb-btn-primary" style="padding: 0.85rem 2.2rem; font-size: 0.95rem;">
+                <i class="fa-solid fa-gem"></i> Khám Phá Bộ Sưu Tập Ngay
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

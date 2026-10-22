@@ -1,0 +1,123 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Bảng Điều Khiển Quản Trị · LUNA BELLE ADMIN{% endblock %}
+
+{% block admin_content %}
+<div style="margin-bottom: 2rem;">
+    <span style="font-size: 0.85rem; color: var(--admin-gold); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">HỆ THỐNG QUẢN TRỊ KIM HOÀN CAO CẤP</span>
+    <h1 class="font-serif" style="font-size: 2.2rem; color: var(--admin-text); margin: 0.25rem 0 0.4rem 0;">Bảng Điều Khiển Tổng Quan</h1>
+    <p style="color: var(--admin-muted); font-size: 0.9rem;">
+        Theo dõi hiệu quả doanh thu bán hàng, tình trạng đơn đặt và tồn kho trang sức LUNA BELLE.
+    </p>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-cards-grid">
+    <div class="stat-card">
+        <div>
+            <div class="stat-label">Tổng Doanh Thu Đã Thu</div>
+            <div class="stat-val" style="color: var(--admin-gold);">{{ stats.revenue|currency }}</div>
+        </div>
+        <div style="font-size: 2.2rem; color: var(--admin-gold); opacity: 0.85;">
+            <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div>
+            <div class="stat-label">Tổng Số Đơn Hàng</div>
+            <div class="stat-val" style="color: #60a5fa;">{{ stats.orders_count }}</div>
+        </div>
+        <div style="font-size: 2.2rem; color: #60a5fa; opacity: 0.85;">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div>
+            <div class="stat-label">Sản Phẩm Trong Kho</div>
+            <div class="stat-val" style="color: #4ade80;">{{ stats.products_count }}</div>
+        </div>
+        <div style="font-size: 2.2rem; color: #4ade80; opacity: 0.85;">
+            <i class="fa-solid fa-gem"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div>
+            <div class="stat-label">Khách Hàng Thành Viên</div>
+            <div class="stat-val" style="color: #D4939A;">{{ stats.users_count }}</div>
+        </div>
+        <div style="font-size: 2.2rem; color: #D4939A; opacity: 0.85;">
+            <i class="fa-solid fa-users"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders Section -->
+<div class="admin-card-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h3 class="font-serif" style="font-size: 1.35rem; color: var(--admin-text); margin: 0;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--admin-gold); margin-right: 8px;"></i> Đơn Hàng Mới Nhất
+            </h3>
+            <span style="font-size: 0.82rem; color: var(--admin-muted);">Các đơn đặt trang sức phát sinh gần đây nhất cần xử lý</span>
+        </div>
+        <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-gold">
+            Xem Tất Cả Đơn Hàng <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Mã Đơn</th>
+                <th>Khách Hàng</th>
+                <th>Tổng Tiền</th>
+                <th>Thanh Toán</th>
+                <th>Trạng Thái Đơn</th>
+                <th>Thời Gian</th>
+                <th style="text-align: right;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ord in recent_orders %}
+                {% set st = ord.TrangThaiDonHang|order_status_info %}
+                {% set pay = ord.TrangThaiThanhToan|payment_status_info %}
+                <tr>
+                    <td>
+                        <strong style="color: var(--admin-gold); font-size: 0.95rem;">#{{ ord.MaDonHangCode }}</strong>
+                    </td>
+                    <td>
+                        <strong style="color: var(--admin-text); display: block; font-size: 0.92rem;">{{ ord.TenNguoiNhan }}</strong>
+                        <span style="font-size: 0.78rem; color: var(--admin-muted);">{{ ord.SoDienThoaiNguoiNhan }}</span>
+                    </td>
+                    <td>
+                        <strong style="color: var(--admin-text); font-size: 0.98rem;">{{ ord.TongThanhToan|currency }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge {{ pay.class }}">{{ pay.text }}</span>
+                    </td>
+                    <td>
+                        <span class="badge {{ st.class }}">{{ st.text }}</span>
+                    </td>
+                    <td style="color: var(--admin-muted); font-size: 0.82rem;">
+                        {{ ord.NgayDatHang.strftime('%d/%m/%Y %H:%M') }}
+                    </td>
+                    <td style="text-align: right;">
+                        <a href="{{ url_for('admin_order_detail', id=ord.MaDonHang) }}" class="btn btn-sm btn-gold">
+                            <i class="fa-solid fa-eye"></i> Xử Lý
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--admin-muted);">
+                        Chưa có đơn hàng nào được ghi nhận.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

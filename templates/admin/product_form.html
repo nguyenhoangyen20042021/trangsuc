@@ -1,0 +1,285 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}
+    {% if product %}Chỉnh Sửa Sản Phẩm #{{ product.MaSanPham }}{% else %}Thêm Mới Trang Sức{% endif %} · LUNA BELLE ADMIN
+{% endblock %}
+
+{% block admin_content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('admin_products') }}" class="btn btn-sm btn-glass" style="margin-bottom: 1rem;">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách sản phẩm
+    </a>
+    <h1 class="font-serif" style="font-size: 2.2rem; color: var(--admin-text); margin-top: 0.25rem;">
+        {% if product %}Chỉnh Sửa Sản Phẩm: <span style="color: var(--admin-rose);">{{ product.TenSanPham }}</span>{% else %}Thêm Mới Tuyệt Tác Kim Hoàn{% endif %}
+    </h1>
+    <p style="color: var(--admin-muted); font-size: 0.92rem;">
+        Quản lý thuộc tính trang sức và các biến thể kích thước, đá quý theo cơ sở dữ liệu kim hoàn LUNA BELLE.
+    </p>
+</div>
+
+<form action="" method="POST" id="productMainForm">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Left: Thông tin sản phẩm chính & Quản lý biến thể -->
+        <div>
+            <!-- Basic Product Info -->
+            <div class="admin-card-box">
+                <h3 class="font-serif" style="font-size: 1.25rem; color: var(--admin-text); margin-bottom: 1.25rem;">
+                    <i class="fa-solid fa-gem" style="margin-right: 8px; color: var(--admin-rose);"></i> Thông Tin Trang Sức Cơ Bản
+                </h3>
+
+                <div class="form-group">
+                    <label class="form-label">Tên sản phẩm trang sức <span style="color:#dc2626;">*</span></label>
+                    <input type="text" name="name" class="form-control" value="{{ product.TenSanPham if product else '' }}" required placeholder="Ví dụ: Nhẫn Kim Cương Solitaire Eternal Grace">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group">
+                        <label class="form-label">Slug (Đường dẫn tĩnh)</label>
+                        <input type="text" name="slug" class="form-control" value="{{ product.Slug if product else '' }}" placeholder="Tự động tạo nếu để trống">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Danh mục sản phẩm <span style="color:#dc2626;">*</span></label>
+                        <select name="category_id" class="form-control" required>
+                            {% for cat in categories %}
+                                <option value="{{ cat.MaDanhMuc }}" {% if product and product.MaDanhMuc == cat.MaDanhMuc %}selected{% endif %}>
+                                    {{ cat.TenDanhMuc }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group">
+                        <label class="form-label">Chất liệu chính <span style="color:#dc2626;">*</span></label>
+                        <input type="text" name="material" class="form-control" value="{{ product.ChatLieu if product else 'Kim Cương' }}" placeholder="Vàng 18K, Kim Cương, Bạc 925..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phong cách</label>
+                        <input type="text" name="style" class="form-control" value="{{ product.PhongCach if product else 'Sang trọng' }}" placeholder="Sang trọng, Cổ điển, Tinh tế...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Đối tượng</label>
+                        <input type="text" name="audience" class="form-control" value="{{ product.DoiTuong if product else 'Nữ' }}" placeholder="Nữ, Nam, Cặp đôi...">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group">
+                        <label class="form-label">Giá cơ sở (VNĐ) <span style="color:#dc2626;">*</span></label>
+                        <input type="number" name="price" id="basePriceInput" class="form-control" value="{{ product.GiaCoSo|int if product else 20000000 }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">URL Hình ảnh chính <span style="color:#dc2626;">*</span></label>
+                        <input type="url" name="image" id="baseImageInput" class="form-control" value="{{ product.HinhAnhChinh if product and product.HinhAnhChinh else 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80' }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mô tả chi tiết chế tác & đặc tính đá quý</label>
+                    <textarea name="description" rows="4" class="form-control" placeholder="Mô tả chuẩn kim cương, giác cắt, độ sáng bóng, ý nghĩa thiết kế...">{{ product.MoTaChiTiet if product else '' }}</textarea>
+                </div>
+
+                {% if product %}
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái bán hàng</label>
+                        <select name="status" class="form-control">
+                            <option value="DangBan" {% if product.TrangThai == 'DangBan' %}selected{% endif %}>Đang Bán</option>
+                            <option value="HetHang" {% if product.TrangThai == 'HetHang' %}selected{% endif %}>Hết Hàng</option>
+                            <option value="NgungBan" {% if product.TrangThai == 'NgungBan' %}selected{% endif %}>Ngừng Bán</option>
+                        </select>
+                    </div>
+                {% endif %}
+
+                <div style="margin-bottom: 1.5rem; background: #FFF5F6; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--admin-border);">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--admin-text);">
+                        <input type="checkbox" name="is_featured" value="1" {% if product and product.LaNoiBat %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--admin-rose);">
+                        <span style="font-weight: 600;">Đánh dấu "Sản Phẩm Nổi Bật" (Hiển thị trang chủ tuyển chọn)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- MULTI-VARIANT SECTION (QUẢN LÝ BIẾN THỂ SẢN PHẨM) -->
+            <div class="admin-card-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 class="font-serif" style="font-size: 1.3rem; color: var(--admin-text); margin: 0;">
+                            <i class="fa-solid fa-layer-group" style="margin-right: 8px; color: var(--admin-rose);"></i> Danh Sách Biến Thể Sản Phẩm
+                        </h3>
+                        <span style="font-size: 0.85rem; color: var(--admin-muted);">Thêm các kích cỡ (size ni tay), loại đá, giá bán và số lượng tồn kho</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-gold" onclick="addNewVariantRow()">
+                        <i class="fa-solid fa-plus-circle"></i> + Thêm Biến Thể Mới
+                    </button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table" id="variantsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 110px;">Kích Cỡ / Size</th>
+                                <th style="width: 160px;">Loại Đá Quý</th>
+                                <th style="width: 140px;">Giá Bán (₫)</th>
+                                <th style="width: 100px;">Tồn Kho</th>
+                                <th style="width: 130px;">Mã SKU</th>
+                                <th>Ảnh Biến Thể (URL)</th>
+                                <th style="width: 50px; text-align: center;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="variantsTbody">
+                            {% if variants and variants|length > 0 %}
+                                {% for bt in variants %}
+                                    <tr class="variant-row">
+                                        <td>
+                                            <input type="text" name="variant_size[]" class="form-control" value="{{ bt.KichThuocSize }}" required placeholder="Size 6, 7...">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="variant_stone[]" class="form-control" value="{{ bt.LoaiDa }}" required placeholder="Moissanite, Kim Cương...">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="variant_price[]" class="form-control" value="{{ bt.GiaBan|int }}" required placeholder="Giá bán">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="variant_stock[]" class="form-control" value="{{ bt.SoLuongTonKho }}" required min="0" placeholder="Số lượng">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="variant_sku[]" class="form-control" value="{{ bt.SKU }}" placeholder="Tự sinh nếu trống">
+                                        </td>
+                                        <td>
+                                            <input type="url" name="variant_image[]" class="form-control" value="{{ bt.HinhAnhBienThe or '' }}" placeholder="Để trống lấy ảnh chính">
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr class="variant-row">
+                                    <td>
+                                        <input type="text" name="variant_size[]" class="form-control" value="Tiêu Chuẩn" required placeholder="Size 6, 7...">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="variant_stone[]" class="form-control" value="Kim Cương Moissanite" required placeholder="Moissanite, Kim Cương...">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="variant_price[]" class="form-control" value="20000000" required placeholder="Giá bán">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="variant_stock[]" class="form-control" value="10" required min="0" placeholder="Số lượng">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="variant_sku[]" class="form-control" value="" placeholder="Tự sinh nếu trống">
+                                    </td>
+                                    <td>
+                                        <input type="url" name="variant_image[]" class="form-control" value="" placeholder="Để trống lấy ảnh chính">
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline-gold btn-sm" onclick="addNewVariantRow()">
+                        <i class="fa-solid fa-plus"></i> Thêm Dòng Biến Thể Khác
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-gold btn-lg">
+                    <i class="fa-solid fa-floppy-disk"></i> {% if product %}Lưu Cập Nhật Toàn Bộ Sản Phẩm & Biến Thể{% else %}Thêm Mới Sản Phẩm & Kích Hoạt Biến Thể{% endif %}
+                </button>
+                <a href="{{ url_for('admin_products') }}" class="btn btn-glass btn-lg">Hủy Bỏ</a>
+            </div>
+        </div>
+
+        <!-- Right: Image preview & Quick Help -->
+        <div>
+            {% if product %}
+                <div class="admin-card-box">
+                    <h4 class="font-serif" style="font-size: 1.15rem; color: var(--admin-text); margin-bottom: 1rem;">
+                        <i class="fa-solid fa-image" style="color: var(--admin-rose); margin-right: 6px;"></i> Ảnh Đại Diện Hiện Tại
+                    </h4>
+                    <div style="width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--admin-border); margin-bottom: 1.5rem; background: #FFF5F6;">
+                        <img src="{{ product.HinhAnhChinh or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80' }}" 
+                             alt="{{ product.TenSanPham }}" 
+                             style="width: 100%; height: 260px; object-fit: cover; display: block;"
+                             onerror="this.src='https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80';">
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="admin-card-box">
+                <h4 class="font-serif" style="font-size: 1.15rem; color: var(--admin-text); margin-bottom: 1rem;">
+                    <i class="fa-solid fa-circle-question" style="color: var(--admin-rose); margin-right: 6px;"></i> Hướng Dẫn Biến Thể
+                </h4>
+                <ul style="font-size: 0.88rem; color: var(--admin-muted); line-height: 1.8; padding-left: 1.2rem;">
+                    <li>Mỗi món trang sức có thể có nhiều kích thước (Ví dụ: Size 6, 7, 8, 9, 10...) hoặc phân loại đá (Moissanite, Kim Cương).</li>
+                    <li>Bạn có thể nhập giá bán và số lượng tồn kho riêng biệt cho từng biến thể.</li>
+                    <li>Nếu để trống SKU, hệ thống sẽ tự sinh mã SKU duy nhất chuẩn quốc tế.</li>
+                    <li>Nếu để trống ảnh biến thể, hệ thống sẽ sử dụng ảnh sản phẩm chính.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+function addNewVariantRow() {
+    const tbody = document.getElementById('variantsTbody');
+    const basePrice = document.getElementById('basePriceInput') ? document.getElementById('basePriceInput').value : 20000000;
+    const baseImage = document.getElementById('baseImageInput') ? document.getElementById('baseImageInput').value : '';
+    
+    const row = document.createElement('tr');
+    row.className = 'variant-row';
+    row.innerHTML = `
+        <td>
+            <input type="text" name="variant_size[]" class="form-control" value="Size " required placeholder="Size 6, 7...">
+        </td>
+        <td>
+            <input type="text" name="variant_stone[]" class="form-control" value="Kim Cương Moissanite" required placeholder="Moissanite, Kim Cương...">
+        </td>
+        <td>
+            <input type="number" name="variant_price[]" class="form-control" value="${basePrice}" required placeholder="Giá bán">
+        </td>
+        <td>
+            <input type="number" name="variant_stock[]" class="form-control" value="10" required min="0" placeholder="Số lượng">
+        </td>
+        <td>
+            <input type="text" name="variant_sku[]" class="form-control" value="" placeholder="Tự sinh nếu trống">
+        </td>
+        <td>
+            <input type="url" name="variant_image[]" class="form-control" value="${baseImage}" placeholder="Để trống lấy ảnh chính">
+        </td>
+        <td style="text-align: center;">
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+}
+
+function removeVariantRow(btn) {
+    const tbody = document.getElementById('variantsTbody');
+    const rows = tbody.querySelectorAll('.variant-row');
+    if (rows.length <= 1) {
+        alert('Sản phẩm phải có ít nhất một biến thể.');
+        return;
+    }
+    const tr = btn.closest('tr');
+    if (tr) {
+        tr.remove();
+    }
+}
+</script>
+{% endblock %}
