@@ -48,10 +48,6 @@ CREATE TABLE `nguoidung` (
   `HoTen` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `SoDienThoai` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `TinhThanh` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `QuanHuyen` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `PhuongXa` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `DiaChiChiTiet` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `NgayTao` datetime DEFAULT CURRENT_TIMESTAMP,
   `NgayCapNhat` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`MaNguoiDung`),
@@ -63,10 +59,10 @@ CREATE TABLE `nguoidung` (
 
 LOCK TABLES `nguoidung` WRITE;
 INSERT INTO `nguoidung` VALUES 
-(1,1,'admin','scrypt:32768:8:1$q7aqw6nAAP4FxXpN$7dd65efe80a4206531b0a9597ab449d6e1c85392504a8d518f272d77721c14adcab8398e8c6a76ffd9cba9a369900a8da46697a60a58b54004385ff1c5391295','Quản Trị Viên Cao Cấp','admin@aurajewelry.vn','0901234567',NULL,NULL,NULL,NULL,'2026-10-17 22:41:11','2026-10-17 22:41:11'),
-(2,2,'nhanvien','scrypt:32768:8:1$eMaUyWiBHwbqYYLj$af7b18cfa40de5748e85154f6db5b6ab2a3ce6cd11caa8de8d5d25cb2de0c0fe501431dfcdc4f6cabf035fcf4cb5822350a9294c8e9740b51d69a2bec0e454b9','Nguyễn Văn Nhân Viên','staff@aurajewelry.vn','0912345678',NULL,NULL,NULL,NULL,'2026-10-17 22:41:11','2026-10-17 22:41:11'),
-(3,3,'khachhang','scrypt:32768:8:1$s6TWXCWWOPm8cbCE$d5456a91d4f9bbb94a9ee0dcb6bf9c5b7f6a81a590fd6b08323a63b028073ede9596ef71f857765dbb80696af13b60e445afd6bc5e853ef974491362bf32cc90','Lê Hoàng Yến Nhi','yennhi@gmail.com','0987654321','TP. Hồ Chí Minh','Quận 1','Phường Bến Nghé','Tầng 15, Vincom Center, 72 Lê Thánh Tôn','2026-10-17 22:41:11','2026-10-17 22:41:11'),
-(4,3,'minhtri','scrypt:32768:8:1$CAAnXhMEyV6xQitX$99f4f9eea4fd3a89a87f9a5954702eea2ae2f4c3b22a49724dd31747d7573cee08ad16d8a16208774424cfe03a6441d5a200fce34166730ae84476a66c6b0a5c','Trần Minh Trí','minhtri@gmail.com','0978999888',NULL,NULL,NULL,NULL,'2026-10-17 22:41:11','2026-10-17 22:41:11');
+(1,1,'admin','scrypt:32768:8:1$q7aqw6nAAP4FxXpN$7dd65efe80a4206531b0a9597ab449d6e1c85392504a8d518f272d77721c14adcab8398e8c6a76ffd9cba9a369900a8da46697a60a58b54004385ff1c5391295','Quản Trị Viên Cao Cấp','admin@aurajewelry.vn','0901234567','2026-10-17 22:41:11','2026-10-17 22:41:11'),
+(2,2,'nhanvien','scrypt:32768:8:1$eMaUyWiBHwbqYYLj$af7b18cfa40de5748e85154f6db5b6ab2a3ce6cd11caa8de8d5d25cb2de0c0fe501431dfcdc4f6cabf035fcf4cb5822350a9294c8e9740b51d69a2bec0e454b9','Nguyễn Văn Nhân Viên','staff@aurajewelry.vn','0912345678','2026-10-17 22:41:11','2026-10-17 22:41:11'),
+(3,3,'khachhang','scrypt:32768:8:1$s6TWXCWWOPm8cbCE$d5456a91d4f9bbb94a9ee0dcb6bf9c5b7f6a81a590fd6b08323a63b028073ede9596ef71f857765dbb80696af13b60e445afd6bc5e853ef974491362bf32cc90','Lê Hoàng Yến Nhi','yennhi@gmail.com','0987654321','2026-10-17 22:41:11','2026-10-17 22:41:11'),
+(4,3,'minhtri','scrypt:32768:8:1$CAAnXhMEyV6xQitX$99f4f9eea4fd3a89a87f9a5954702eea2ae2f4c3b22a49724dd31747d7573cee08ad16d8a16208774424cfe03a6441d5a200fce34166730ae84476a66c6b0a5c','Trần Minh Trí','minhtri@gmail.com','0978999888','2026-10-17 22:41:11','2026-10-17 22:41:11');
 UNLOCK TABLES;
 
 --

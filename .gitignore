@@ -1,0 +1,113 @@
+# ==========================================
+# GITIGNORE - LUNA BELLE JEWELRY PLATFORM
+# ==========================================
+
+# 1. BỎ HOÀN TOÀN TẤT CẢ FILE TEST LÊN GIT
+test_*
+test_*.*
+test_*/**
+tests/
+test_*/
+test_screenshots/
+test_samples/
+screenshots/
+create_samples.js
+import_new_db.py
+*.log
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# 2. BỎ HOÀN TOÀN TẤT CẢ FILE ẢNH & MEDIA LÊN GIT
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.bmp
+*.ico
+*.svg
+*.tiff
+static/uploads/*
+!static/uploads/.gitkeep
+static/uploads/**/*
+!static/uploads/**/.gitkeep
+
+# 3. Python & Bytecode
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+**/__pycache__/**
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 4. Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# 5. Node & Puppeteer
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# 6. Operating System & IDEs
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 7. IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# 8. Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# 9. Temporary Scratch & System Generated
+scratch/
+.system_generated/
+.gemini/

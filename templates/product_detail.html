@@ -177,11 +177,7 @@
                             <i class="fa-solid fa-bolt"></i> Mua Ngay
                         </button>
 
-                        <button type="button" class="lb-wishlist-btn wishlist-toggle-btn {% if is_in_wishlist %}active{% endif %}" 
-                                data-product-id="{{ product.MaSanPham }}" title="Lưu danh sách yêu thích"
-                                style="position: static; width: 48px; height: 48px; border-radius: 50%; box-shadow: var(--lb-shadow-sm); border: 1.5px solid var(--lb-border-card);">
-                            <i class="fa-solid fa-heart" {% if is_in_wishlist %}style="color: #EF4444;"{% endif %}></i>
-                        </button>
+
                     </div>
                 </form>
 
@@ -341,9 +337,7 @@
                         <article class="lb-product-card">
                             <div class="lb-product-thumb">
                                 <img src="{{ rp.HinhAnhChinh }}" alt="{{ rp.TenSanPham }}" loading="lazy">
-                                <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ rp.MaSanPham }}" aria-label="Yêu thích">
-                                    <i class="fa-regular fa-heart"></i>
-                                </button>
+
                                 <div class="lb-product-overlay">
                                     <a href="{{ url_for('product_detail', slug=rp.Slug) }}" class="lb-quick-view-btn">
                                         <i class="fa-solid fa-eye"></i> Xem Chi Tiết

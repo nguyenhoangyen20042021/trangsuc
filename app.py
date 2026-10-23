@@ -5,12 +5,16 @@ if sys.stdout and sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 
+import os
+import time
+import uuid
 import json
 import random
 import datetime
 from decimal import Decimal
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
 
 from config import Config
@@ -19,6 +23,31 @@ from ai_service import generate_deepseek_consultation, get_deepseek_config, save
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# ----------------- PRODUCT IMAGE UPLOAD CONFIGURATION -----------------
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'products')
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Tối đa 16MB mỗi request
+
+def allowed_image_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+def save_uploaded_image(file_storage, product_id, order=1):
+    """Lưu 1 file ảnh tải lên từ máy tính, trả về URL tương đối /static/uploads/products/..."""
+    if not file_storage or not file_storage.filename:
+        return None
+    if not allowed_image_file(file_storage.filename):
+        return None
+    
+    ext = file_storage.filename.rsplit('.', 1)[1].lower()
+    timestamp = int(time.time())
+    rand_str = uuid.uuid4().hex[:6]
+    safe_name = f"prod_{product_id}_{order}_{timestamp}_{rand_str}.{ext}"
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    file_path = os.path.join(UPLOAD_FOLDER, safe_name)
+    file_storage.save(file_path)
+    return f"/static/uploads/products/{safe_name}"
 
 # ----------------- JINJA FILTERS & CONTEXT HELPERS -----------------
 @app.template_filter('currency')
@@ -297,22 +326,13 @@ def product_detail(slug):
         LIMIT 4
     """, (product['MaDanhMuc'], product['MaSanPham']))
 
-    # Kiểm tra xem sản phẩm đã có trong wishlist chưa
-    is_in_wishlist = False
-    if 'user_id' in session:
-        fav = query_one("SELECT MaYeuThich FROM SanPhamYeuThich WHERE MaNguoiDung = %s AND MaSanPham = %s",
-                        (session['user_id'], product['MaSanPham']))
-        if fav:
-            is_in_wishlist = True
-
     return render_template('product_detail.html',
                            product=product,
                            variants=variants,
                            gallery=gallery,
                            reviews=reviews,
                            avg_rating=avg_rating,
-                           related_products=related_products,
-                           is_in_wishlist=is_in_wishlist)
+                           related_products=related_products)
 
 # ----------------- CART & CHECKOUT -----------------
 
@@ -601,9 +621,6 @@ def checkout():
     if request.method == 'POST':
         fullname = request.form.get('fullname', '').strip()
         phone = request.form.get('phone', '').strip()
-        city = request.form.get('city', '').strip()
-        district = request.form.get('district', '').strip()
-        ward = request.form.get('ward', '').strip()
         address = request.form.get('address', '').strip()
         note = request.form.get('note', '').strip()
         payment_method = request.form.get('payment_method', 'COD')
@@ -612,7 +629,7 @@ def checkout():
             flash('Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.', 'danger')
             return redirect(url_for('checkout'))
 
-        full_shipping_address = f"{address}, {ward}, {district}, {city}".strip(', ')
+        shipping_address = address
 
         # Xác định user ID (nếu chưa login, gán vào khách vãng lai hoặc tạo tạm)
         user_id = session.get('user_id')
@@ -641,7 +658,7 @@ def checkout():
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'ChoXacNhan', %s, 'ChuaThanhToan')
                 """, (
                     order_code, user_id, voucher_id, fullname, phone,
-                    full_shipping_address, note, subtotal, shipping_fee, discount_amount, grand_total,
+                    shipping_address, note, subtotal, shipping_fee, discount_amount, grand_total,
                     payment_method
                 ))
                 order_id = cursor.lastrowid
@@ -680,22 +697,12 @@ def checkout():
             flash(f"Lỗi khi đặt hàng: {str(e)}", 'danger')
             return redirect(url_for('checkout'))
 
-    # Load địa chỉ mặc định của user nếu đã login
-    saved_address = None
-    if 'user_id' in session:
-        saved_address = query_one("""
-            SELECT * FROM DiaChiNguoiDung 
-            WHERE MaNguoiDung = %s 
-            ORDER BY LaMacDinh DESC LIMIT 1
-        """, (session['user_id'],))
-
     return render_template('checkout.html',
                            items=items_detail,
                            subtotal=subtotal,
                            shipping_fee=shipping_fee,
                            discount_amount=discount_amount,
-                           grand_total=grand_total,
-                           saved_address=saved_address)
+                           grand_total=grand_total)
 
 @app.route('/order-success/<order_code>')
 def order_success(order_code):
@@ -734,44 +741,7 @@ def order_tracking():
 
     return render_template('order_tracking.html', order=order, items=items, timeline=timeline, search_val=search_val)
 
-# ----------------- WISHLIST -----------------
 
-@app.route('/wishlist')
-@login_required
-def wishlist():
-    """Xem danh sách sản phẩm yêu thích."""
-    items = query_all("""
-        SELECT yt.MaYeuThich, sp.*, dm.TenDanhMuc, MIN(bt.GiaBan) as GiaMin,
-               (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
-        FROM SanPhamYeuThich yt
-        JOIN SanPham sp ON yt.MaSanPham = sp.MaSanPham
-        JOIN DanhMuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
-        LEFT JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-        WHERE yt.MaNguoiDung = %s
-        GROUP BY sp.MaSanPham
-        ORDER BY yt.NgayThem DESC
-    """, (session['user_id'],))
-    return render_template('wishlist.html', items=items)
-
-@app.route('/wishlist/toggle', methods=['POST'])
-def toggle_wishlist():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập để lưu sản phẩm yêu thích.', 'require_login': True}), 401
-
-    product_id = request.form.get('product_id', type=int)
-    if not product_id:
-        return jsonify({'success': False, 'message': 'Mã sản phẩm không hợp lệ.'}), 400
-
-    existing = query_one("SELECT MaYeuThich FROM SanPhamYeuThich WHERE MaNguoiDung = %s AND MaSanPham = %s",
-                         (session['user_id'], product_id))
-
-    if existing:
-        execute("DELETE FROM SanPhamYeuThich WHERE MaYeuThich = %s", (existing['MaYeuThich'],))
-        return jsonify({'success': True, 'added': False, 'message': 'Đã bỏ khỏi danh sách yêu thích.'})
-    else:
-        execute("INSERT INTO SanPhamYeuThich (MaNguoiDung, MaSanPham) VALUES (%s, %s)",
-                (session['user_id'], product_id))
-        return jsonify({'success': True, 'added': True, 'message': 'Đã thêm vào danh sách yêu thích!'})
 
 # ----------------- AI JEWELRY CONSULTANT -----------------
 
@@ -782,7 +752,7 @@ def ai_consultant():
 
 @app.route('/api/ai-consultant', methods=['POST'])
 def ai_consultant_api():
-    """Xử lý tư vấn AI thông minh bằng mô hình DeepSeek và lưu log vào LichSuTuvaiAI."""
+    """Xử lý tư vấn AI thông minh bằng mô hình DeepSeek tư vấn trực tiếp cho khách hàng."""
     data = request.get_json() or {}
     user_msg = data.get('message', '').strip()
     style = data.get('style', '')
@@ -807,15 +777,7 @@ def ai_consultant_api():
     reply = result.get('reply', '')
     suggested_products = result.get('products', [])
 
-    # Lưu vào DB bảng LichSuTuvaiAI
-    context_json = json.dumps(context_dict, ensure_ascii=False)
-    try:
-        execute("""
-            INSERT INTO LichSuTuvaiAI (MaNguoiDung, CauHoiNguoiDung, PhanHoiAI, ContextNguoiDung)
-            VALUES (%s, %s, %s, %s)
-        """, (user_id, user_msg, reply, context_json))
-    except Exception as e:
-        print(f"Error logging AI chat: {e}")
+
 
     # Format JSON response
     return jsonify({
@@ -935,8 +897,6 @@ def profile():
     if request.method == 'POST':
         fullname = request.form.get('fullname', '').strip()
         phone = request.form.get('phone', '').strip()
-        finger_size = request.form.get('finger_size', '')
-        style = request.form.get('style', '')
         new_pass = request.form.get('new_password', '').strip()
 
         if new_pass:
@@ -963,10 +923,7 @@ def profile():
         ORDER BY NgayDatHang DESC
     """, (session['user_id'],))
 
-    # Sổ địa chỉ
-    addresses = query_all("SELECT * FROM DiaChiNguoiDung WHERE MaNguoiDung = %s", (session['user_id'],))
-
-    return render_template('profile.html', user=user, orders=orders, addresses=addresses)
+    return render_template('profile.html', user=user, orders=orders)
 
 # ----------------- ADMIN DASHBOARD & MANAGEMENT -----------------
 
@@ -978,27 +935,178 @@ def admin_redirect():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
+    now = datetime.datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    filter_type = request.args.get('filter_type', 'all')
+    date_from_str = request.args.get('date_from', '').strip()
+    date_to_str = request.args.get('date_to', '').strip()
+
+    start_date = None
+    end_date = None
+    filter_title = 'Toàn Thời Gian'
+    date_range_label = ''
+
+    if filter_type == 'today':
+        start_date = today_start
+        end_date = today_end
+        filter_title = 'Hôm Nay'
+        date_range_label = today_start.strftime('%d/%m/%Y')
+    elif filter_type == 'yesterday':
+        yesterday = today_start - datetime.timedelta(days=1)
+        start_date = yesterday
+        end_date = yesterday.replace(hour=23, minute=59, second=59, microsecond=999999)
+        filter_title = 'Hôm Qua'
+        date_range_label = yesterday.strftime('%d/%m/%Y')
+    elif filter_type == '7days':
+        start_date = today_start - datetime.timedelta(days=6)
+        end_date = today_end
+        filter_title = '7 Ngày Gần Nhất'
+        date_range_label = f"{start_date.strftime('%d/%m')} - {end_date.strftime('%d/%m/%Y')}"
+    elif filter_type == 'this_month':
+        start_date = today_start.replace(day=1)
+        end_date = today_end
+        filter_title = f'Tháng {now.month}/{now.year}'
+        date_range_label = f"01/{now.month:02d} - {end_date.strftime('%d/%m/%Y')}"
+    elif filter_type == 'last_month':
+        first_of_this_month = today_start.replace(day=1)
+        last_day_of_last_month = first_of_this_month - datetime.timedelta(days=1)
+        start_date = last_day_of_last_month.replace(day=1, hour=0, minute=0, second=0)
+        end_date = last_day_of_last_month.replace(hour=23, minute=59, second=59, microsecond=999999)
+        filter_title = f'Tháng {start_date.month}/{start_date.year}'
+        date_range_label = f"{start_date.strftime('%d/%m')} - {end_date.strftime('%d/%m/%Y')}"
+    elif filter_type == 'this_year':
+        start_date = today_start.replace(month=1, day=1)
+        end_date = today_end
+        filter_title = f'Năm {now.year}'
+        date_range_label = f"01/01/{now.year} - {end_date.strftime('%d/%m/%Y')}"
+    elif filter_type == 'custom':
+        filter_title = 'Khoảng Tùy Chọn'
+        if date_from_str:
+            try:
+                start_date = datetime.datetime.strptime(date_from_str, '%Y-%m-%d')
+            except ValueError:
+                pass
+        if date_to_str:
+            try:
+                end_date = datetime.datetime.strptime(date_to_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+            except ValueError:
+                pass
+        if start_date and end_date:
+            date_range_label = f"{start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}"
+        elif start_date:
+            date_range_label = f"Từ {start_date.strftime('%d/%m/%Y')}"
+        elif end_date:
+            date_range_label = f"Đến {end_date.strftime('%d/%m/%Y')}"
+
+    # Xây dựng mệnh đề WHERE theo thời gian
+    where_date_clause = ""
+    params_date = []
+    if start_date and end_date:
+        where_date_clause = " AND dh.NgayDatHang BETWEEN %s AND %s"
+        params_date = [start_date, end_date]
+    elif start_date:
+        where_date_clause = " AND dh.NgayDatHang >= %s"
+        params_date = [start_date]
+    elif end_date:
+        where_date_clause = " AND dh.NgayDatHang <= %s"
+        params_date = [end_date]
+
     stats = {}
-    rev = query_one("SELECT SUM(TongThanhToan) AS total_revenue FROM DonHang WHERE TrangThaiDonHang != 'DaHuy'")
+
+    # 1. Doanh thu trong kỳ (chỉ tính đơn hợp lệ, không tính đơn hủy)
+    rev_sql = f"SELECT SUM(TongThanhToan) AS total_revenue FROM DonHang dh WHERE dh.TrangThaiDonHang != 'DaHuy'{where_date_clause}"
+    rev = query_one(rev_sql, params_date)
     stats['revenue'] = rev['total_revenue'] or Decimal('0')
 
-    ord_cnt = query_one("SELECT COUNT(*) AS total_orders FROM DonHang")
+    # 2. Tổng số đơn hàng trong kỳ
+    ord_sql = f"SELECT COUNT(*) AS total_orders FROM DonHang dh WHERE 1=1{where_date_clause}"
+    ord_cnt = query_one(ord_sql, params_date)
     stats['orders_count'] = ord_cnt['total_orders'] or 0
 
+    # 3. Phân loại trạng thái đơn trong kỳ
+    status_sql = f"""
+        SELECT dh.TrangThaiDonHang, COUNT(*) AS cnt 
+        FROM DonHang dh 
+        WHERE 1=1{where_date_clause} 
+        GROUP BY dh.TrangThaiDonHang
+    """
+    status_rows = query_all(status_sql, params_date)
+    status_counts = {r['TrangThaiDonHang']: r['cnt'] for r in status_rows}
+
+    stats['completed_orders'] = status_counts.get('DaGiao', 0)
+    stats['cancelled_orders'] = status_counts.get('DaHuy', 0)
+    stats['processing_orders'] = status_counts.get('ChoXacNhan', 0) + status_counts.get('DaXacNhan', 0) + status_counts.get('DangGiao', 0)
+
+    # 4. Giá trị đơn trung bình (AOV)
+    valid_orders = stats['orders_count'] - stats['cancelled_orders']
+    if valid_orders > 0 and stats['revenue'] > 0:
+        stats['avg_order_value'] = stats['revenue'] / valid_orders
+    else:
+        stats['avg_order_value'] = Decimal('0')
+
+    # 5. Tỷ lệ hoàn tất đơn
+    if stats['orders_count'] > 0:
+        stats['completion_rate'] = round((stats['completed_orders'] / stats['orders_count']) * 100, 1)
+    else:
+        stats['completion_rate'] = 0
+
+    # 6. Quy mô hệ thống: tổng sản phẩm & người dùng
     prod_cnt = query_one("SELECT COUNT(*) AS total_products FROM SanPham")
     stats['products_count'] = prod_cnt['total_products'] or 0
 
     user_cnt = query_one("SELECT COUNT(*) AS total_users FROM NguoiDung WHERE MaVaiTro = 3")
     stats['users_count'] = user_cnt['total_users'] or 0
 
-    recent_orders = query_all("""
+    # 7. Top 5 sản phẩm bán chạy nhất trong kỳ
+    top_prod_sql = f"""
+        SELECT ctdh.TenSanPhamSnap, SUM(ctdh.SoLuong) AS TongDaBan, SUM(ctdh.DonGia * ctdh.SoLuong) AS TongDoanhThu,
+               (SELECT ha.DuongDanAnh FROM HinhAnhSanPham ha 
+                JOIN BienTheSanPham bt ON ha.MaSanPham = bt.MaSanPham 
+                WHERE bt.MaBienThe = ctdh.MaBienThe ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnh
+        FROM ChiTietDonHang ctdh
+        JOIN DonHang dh ON ctdh.MaDonHang = dh.MaDonHang
+        WHERE dh.TrangThaiDonHang != 'DaHuy'{where_date_clause}
+        GROUP BY ctdh.TenSanPhamSnap, ctdh.MaBienThe
+        ORDER BY TongDaBan DESC
+        LIMIT 5
+    """
+    top_products = query_all(top_prod_sql, params_date)
+
+    # 8. Bảng doanh thu theo từng ngày trong kỳ
+    daily_sql = f"""
+        SELECT DATE(dh.NgayDatHang) AS Ngay, COUNT(*) AS SoDon, 
+               SUM(CASE WHEN dh.TrangThaiDonHang != 'DaHuy' THEN dh.TongThanhToan ELSE 0 END) AS DoanhThuNgay
+        FROM DonHang dh
+        WHERE 1=1{where_date_clause}
+        GROUP BY DATE(dh.NgayDatHang)
+        ORDER BY Ngay DESC
+        LIMIT 14
+    """
+    daily_stats = query_all(daily_sql, params_date)
+
+    # 9. Danh sách đơn hàng trong kỳ
+    recent_orders_sql = f"""
         SELECT dh.*, nd.HoTen AS TenKhachHang 
         FROM DonHang dh
         LEFT JOIN NguoiDung nd ON dh.MaNguoiDung = nd.MaNguoiDung
-        ORDER BY dh.NgayDatHang DESC LIMIT 6
-    """)
+        WHERE 1=1{where_date_clause}
+        ORDER BY dh.NgayDatHang DESC LIMIT 20
+    """
+    recent_orders = query_all(recent_orders_sql, params_date)
 
-    return render_template('admin/dashboard.html', stats=stats, recent_orders=recent_orders)
+    return render_template('admin/dashboard.html',
+                           stats=stats,
+                           recent_orders=recent_orders,
+                           status_counts=status_counts,
+                           top_products=top_products,
+                           daily_stats=daily_stats,
+                           filter_type=filter_type,
+                           filter_title=filter_title,
+                           date_range_label=date_range_label,
+                           date_from=date_from_str or (start_date.strftime('%Y-%m-%d') if start_date else ''),
+                           date_to=date_to_str or (end_date.strftime('%Y-%m-%d') if end_date else ''))
 
 @app.route('/admin/products')
 @admin_required
@@ -1027,7 +1135,7 @@ def admin_product_new():
         audience = request.form.get('audience', '').strip()
         price = request.form.get('price', type=float)
         desc = request.form.get('description', '').strip()
-        img = request.form.get('image', '').strip()
+        fallback_img_url = request.form.get('image', '').strip()
         is_featured = 1 if request.form.get('is_featured') else 0
 
         # Tạo sản phẩm (theo đúng schema SanPham)
@@ -1036,12 +1144,52 @@ def admin_product_new():
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'DangBan')
         """, (name, slug, cat_id, material, style, audience, price, desc, is_featured))
 
-        # Lưu ảnh chính vào HinhAnhSanPham
-        if img:
+        # Xử lý tối đa 5 ảnh tải lên từ máy tính
+        saved_image_urls = []
+        
+        # 1. Quét theo 5 slot (image_file_1 -> image_file_5)
+        for slot in range(1, 6):
+            file_item = request.files.get(f'image_file_{slot}')
+            if file_item and file_item.filename:
+                saved_url = save_uploaded_image(file_item, product_id, order=slot)
+                if saved_url:
+                    saved_image_urls.append((slot, saved_url))
+
+        # 2. Quét batch product_images nếu các slot còn thiếu
+        batch_files = request.files.getlist('product_images')
+        occupied_slots = {slot for slot, _ in saved_image_urls}
+        available_slots = [s for s in range(1, 6) if s not in occupied_slots]
+        for f in batch_files:
+            if f and f.filename and available_slots:
+                next_slot = available_slots.pop(0)
+                saved_url = save_uploaded_image(f, product_id, order=next_slot)
+                if saved_url:
+                    saved_image_urls.append((next_slot, saved_url))
+
+        # Sắp xếp theo thứ tự hiển thị slot
+        saved_image_urls.sort(key=lambda x: x[0])
+
+        # 3. Lưu vào bảng HinhAnhSanPham
+        if saved_image_urls:
+            for slot, img_url in saved_image_urls:
+                execute("""
+                    INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi)
+                    VALUES (%s, %s, %s)
+                """, (product_id, img_url, slot))
+            primary_img = saved_image_urls[0][1]
+        elif fallback_img_url:
             execute("""
                 INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi)
                 VALUES (%s, %s, 1)
-            """, (product_id, img))
+            """, (product_id, fallback_img_url))
+            primary_img = fallback_img_url
+        else:
+            default_placeholder = "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80"
+            execute("""
+                INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi)
+                VALUES (%s, %s, 1)
+            """, (product_id, default_placeholder))
+            primary_img = default_placeholder
 
         # Lưu danh sách biến thể từ form
         var_sizes = request.form.getlist('variant_size[]')
@@ -1058,7 +1206,7 @@ def admin_product_new():
                 v_price = float(var_prices[i]) if i < len(var_prices) and var_prices[i] else price
                 v_stock = int(var_stocks[i]) if i < len(var_stocks) and var_stocks[i] else 10
                 v_sku = var_skus[i].strip() if i < len(var_skus) and var_skus[i] else f"SKU-{product_id}-{i+1}-{random.randint(100, 999)}"
-                v_img = var_images[i].strip() if i < len(var_images) and var_images[i] else img
+                v_img = var_images[i].strip() if i < len(var_images) and var_images[i] else primary_img
 
                 execute("""
                     INSERT INTO BienTheSanPham (MaSanPham, SKU, KichThuocSize, LoaiDa, GiaBan, SoLuongTonKho, HinhAnhBienThe)
@@ -1069,12 +1217,12 @@ def admin_product_new():
             execute("""
                 INSERT INTO BienTheSanPham (MaSanPham, SKU, KichThuocSize, LoaiDa, GiaBan, SoLuongTonKho, HinhAnhBienThe)
                 VALUES (%s, %s, 'Tiêu Chuẩn', 'Mặc định', %s, 10, %s)
-            """, (product_id, sku, price, img))
+            """, (product_id, sku, price, primary_img))
 
-        flash('Thêm mới sản phẩm trang sức và các biến thể thành công!', 'success')
+        flash(f'Thêm mới sản phẩm trang sức thành công! Đã tải lên và lưu trữ {len(saved_image_urls)} hình ảnh từ máy tính.', 'success')
         return redirect(url_for('admin_products'))
 
-    return render_template('admin/product_form.html', product=None, categories=categories, variants=[])
+    return render_template('admin/product_form.html', product=None, categories=categories, variants=[], gallery=[])
 
 @app.route('/admin/product/edit/<int:id>', methods=['GET', 'POST'])
 @admin_required
@@ -1089,6 +1237,7 @@ def admin_product_edit(id):
         abort(404)
     categories = query_all("SELECT * FROM DanhMuc ORDER BY TenDanhMuc ASC")
     variants = query_all("SELECT * FROM BienTheSanPham WHERE MaSanPham = %s", (id,))
+    gallery = query_all("SELECT * FROM HinhAnhSanPham WHERE MaSanPham = %s ORDER BY ThuTuHienThi ASC", (id,))
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -1099,7 +1248,7 @@ def admin_product_edit(id):
         audience = request.form.get('audience', '').strip()
         price = request.form.get('price', type=float)
         desc = request.form.get('description', '').strip()
-        img = request.form.get('image', '').strip()
+        fallback_img_url = request.form.get('image', '').strip()
         status = request.form.get('status', 'DangBan')
         is_featured = 1 if request.form.get('is_featured') else 0
 
@@ -1112,13 +1261,51 @@ def admin_product_edit(id):
             WHERE MaSanPham = %s
         """, (name, slug, cat_id, material, style, audience, price, desc, is_featured, status, id))
 
-        # Cập nhật hoặc thêm ảnh đại diện trong HinhAnhSanPham
-        if img:
-            has_img = query_one("SELECT MaHinhAnh FROM HinhAnhSanPham WHERE MaSanPham = %s ORDER BY ThuTuHienThi ASC LIMIT 1", (id,))
-            if has_img:
-                execute("UPDATE HinhAnhSanPham SET DuongDanAnh = %s WHERE MaHinhAnh = %s", (img, has_img['MaHinhAnh']))
+        # Xóa các ảnh được người dùng chọn xóa
+        del_img_ids = request.form.getlist('delete_image_ids[]')
+        for del_id in del_img_ids:
+            if del_id:
+                execute("DELETE FROM HinhAnhSanPham WHERE MaHinhAnh = %s AND MaSanPham = %s", (del_id, id))
+
+        # Xử lý cập nhật/thêm ảnh mới từ 5 slot tải lên
+        for slot in range(1, 6):
+            file_item = request.files.get(f'image_file_{slot}')
+            if file_item and file_item.filename:
+                saved_url = save_uploaded_image(file_item, id, order=slot)
+                if saved_url:
+                    existing_slot_img = query_one("""
+                        SELECT MaHinhAnh FROM HinhAnhSanPham 
+                        WHERE MaSanPham = %s AND ThuTuHienThi = %s
+                    """, (id, slot))
+                    if existing_slot_img:
+                        execute("UPDATE HinhAnhSanPham SET DuongDanAnh = %s WHERE MaHinhAnh = %s", (saved_url, existing_slot_img['MaHinhAnh']))
+                    else:
+                        execute("INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi) VALUES (%s, %s, %s)", (id, saved_url, slot))
+
+        # Nếu có batch upload product_images
+        batch_files = request.files.getlist('product_images')
+        if batch_files:
+            current_slots = {img['ThuTuHienThi'] for img in query_all("SELECT ThuTuHienThi FROM HinhAnhSanPham WHERE MaSanPham = %s", (id,))}
+            avail_slots = [s for s in range(1, 6) if s not in current_slots]
+            for f in batch_files:
+                if f and f.filename and avail_slots:
+                    n_slot = avail_slots.pop(0)
+                    saved_url = save_uploaded_image(f, id, order=n_slot)
+                    if saved_url:
+                        execute("INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi) VALUES (%s, %s, %s)", (id, saved_url, n_slot))
+
+        # Nếu sản phẩm chưa có ảnh nào mà có URL dự phòng
+        has_any_img = query_one("SELECT MaHinhAnh FROM HinhAnhSanPham WHERE MaSanPham = %s", (id,))
+        if not has_any_img:
+            if fallback_img_url:
+                execute("INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi) VALUES (%s, %s, 1)", (id, fallback_img_url))
             else:
-                execute("INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi) VALUES (%s, %s, 1)", (id, img))
+                default_placeholder = "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80"
+                execute("INSERT INTO HinhAnhSanPham (MaSanPham, DuongDanAnh, ThuTuHienThi) VALUES (%s, %s, 1)", (id, default_placeholder))
+
+        # Lấy ảnh đại diện chính hiện tại
+        cur_main_img = query_one("SELECT DuongDanAnh FROM HinhAnhSanPham WHERE MaSanPham = %s ORDER BY ThuTuHienThi ASC LIMIT 1", (id,))
+        main_img_path = cur_main_img['DuongDanAnh'] if cur_main_img else ''
 
         # Cập nhật danh sách biến thể
         var_sizes = request.form.getlist('variant_size[]')
@@ -1136,17 +1323,17 @@ def admin_product_edit(id):
                 v_price = float(var_prices[i]) if i < len(var_prices) and var_prices[i] else price
                 v_stock = int(var_stocks[i]) if i < len(var_stocks) and var_stocks[i] else 10
                 v_sku = var_skus[i].strip() if i < len(var_skus) and var_skus[i] else f"SKU-{id}-{i+1}-{random.randint(100, 999)}"
-                v_img = var_images[i].strip() if i < len(var_images) and var_images[i] else img
+                v_img = var_images[i].strip() if i < len(var_images) and var_images[i] else main_img_path
 
                 execute("""
                     INSERT INTO BienTheSanPham (MaSanPham, SKU, KichThuocSize, LoaiDa, GiaBan, SoLuongTonKho, HinhAnhBienThe)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """, (id, v_sku, size, stone, v_price, v_stock, v_img))
 
-        flash('Đã cập nhật sản phẩm và biến thể thành công!', 'success')
+        flash('Đã cập nhật sản phẩm, bộ sưu tập hình ảnh và biến thể thành công!', 'success')
         return redirect(url_for('admin_products'))
 
-    return render_template('admin/product_form.html', product=product, categories=categories, variants=variants)
+    return render_template('admin/product_form.html', product=product, categories=categories, variants=variants, gallery=gallery)
 
 @app.route('/admin/product/delete/<int:id>', methods=['POST'])
 @admin_required
@@ -1154,6 +1341,235 @@ def admin_product_delete(id):
     execute("DELETE FROM SanPham WHERE MaSanPham = %s", (id,))
     flash('Đã xóa sản phẩm thành công.', 'info')
     return redirect(url_for('admin_products'))
+
+# ----------------- ADMIN CATEGORY MANAGEMENT -----------------
+
+@app.route('/admin/categories')
+@admin_required
+def admin_categories():
+    categories = query_all("""
+        SELECT dm.*, COUNT(sp.MaSanPham) AS SoLuongSanPham,
+               (SELECT TenDanhMuc FROM DanhMuc cha WHERE cha.MaDanhMuc = dm.MaDanhMucCha) AS TenDanhMucCha
+        FROM DanhMuc dm
+        LEFT JOIN SanPham sp ON dm.MaDanhMuc = sp.MaDanhMuc
+        GROUP BY dm.MaDanhMuc
+        ORDER BY dm.MaDanhMuc ASC
+    """)
+    return render_template('admin/categories.html', categories=categories)
+
+@app.route('/admin/category/new', methods=['GET', 'POST'])
+@admin_required
+def admin_category_new():
+    parent_categories = query_all("SELECT * FROM DanhMuc WHERE MaDanhMucCha IS NULL ORDER BY TenDanhMuc ASC")
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        slug = request.form.get('slug', '').strip() or name.lower().replace(' ', '-').replace('&', 'va')
+        parent_id = request.form.get('parent_id', type=int) or None
+        desc = request.form.get('description', '').strip()
+
+        if not name:
+            flash('Vui lòng nhập tên danh mục.', 'warning')
+            return redirect(url_for('admin_category_new'))
+
+        # Kiểm tra slug trùng
+        existing = query_one("SELECT MaDanhMuc FROM DanhMuc WHERE Slug = %s", (slug,))
+        if existing:
+            slug = f"{slug}-{random.randint(100, 999)}"
+
+        execute("""
+            INSERT INTO DanhMuc (TenDanhMuc, Slug, MaDanhMucCha, MoTa)
+            VALUES (%s, %s, %s, %s)
+        """, (name, slug, parent_id, desc))
+
+        flash(f'Đã tạo danh mục "{name}" thành công!', 'success')
+        return redirect(url_for('admin_categories'))
+
+    return render_template('admin/category_form.html', category=None, parent_categories=parent_categories)
+
+@app.route('/admin/category/edit/<int:id>', methods=['GET', 'POST'])
+@admin_required
+def admin_category_edit(id):
+    category = query_one("SELECT * FROM DanhMuc WHERE MaDanhMuc = %s", (id,))
+    if not category:
+        abort(404)
+
+    parent_categories = query_all("SELECT * FROM DanhMuc WHERE MaDanhMucCha IS NULL AND MaDanhMuc != %s ORDER BY TenDanhMuc ASC", (id,))
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        slug = request.form.get('slug', '').strip() or name.lower().replace(' ', '-')
+        parent_id = request.form.get('parent_id', type=int) or None
+        desc = request.form.get('description', '').strip()
+
+        if not name:
+            flash('Vui lòng nhập tên danh mục.', 'warning')
+            return redirect(url_for('admin_category_edit', id=id))
+
+        execute("""
+            UPDATE DanhMuc 
+            SET TenDanhMuc = %s, Slug = %s, MaDanhMucCha = %s, MoTa = %s
+            WHERE MaDanhMuc = %s
+        """, (name, slug, parent_id, desc, id))
+
+        flash(f'Đã cập nhật danh mục "{name}" thành công!', 'success')
+        return redirect(url_for('admin_categories'))
+
+    return render_template('admin/category_form.html', category=category, parent_categories=parent_categories)
+
+@app.route('/admin/category/delete/<int:id>', methods=['POST'])
+@admin_required
+def admin_category_delete(id):
+    # Kiểm tra xem danh mục có sản phẩm không
+    cnt = query_one("SELECT COUNT(*) AS total FROM SanPham WHERE MaDanhMuc = %s", (id,))
+    if cnt and cnt['total'] > 0:
+        flash(f"Không thể xóa danh mục này vì đang chứa {cnt['total']} sản phẩm! Vui lòng chuyển hoặc xóa sản phẩm trước.", 'danger')
+        return redirect(url_for('admin_categories'))
+
+    execute("DELETE FROM DanhMuc WHERE MaDanhMuc = %s", (id,))
+    flash('Đã xóa danh mục thành công!', 'info')
+    return redirect(url_for('admin_categories'))
+
+
+# ----------------- ADMIN USER MANAGEMENT -----------------
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    search_q = request.args.get('q', '').strip()
+    role_filter = request.args.get('role', '').strip()
+
+    sql = """
+        SELECT nd.*, vt.TenVaiTro, vt.MoTa AS MoTaVaiTro,
+               COUNT(dh.MaDonHang) AS TongDonHang,
+               COALESCE(SUM(CASE WHEN dh.TrangThaiDonHang != 'DaHuy' THEN dh.TongThanhToan ELSE 0 END), 0) AS TongChiTieu
+        FROM NguoiDung nd
+        JOIN VaiTro vt ON nd.MaVaiTro = vt.MaVaiTro
+        LEFT JOIN DonHang dh ON nd.MaNguoiDung = dh.MaNguoiDung
+        WHERE 1=1
+    """
+    params = []
+
+    if search_q:
+        sql += " AND (nd.HoTen LIKE %s OR nd.Email LIKE %s OR nd.TenDangNhap LIKE %s OR nd.SoDienThoai LIKE %s)"
+        pattern = f"%{search_q}%"
+        params.extend([pattern, pattern, pattern, pattern])
+
+    if role_filter:
+        sql += " AND nd.MaVaiTro = %s"
+        params.append(role_filter)
+
+    sql += " GROUP BY nd.MaNguoiDung ORDER BY nd.MaNguoiDung DESC"
+
+    users = query_all(sql, params)
+    roles = query_all("SELECT * FROM VaiTro ORDER BY MaVaiTro ASC")
+
+    return render_template('admin/users.html',
+                           users=users,
+                           roles=roles,
+                           search_query=search_q,
+                           current_role=role_filter)
+
+@app.route('/admin/user/new', methods=['GET', 'POST'])
+@admin_required
+def admin_user_new():
+    roles = query_all("SELECT * FROM VaiTro ORDER BY MaVaiTro ASC")
+
+    if request.method == 'POST':
+        fullname = request.form.get('fullname', '').strip()
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
+        role_id = request.form.get('role_id', type=int)
+
+        if not fullname or not username or not email or not password or not role_id:
+            flash('Vui lòng điền đầy đủ các thông tin bắt buộc.', 'danger')
+            return redirect(url_for('admin_user_new'))
+
+        # Kiểm tra trùng username hoặc email
+        ex_user = query_one("SELECT MaNguoiDung FROM NguoiDung WHERE TenDangNhap = %s", (username,))
+        if ex_user:
+            flash(f'Tên đăng nhập "{username}" đã được sử dụng. Vui lòng chọn tên khác.', 'danger')
+            return redirect(url_for('admin_user_new'))
+
+        ex_email = query_one("SELECT MaNguoiDung FROM NguoiDung WHERE Email = %s", (email,))
+        if ex_email:
+            flash(f'Email "{email}" đã được đăng ký trong hệ thống.', 'danger')
+            return redirect(url_for('admin_user_new'))
+
+        pwd_hash = generate_password_hash(password)
+
+        execute("""
+            INSERT INTO NguoiDung (MaVaiTro, TenDangNhap, MatKhauMaHoa, HoTen, Email, SoDienThoai)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (role_id, username, pwd_hash, fullname, email, phone))
+
+        flash(f'Đã tạo tài khoản cho "{fullname}" thành công!', 'success')
+        return redirect(url_for('admin_users'))
+
+    return render_template('admin/user_form.html', user_item=None, roles=roles)
+
+@app.route('/admin/user/edit/<int:id>', methods=['GET', 'POST'])
+@admin_required
+def admin_user_edit(id):
+    user_item = query_one("SELECT * FROM NguoiDung WHERE MaNguoiDung = %s", (id,))
+    if not user_item:
+        abort(404)
+
+    roles = query_all("SELECT * FROM VaiTro ORDER BY MaVaiTro ASC")
+
+    if request.method == 'POST':
+        fullname = request.form.get('fullname', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
+        role_id = request.form.get('role_id', type=int)
+
+        if not fullname or not email or not role_id:
+            flash('Vui lòng điền đầy đủ họ tên, email và vai trò.', 'danger')
+            return redirect(url_for('admin_user_edit', id=id))
+
+        # Kiểm tra trùng email với người dùng khác
+        ex_email = query_one("SELECT MaNguoiDung FROM NguoiDung WHERE Email = %s AND MaNguoiDung != %s", (email, id))
+        if ex_email:
+            flash(f'Email "{email}" đã được người dùng khác sử dụng.', 'danger')
+            return redirect(url_for('admin_user_edit', id=id))
+
+        if password:
+            pwd_hash = generate_password_hash(password)
+            execute("""
+                UPDATE NguoiDung 
+                SET HoTen = %s, Email = %s, SoDienThoai = %s, MaVaiTro = %s, MatKhauMaHoa = %s
+                WHERE MaNguoiDung = %s
+            """, (fullname, email, phone, role_id, pwd_hash, id))
+        else:
+            execute("""
+                UPDATE NguoiDung 
+                SET HoTen = %s, Email = %s, SoDienThoai = %s, MaVaiTro = %s
+                WHERE MaNguoiDung = %s
+            """, (fullname, email, phone, role_id, id))
+
+        flash(f'Đã cập nhật thông tin người dùng "{fullname}" thành công!', 'success')
+        return redirect(url_for('admin_users'))
+
+    return render_template('admin/user_form.html', user_item=user_item, roles=roles)
+
+@app.route('/admin/user/delete/<int:id>', methods=['POST'])
+@admin_required
+def admin_user_delete(id):
+    if session.get('user_id') == id:
+        flash('Bạn không thể tự xóa tài khoản đang đăng nhập của chính mình!', 'danger')
+        return redirect(url_for('admin_users'))
+
+    # Kiểm tra ràng buộc đơn hàng
+    orders_cnt = query_one("SELECT COUNT(*) AS total FROM DonHang WHERE MaNguoiDung = %s", (id,))
+    if orders_cnt and orders_cnt['total'] > 0:
+        flash(f"Không thể xóa người dùng này vì đã phát sinh {orders_cnt['total']} đơn hàng trong hệ thống! Hãy đổi vai trò thay vì xóa.", 'warning')
+        return redirect(url_for('admin_users'))
+
+    execute("DELETE FROM NguoiDung WHERE MaNguoiDung = %s", (id,))
+    flash('Đã xóa người dùng thành công!', 'info')
+    return redirect(url_for('admin_users'))
 
 @app.route('/admin/orders')
 @admin_required

@@ -16,32 +16,19 @@ def seed_database():
                 (3, 'CUSTOMER', 'Khách hàng mua sắm')
             """)
 
-        # 2. Người dùng mẫu
         users = [
-            (1, 'admin', generate_password_hash('admin123'), 'Quản Trị Viên Cao Cấp', 'admin@aurajewelry.vn', '0901234567', 'Size 11', 'Sang trọng', True),
-            (2, 'nhanvien', generate_password_hash('staff123'), 'Nguyễn Văn Nhân Viên', 'staff@aurajewelry.vn', '0912345678', 'Size 12', 'Hiện đại', True),
-            (3, 'khachhang', generate_password_hash('123456'), 'Lê Hoàng Yến Nhi', 'yennhi@gmail.com', '0987654321', 'Size 10', 'Tối giản', True),
-            (3, 'minhtri', generate_password_hash('123456'), 'Trần Minh Trí', 'minhtri@gmail.com', '0978999888', 'Size 14', 'Cổ điển', True)
+            (1, 'admin', generate_password_hash('admin123'), 'Quản Trị Viên Cao Cấp', 'admin@aurajewelry.vn', '0901234567'),
+            (2, 'nhanvien', generate_password_hash('staff123'), 'Nguyễn Văn Nhân Viên', 'staff@aurajewelry.vn', '0912345678'),
+            (3, 'khachhang', generate_password_hash('123456'), 'Lê Hoàng Yến Nhi', 'yennhi@gmail.com', '0987654321'),
+            (3, 'minhtri', generate_password_hash('123456'), 'Trần Minh Trí', 'minhtri@gmail.com', '0978999888')
         ]
         for u in users:
             cursor.execute("SELECT MaNguoiDung FROM NguoiDung WHERE TenDangNhap = %s", (u[1],))
             if not cursor.fetchone():
                 cursor.execute("""
-                    INSERT INTO NguoiDung (MaVaiTro, TenDangNhap, MatKhauMaHoa, HoTen, Email, SoDienThoai, KichThuocTay, PhongCachYeuThich, KichHoat)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO NguoiDung (MaVaiTro, TenDangNhap, MatKhauMaHoa, HoTen, Email, SoDienThoai)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """, u)
-
-        # Lấy ID của khachhang
-        cursor.execute("SELECT MaNguoiDung FROM NguoiDung WHERE TenDangNhap = 'khachhang'")
-        khach_id = cursor.fetchone()['MaNguoiDung']
-
-        # Địa chỉ người dùng mẫu
-        cursor.execute("SELECT COUNT(*) AS cnt FROM DiaChiNguoiDung WHERE MaNguoiDung = %s", (khach_id,))
-        if cursor.fetchone()['cnt'] == 0:
-            cursor.execute("""
-                INSERT INTO DiaChiNguoiDung (MaNguoiDung, TenNguoiNhan, SoDienThoai, TinhThanh, QuanHuyen, PhuongXa, DiaChiChiTiet, LaMacDinh)
-                VALUES (%s, 'Lê Hoàng Yến Nhi', '0987654321', 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', 'Tầng 15, Vincom Center, 72 Lê Thánh Tôn', 1)
-            """, (khach_id,))
 
         # 3. Danh mục sản phẩm
         categories = [

@@ -130,43 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 7. Wishlist Toggle
-    const wishlistBtns = document.querySelectorAll('.wishlist-toggle-btn');
-    wishlistBtns.forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const productId = this.getAttribute('data-product-id');
-            const formData = new FormData();
-            formData.append('product_id', productId);
-
-            fetch('/wishlist/toggle', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.require_login) {
-                    window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
-                    return;
-                }
-                if (data.success) {
-                    showToast(data.message, data.added ? 'success' : 'info');
-                    if (data.added) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                        // Nếu đang ở trang wishlist thì reload
-                        if (window.location.pathname === '/wishlist') {
-                            window.location.reload();
-                        }
-                    }
-                }
-            })
-            .catch(err => console.error(err));
-        });
-    });
+    // 7. Wishlist removed in refactoring
 
     // 8. Size Guide Modal
     const openSizeGuide = document.getElementById('openSizeGuide');

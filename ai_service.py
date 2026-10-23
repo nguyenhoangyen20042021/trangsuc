@@ -306,7 +306,7 @@ def format_products_for_chat(prods):
             'name': p['TenSanPham'],
             'slug': p['Slug'],
             'price': int(p.get('GiaMin') or p.get('GiaCoSo', 0)),
-            'image': p['HinhAnhChinh'],
+            'image': p.get('HinhAnhChinh') or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800',
             'material': p['ChatLieu']
         })
     return res
@@ -461,7 +461,8 @@ def generate_deepseek_consultation(user_message, context_dict=None):
     # Lấy danh sách sản phẩm từ MySQL
     try:
         products = query_all("""
-            SELECT sp.*, dm.TenDanhMuc, MIN(bt.GiaBan) as GiaMin 
+            SELECT sp.*, dm.TenDanhMuc, MIN(bt.GiaBan) as GiaMin,
+                   (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
             FROM SanPham sp
             JOIN DanhMuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
             LEFT JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham

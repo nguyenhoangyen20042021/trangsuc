@@ -1108,11 +1108,7 @@
                             <span class="lb-discount-badge">GIẢM GIÁ</span>
                             {% endif %}
 
-                            <!-- Wishlist Button -->
-                            <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ p.MaSanPham }}"
-                                title="Thêm vào yêu thích" aria-label="Thêm vào danh sách yêu thích">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
+
 
                             <!-- Quick View overlay -->
                             <div class="lb-product-overlay">
@@ -1181,10 +1177,7 @@
                                     style="background: linear-gradient(135deg, var(--lb-rg-primary), var(--lb-rg-secondary));">
                                     <i class="fa-solid fa-star" style="font-size:0.65rem;"></i> NỔI BẬT
                                 </span>
-                                <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ p.MaSanPham }}"
-                                    aria-label="Yêu thích">
-                                    <i class="fa-regular fa-heart"></i>
-                                </button>
+
                                 <div class="lb-product-overlay">
                                     <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-quick-view-btn">
                                         <i class="fa-solid fa-eye"></i> Xem Nhanh

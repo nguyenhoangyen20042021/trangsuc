@@ -51,8 +51,14 @@
                 <a href="{{ url_for('admin_products') }}" class="{% if request.endpoint in ['admin_products', 'admin_product_new', 'admin_product_edit'] %}active{% endif %}">
                     <i class="fa-solid fa-gem"></i> Quản Lý Sản Phẩm
                 </a>
+                <a href="{{ url_for('admin_categories') }}" class="{% if request.endpoint in ['admin_categories', 'admin_category_new', 'admin_category_edit'] %}active{% endif %}">
+                    <i class="fa-solid fa-layer-group"></i> Quản Lý Danh Mục
+                </a>
                 <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint in ['admin_orders', 'admin_order_detail'] %}active{% endif %}">
                     <i class="fa-solid fa-receipt"></i> Quản Lý Đơn Hàng
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint in ['admin_users', 'admin_user_new', 'admin_user_edit'] %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i> Quản Lý Người Dùng
                 </a>
                 <a href="{{ url_for('admin_vouchers') }}" class="{% if request.endpoint == 'admin_vouchers' %}active{% endif %}">
                     <i class="fa-solid fa-tag"></i> Quản Lý Voucher

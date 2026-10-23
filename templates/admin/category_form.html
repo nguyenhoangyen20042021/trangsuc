@@ -1,0 +1,65 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}{{ 'Chỉnh Sửa Danh Mục' if category else 'Thêm Danh Mục Mới' }} · LUNA BELLE ADMIN{% endblock %}
+
+{% block admin_content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <a href="{{ url_for('admin_categories') }}" class="btn btn-sm btn-outline-gold" style="margin-bottom: 0.8rem;">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách danh mục
+        </a>
+        <h1 class="font-serif" style="font-size: 2.2rem; color: var(--admin-text); margin: 0.2rem 0 0.4rem 0;">
+            {{ 'Chỉnh Sửa Danh Mục' if category else 'Thêm Mới Danh Mục Kim Hoàn' }}
+        </h1>
+        <p style="color: var(--admin-muted); font-size: 0.9rem; margin: 0;">
+            {{ 'Cập nhật thông tin phân loại sản phẩm #' ~ category.MaDanhMuc if category else 'Tạo danh mục mới để phân loại trang sức và hiển thị trên menu cửa hàng' }}
+        </p>
+    </div>
+</div>
+
+<div class="admin-card-box" style="max-width: 800px;">
+    <form action="" method="POST">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+                <label class="form-label">Tên danh mục <span style="color: #EF4444;">*</span></label>
+                <input type="text" name="name" class="form-control" placeholder="Ví dụ: Nhẫn Kim Cương & Nhẫn Cưới" 
+                       value="{{ category.TenDanhMuc if category else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Slug URL (Tự sinh nếu để trống)</label>
+                <input type="text" name="slug" class="form-control" placeholder="nhan-kim-cuong" 
+                       value="{{ category.Slug if category else '' }}">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label">Danh mục cha (Tùy chọn)</label>
+            <select name="parent_id" class="form-control">
+                <option value="">-- Là danh mục gốc (Cấp 1) --</option>
+                {% for p in parent_categories %}
+                    <option value="{{ p.MaDanhMuc }}" {% if category and category.MaDanhMucCha == p.MaDanhMuc %}selected{% endif %}>
+                        {{ p.TenDanhMuc }}
+                    </option>
+                {% endfor %}
+            </select>
+            <small style="color: var(--admin-muted); font-size: 0.78rem; margin-top: 4px; display: block;">
+                Chọn danh mục cấp trên nếu đây là danh mục con (sub-category).
+            </small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.8rem;">
+            <label class="form-label">Mô tả danh mục</label>
+            <textarea name="description" rows="4" class="form-control" placeholder="Mô tả tóm tắt về các tuyệt tác trang sức thuộc danh mục này...">{{ category.MoTa if category else '' }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
+            <button type="submit" class="btn btn-gold btn-lg">
+                <i class="fa-solid fa-floppy-disk"></i> {{ 'Lưu Cập Nhật Danh Mục' if category else 'Tạo Danh Mục Mới' }}
+            </button>
+            <a href="{{ url_for('admin_categories') }}" class="btn btn-outline-gold btn-lg">
+                Hủy Bỏ
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

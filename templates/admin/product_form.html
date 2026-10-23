@@ -13,13 +13,13 @@
         {% if product %}Chỉnh Sửa Sản Phẩm: <span style="color: var(--admin-rose);">{{ product.TenSanPham }}</span>{% else %}Thêm Mới Tuyệt Tác Kim Hoàn{% endif %}
     </h1>
     <p style="color: var(--admin-muted); font-size: 0.92rem;">
-        Quản lý thuộc tính trang sức và các biến thể kích thước, đá quý theo cơ sở dữ liệu kim hoàn LUNA BELLE.
+        Quản lý thuộc tính trang sức, bộ sưu tập hình ảnh tải lên từ máy tính và các biến thể kích thước, đá quý theo cơ sở dữ liệu kim hoàn LUNA BELLE.
     </p>
 </div>
 
-<form action="" method="POST" id="productMainForm">
+<form action="" method="POST" id="productMainForm" enctype="multipart/form-data">
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-        <!-- Left: Thông tin sản phẩm chính & Quản lý biến thể -->
+        <!-- Left: Thông tin sản phẩm chính, Quản lý 5 ảnh & Quản lý biến thể -->
         <div>
             <!-- Basic Product Info -->
             <div class="admin-card-box">
@@ -70,8 +70,12 @@
                         <input type="number" name="price" id="basePriceInput" class="form-control" value="{{ product.GiaCoSo|int if product else 20000000 }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">URL Hình ảnh chính <span style="color:#dc2626;">*</span></label>
-                        <input type="url" name="image" id="baseImageInput" class="form-control" value="{{ product.HinhAnhChinh if product and product.HinhAnhChinh else 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80' }}" required>
+                        <label class="form-label">Trạng thái bán hàng</label>
+                        <select name="status" class="form-control">
+                            <option value="DangBan" {% if not product or product.TrangThai == 'DangBan' %}selected{% endif %}>Đang Bán</option>
+                            <option value="HetHang" {% if product and product.TrangThai == 'HetHang' %}selected{% endif %}>Hết Hàng</option>
+                            <option value="NgungBan" {% if product and product.TrangThai == 'NgungBan' %}selected{% endif %}>Ngừng Bán</option>
+                        </select>
                     </div>
                 </div>
 
@@ -80,23 +84,113 @@
                     <textarea name="description" rows="4" class="form-control" placeholder="Mô tả chuẩn kim cương, giác cắt, độ sáng bóng, ý nghĩa thiết kế...">{{ product.MoTaChiTiet if product else '' }}</textarea>
                 </div>
 
-                {% if product %}
-                    <div class="form-group">
-                        <label class="form-label">Trạng thái bán hàng</label>
-                        <select name="status" class="form-control">
-                            <option value="DangBan" {% if product.TrangThai == 'DangBan' %}selected{% endif %}>Đang Bán</option>
-                            <option value="HetHang" {% if product.TrangThai == 'HetHang' %}selected{% endif %}>Hết Hàng</option>
-                            <option value="NgungBan" {% if product.TrangThai == 'NgungBan' %}selected{% endif %}>Ngừng Bán</option>
-                        </select>
-                    </div>
-                {% endif %}
-
                 <div style="margin-bottom: 1.5rem; background: #FFF5F6; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--admin-border);">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--admin-text);">
                         <input type="checkbox" name="is_featured" value="1" {% if product and product.LaNoiBat %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--admin-rose);">
                         <span style="font-weight: 600;">Đánh dấu "Sản Phẩm Nổi Bật" (Hiển thị trang chủ tuyển chọn)</span>
                     </label>
                 </div>
+            </div>
+
+            <!-- ========================================================
+                 5 PRODUCT IMAGES UPLOAD SECTION (TẢI 5 ẢNH TỪ MÁY TÍNH)
+            ======================================================== -->
+            <div class="admin-card-box" id="productImagesCard">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 class="font-serif" style="font-size: 1.25rem; color: var(--admin-text); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-images" style="color: var(--admin-rose);"></i>
+                            Bộ Sưu Tập Hình Ảnh Sản Phẩm (Tối Đa 5 Ảnh Từ Máy)
+                        </h3>
+                        <span style="font-size: 0.85rem; color: var(--admin-muted);">
+                            Tải trực tiếp các file ảnh từ máy tính (.jpg, .png, .webp). Slot #1 là ảnh đại diện chính của sản phẩm.
+                        </span>
+                    </div>
+
+                    <!-- Batch upload button -->
+                    <div>
+                        <input type="file" id="batchUploadInput" name="product_images" multiple accept="image/*" style="display: none;" onchange="handleBatchUpload(this)">
+                        <button type="button" class="btn btn-sm btn-gold" onclick="document.getElementById('batchUploadInput').click()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Tải Lên Nhiều Ảnh (Chọn Tối Đa 5 File)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Map existing gallery images by ThuTuHienThi -->
+                {% set gallery_map = {} %}
+                {% if gallery %}
+                    {% for g in gallery %}
+                        {% set _ = gallery_map.update({g.ThuTuHienThi: g}) %}
+                    {% endfor %}
+                {% endif %}
+
+                <!-- 5 Image Slots Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    {% for slot in range(1, 6) %}
+                        {% set existing = gallery_map.get(slot) %}
+                        <div class="image-slot-card" id="slotCard_{{ slot }}" 
+                             style="border: 2px dashed {% if slot == 1 %}var(--admin-gold){% else %}var(--admin-border){% endif %}; 
+                                    border-radius: 12px; padding: 0.75rem; text-align: center; background: {% if slot == 1 %}#FFFDF8{% else %}#FFFFFF{% endif %}; position: relative; transition: all 0.2s ease;">
+                            
+                            <!-- Slot Badge -->
+                            <div style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; 
+                                             color: {% if slot == 1 %}var(--admin-gold){% else %}var(--admin-muted){% endif %};">
+                                    {% if slot == 1 %}⭐ Ảnh Chính (Slot 1){% else %}Góc Chụp {{ slot }}{% endif %}
+                                </span>
+                                {% if existing %}
+                                    <label title="Đánh dấu xóa ảnh này" style="cursor: pointer; margin: 0; font-size: 0.75rem; color: #EF4444;">
+                                        <input type="checkbox" name="delete_image_ids[]" value="{{ existing.MaHinhAnh }}" onchange="toggleDeleteImage(this, {{ slot }})"> Xóa
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <!-- Preview Container -->
+                            <div class="slot-preview-box" id="previewBox_{{ slot }}" 
+                                 onclick="document.getElementById('fileInput_{{ slot }}').click()"
+                                 style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; background: #F8F9FA; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--admin-border-light); position: relative;">
+                                
+                                <img id="previewImg_{{ slot }}" 
+                                     src="{{ existing.DuongDanAnh if existing else '' }}" 
+                                     alt="Slot {{ slot }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover; display: {% if existing %}block{% else %}none{% endif %};">
+                                
+                                <div id="placeholder_{{ slot }}" style="display: {% if existing %}none{% else %}flex{% endif %}; flex-direction: column; align-items: center; justify-content: center; color: var(--admin-muted); font-size: 0.78rem; padding: 0.5rem;">
+                                    <i class="fa-solid fa-camera" style="font-size: 1.5rem; margin-bottom: 4px; color: {% if slot == 1 %}var(--admin-gold){% else %}#CBD5E1{% endif %};"></i>
+                                    <span>{% if slot == 1 %}Tải ảnh chính{% else %}Tải ảnh {{ slot }}{% endif %}</span>
+                                </div>
+                            </div>
+
+                            <!-- Individual Slot File Input -->
+                            <input type="file" name="image_file_{{ slot }}" id="fileInput_{{ slot }}" accept="image/*" style="display: none;" onchange="handleSingleFileChange(this, {{ slot }})">
+
+                            <!-- Action button under slot -->
+                            <div style="margin-top: 8px; display: flex; gap: 4px; justify-content: center;">
+                                <button type="button" class="btn btn-sm btn-glass" style="font-size: 0.72rem; padding: 2px 8px;" onclick="document.getElementById('fileInput_{{ slot }}').click()">
+                                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Đổi ảnh
+                                </button>
+                                <button type="button" class="btn btn-sm btn-glass" style="font-size: 0.72rem; padding: 2px 6px; color: #EF4444;" onclick="clearSlot({{ slot }})" title="Hủy ảnh vừa chọn">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Fallback URL Toggle (Tùy chọn phụ nếu cần dùng link ngoài) -->
+                <details style="font-size: 0.85rem; color: var(--admin-muted); background: #FAFBFD; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--admin-border-light);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--admin-text-sub);">
+                        <i class="fa-solid fa-link" style="color: var(--admin-gold);"></i> Tùy chọn nâng cao: Nhập URL ảnh dự phòng (fallback)
+                    </summary>
+                    <div style="margin-top: 0.75rem;">
+                        <input type="url" name="image" id="baseImageInput" class="form-control" 
+                               value="{{ product.HinhAnhChinh if product and product.HinhAnhChinh and not product.HinhAnhChinh.startswith('/static/') else '' }}" 
+                               placeholder="https://example.com/photo.jpg (Chỉ dùng khi không tải ảnh từ máy tính)">
+                        <small style="color: var(--admin-muted); display: block; margin-top: 4px;">
+                            Nếu bạn đã tải ảnh từ máy tính lên ở các ô phía trên, hệ thống sẽ ưu tiên sử dụng ảnh tải lên từ máy của bạn.
+                        </small>
+                    </div>
+                </details>
             </div>
 
             <!-- MULTI-VARIANT SECTION (QUẢN LÝ BIẾN THỂ SẢN PHẨM) -->
@@ -146,7 +240,7 @@
                                             <input type="text" name="variant_sku[]" class="form-control" value="{{ bt.SKU }}" placeholder="Tự sinh nếu trống">
                                         </td>
                                         <td>
-                                            <input type="url" name="variant_image[]" class="form-control" value="{{ bt.HinhAnhBienThe or '' }}" placeholder="Để trống lấy ảnh chính">
+                                            <input type="text" name="variant_image[]" class="form-control" value="{{ bt.HinhAnhBienThe or '' }}" placeholder="Để trống lấy ảnh chính">
                                         </td>
                                         <td style="text-align: center;">
                                             <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">
@@ -173,7 +267,7 @@
                                         <input type="text" name="variant_sku[]" class="form-control" value="" placeholder="Tự sinh nếu trống">
                                     </td>
                                     <td>
-                                        <input type="url" name="variant_image[]" class="form-control" value="" placeholder="Để trống lấy ảnh chính">
+                                        <input type="text" name="variant_image[]" class="form-control" value="" placeholder="Để trống lấy ảnh chính">
                                     </td>
                                     <td style="text-align: center;">
                                         <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">
@@ -196,7 +290,7 @@
             <!-- Submit Buttons -->
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                 <button type="submit" class="btn btn-gold btn-lg">
-                    <i class="fa-solid fa-floppy-disk"></i> {% if product %}Lưu Cập Nhật Toàn Bộ Sản Phẩm & Biến Thể{% else %}Thêm Mới Sản Phẩm & Kích Hoạt Biến Thể{% endif %}
+                    <i class="fa-solid fa-floppy-disk"></i> {% if product %}Lưu Cập Nhật Toàn Bộ Sản Phẩm, Hình Ảnh & Biến Thể{% else %}Thêm Mới Sản Phẩm & Lưu Bộ Sưu Tập Ảnh{% endif %}
                 </button>
                 <a href="{{ url_for('admin_products') }}" class="btn btn-glass btn-lg">Hủy Bỏ</a>
             </div>
@@ -220,13 +314,13 @@
 
             <div class="admin-card-box">
                 <h4 class="font-serif" style="font-size: 1.15rem; color: var(--admin-text); margin-bottom: 1rem;">
-                    <i class="fa-solid fa-circle-question" style="color: var(--admin-rose); margin-right: 6px;"></i> Hướng Dẫn Biến Thể
+                    <i class="fa-solid fa-circle-info" style="color: var(--admin-rose); margin-right: 6px;"></i> Hướng Dẫn Tải Ảnh LUNA BELLE
                 </h4>
                 <ul style="font-size: 0.88rem; color: var(--admin-muted); line-height: 1.8; padding-left: 1.2rem;">
-                    <li>Mỗi món trang sức có thể có nhiều kích thước (Ví dụ: Size 6, 7, 8, 9, 10...) hoặc phân loại đá (Moissanite, Kim Cương).</li>
-                    <li>Bạn có thể nhập giá bán và số lượng tồn kho riêng biệt cho từng biến thể.</li>
-                    <li>Nếu để trống SKU, hệ thống sẽ tự sinh mã SKU duy nhất chuẩn quốc tế.</li>
-                    <li>Nếu để trống ảnh biến thể, hệ thống sẽ sử dụng ảnh sản phẩm chính.</li>
+                    <li><strong>Tải lên tối đa 5 ảnh:</strong> Giúp khách hàng chiêm ngưỡng đa góc độ sản phẩm từ mặt chính, góc nghiêng tới mặt giác cắt.</li>
+                    <li><strong>Slot 1 là Ảnh Chính:</strong> Luôn được ưu tiên hiển thị ở Trang Chủ, Danh Sách Sản Phẩm và Thumbnail Giỏ Hàng.</li>
+                    <li><strong>Xem trước tức thì:</strong> Khi bạn chọn ảnh từ máy tính, ảnh sẽ hiện ngay lập tức trên màn hình trước khi lưu.</li>
+                    <li><strong>Định dạng hỗ trợ:</strong> JPG, JPEG, PNG, WEBP với dung lượng sắc nét, chuẩn kim hoàn cao cấp.</li>
                 </ul>
             </div>
         </div>
@@ -234,10 +328,76 @@
 </form>
 
 <script>
+// Xử lý xem trước khi chọn 1 file riêng lẻ cho từng slot
+function handleSingleFileChange(input, slot) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const previewImg = document.getElementById(`previewImg_${slot}`);
+        const placeholder = document.getElementById(`placeholder_${slot}`);
+        
+        previewImg.src = URL.createObjectURL(file);
+        previewImg.style.display = 'block';
+        placeholder.style.display = 'none';
+
+        // Tự động gỡ bỏ đánh dấu xóa nếu có
+        const delCheckbox = document.querySelector(`input[name="delete_image_ids[]"][value="${slot}"]`);
+        if (delCheckbox) delCheckbox.checked = false;
+    }
+}
+
+// Xử lý tải lên nhiều file cùng lúc (batch upload)
+function handleBatchUpload(input) {
+    if (!input.files || input.files.length === 0) return;
+    const files = Array.from(input.files).slice(0, 5); // Tối đa 5 file
+
+    files.forEach((file, index) => {
+        const slot = index + 1;
+        const previewImg = document.getElementById(`previewImg_${slot}`);
+        const placeholder = document.getElementById(`placeholder_${slot}`);
+        const fileInput = document.getElementById(`fileInput_${slot}`);
+
+        // Gán file vào DataTransfer của input riêng
+        try {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+        } catch (e) {
+            console.log('Batch file transfer handled via global input');
+        }
+
+        previewImg.src = URL.createObjectURL(file);
+        previewImg.style.display = 'block';
+        placeholder.style.display = 'none';
+    });
+}
+
+// Xóa trắng ảnh ở một slot
+function clearSlot(slot) {
+    const fileInput = document.getElementById(`fileInput_${slot}`);
+    const previewImg = document.getElementById(`previewImg_${slot}`);
+    const placeholder = document.getElementById(`placeholder_${slot}`);
+    
+    fileInput.value = '';
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+}
+
+// Bật/tắt trạng thái gạch mờ ảnh khi chọn xóa
+function toggleDeleteImage(checkbox, slot) {
+    const previewBox = document.getElementById(`previewBox_${slot}`);
+    if (checkbox.checked) {
+        previewBox.style.opacity = '0.35';
+        previewBox.style.filter = 'grayscale(100%)';
+    } else {
+        previewBox.style.opacity = '1';
+        previewBox.style.filter = 'none';
+    }
+}
+
 function addNewVariantRow() {
     const tbody = document.getElementById('variantsTbody');
     const basePrice = document.getElementById('basePriceInput') ? document.getElementById('basePriceInput').value : 20000000;
-    const baseImage = document.getElementById('baseImageInput') ? document.getElementById('baseImageInput').value : '';
     
     const row = document.createElement('tr');
     row.className = 'variant-row';
@@ -258,7 +418,7 @@ function addNewVariantRow() {
             <input type="text" name="variant_sku[]" class="form-control" value="" placeholder="Tự sinh nếu trống">
         </td>
         <td>
-            <input type="url" name="variant_image[]" class="form-control" value="${baseImage}" placeholder="Để trống lấy ảnh chính">
+            <input type="text" name="variant_image[]" class="form-control" value="" placeholder="Để trống lấy ảnh chính">
         </td>
         <td style="text-align: center;">
             <button type="button" class="btn btn-sm btn-danger" onclick="removeVariantRow(this)" title="Xóa dòng biến thể">

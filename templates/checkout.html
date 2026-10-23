@@ -34,37 +34,18 @@
                         <div>
                             <label class="lb-form-label">Họ và tên người nhận <span style="color: #EF4444;">*</span></label>
                             <input type="text" name="fullname" class="lb-form-input" placeholder="Ví dụ: Lê Hoàng Yến Nhi" 
-                                   value="{{ (saved_address.TenNguoiNhan if saved_address else (current_user.HoTen if current_user else '')) }}" required>
+                                   value="{{ current_user.HoTen if current_user else '' }}" required>
                         </div>
                         <div>
                             <label class="lb-form-label">Số điện thoại liên hệ <span style="color: #EF4444;">*</span></label>
                             <input type="tel" name="phone" class="lb-form-input" placeholder="Ví dụ: 0987654321" 
-                                   value="{{ (saved_address.SoDienThoai if saved_address else (current_user.SoDienThoai if current_user else '')) }}" required>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
-                        <div>
-                            <label class="lb-form-label">Tỉnh / Thành phố <span style="color: #EF4444;">*</span></label>
-                            <input type="text" name="city" class="lb-form-input" placeholder="Đồng Nai" 
-                                   value="{{ saved_address.TinhThanh if saved_address else 'Đồng Nai' }}" required>
-                        </div>
-                        <div>
-                            <label class="lb-form-label">Quận / Huyện <span style="color: #EF4444;">*</span></label>
-                            <input type="text" name="district" class="lb-form-input" placeholder="TP. Biên Hòa" 
-                                   value="{{ saved_address.QuanHuyen if saved_address else 'TP. Biên Hòa' }}" required>
-                        </div>
-                        <div>
-                            <label class="lb-form-label">Phường / Xã <span style="color: #EF4444;">*</span></label>
-                            <input type="text" name="ward" class="lb-form-input" placeholder="Phường Tân Phong" 
-                                   value="{{ saved_address.PhuongXa if saved_address else 'Phường Tân Phong' }}" required>
+                                   value="{{ current_user.SoDienThoai if current_user and current_user.SoDienThoai else '' }}" required>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 1.2rem;">
-                        <label class="lb-form-label">Địa chỉ chi tiết (Số nhà, đường, khu dân cư) <span style="color: #EF4444;">*</span></label>
-                        <input type="text" name="address" class="lb-form-input" placeholder="Ví dụ: Số 88 Đường Nguyễn Ái Quốc" 
-                               value="{{ saved_address.DiaChiChiTiet if saved_address else '' }}" required>
+                        <label class="lb-form-label">Địa chỉ nhận hàng (Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành) <span style="color: #EF4444;">*</span></label>
+                        <input type="text" name="address" class="lb-form-input" placeholder="Ví dụ: Tầng 15, Vincom Center, 72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh" required>
                     </div>
 
                     <div>
