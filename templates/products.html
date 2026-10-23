@@ -71,25 +71,66 @@
                         <input type="hidden" name="sort" id="filterSortInput" value="{{ current_filters.sort }}">
                     {% endif %}
 
-                    <!-- 1. Danh Mục Sản Phẩm -->
+                    <!-- 1. Danh Mục Sản Phẩm (Phân Cấp Cha - Con Chuẩn) -->
                     <div class="lb-filter-group">
                         <div class="lb-filter-title">
-                            <span><i class="fa-solid fa-layer-group" style="color: var(--lb-rg-primary);"></i> Danh Mục</span>
+                            <span><i class="fa-solid fa-layer-group" style="color: var(--lb-rg-primary);"></i> Danh Mục Sản Phẩm</span>
                         </div>
                         <div class="lb-category-filter-list">
+                            <!-- Tất cả sản phẩm -->
                             <a href="{{ url_for('products', **dict(request.args, category='')) }}" 
-                               class="lb-category-item {% if not current_filters.category %}active{% endif %}">
-                                <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 0.4rem; opacity: 0.7;"></i> Tất Cả Sản Phẩm</span>
+                               class="lb-category-item {% if not current_filters.category %}active{% endif %}"
+                               style="font-weight: 600;">
+                                <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 0.4rem; color: var(--lb-rg-primary);"></i> Tất Cả Tuyệt Tác</span>
                                 <span class="lb-category-count">{{ products|length }}</span>
                             </a>
-                            {% for cat in (categories or nav_categories) %}
-                                <a href="{{ url_for('products', **dict(request.args, category=cat.Slug)) }}" 
-                                   class="lb-category-item {% if current_filters.category == cat.Slug %}active{% endif %}">
-                                    <span><i class="fa-solid fa-chevron-right" style="font-size: 0.65rem; margin-right: 0.45rem; opacity: 0.5;"></i> {{ cat.TenDanhMuc }}</span>
-                                    {% if cat.SoLuongSP is defined %}
-                                        <span class="lb-category-count">{{ cat.SoLuongSP }}</span>
+
+                            <!-- Danh Sách Phân Cấp Cha - Con Động -->
+                            {% for parent in category_tree %}
+                                {% set is_parent_active = (current_filters.category == parent.Slug) %}
+                                {% set is_child_active = false %}
+                                {% if parent.children %}
+                                    {% for ch in parent.children %}
+                                        {% if current_filters.category == ch.Slug %}
+                                            {% set is_child_active = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                <div class="lb-category-branch" style="margin-top: 0.25rem;">
+                                    <!-- Danh mục Cha -->
+                                    <a href="{{ url_for('products', **dict(request.args, category=parent.Slug)) }}" 
+                                       class="lb-category-item {% if is_parent_active %}active{% endif %}"
+                                       style="font-weight: 600; {% if is_child_active and not is_parent_active %}color: var(--lb-rg-primary);{% endif %}">
+                                        <span style="display: flex; align-items: center; gap: 0.4rem;">
+                                            <i class="fa-solid {% if parent.children %}fa-folder-open{% else %}fa-folder{% endif %}" style="font-size: 0.75rem; color: var(--lb-rg-primary);"></i>
+                                            {{ parent.TenDanhMuc }}
+                                        </span>
+                                        {% if parent.TongSoLuongSP is defined and parent.TongSoLuongSP > 0 %}
+                                            <span class="lb-category-count">{{ parent.TongSoLuongSP }}</span>
+                                        {% endif %}
+                                    </a>
+
+                                    <!-- Danh mục Con (Subcategories) -->
+                                    {% if parent.children %}
+                                        <div class="lb-subcategory-list" 
+                                             style="padding-left: 0.75rem; margin: 0.2rem 0 0.35rem 0.75rem; border-left: 2px solid {% if is_parent_active or is_child_active %}var(--lb-rg-primary){% else %}var(--lb-border-soft){% endif %}; display: flex; flex-direction: column; gap: 0.2rem;">
+                                            {% for sub in parent.children %}
+                                                <a href="{{ url_for('products', **dict(request.args, category=sub.Slug)) }}" 
+                                                   class="lb-category-item {% if current_filters.category == sub.Slug %}active{% endif %}"
+                                                   style="font-size: 0.82rem; padding: 0.32rem 0.6rem; border-radius: 6px;">
+                                                    <span style="display: flex; align-items: center; gap: 0.35rem;">
+                                                        <i class="fa-solid fa-angle-right" style="font-size: 0.62rem; opacity: 0.6;"></i>
+                                                        {{ sub.TenDanhMuc }}
+                                                    </span>
+                                                    {% if sub.SoLuongSP is defined and sub.SoLuongSP > 0 %}
+                                                        <span class="lb-category-count" style="font-size: 0.68rem; padding: 1px 6px;">{{ sub.SoLuongSP }}</span>
+                                                    {% endif %}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
                                     {% endif %}
-                                </a>
+                                </div>
                             {% endfor %}
                         </div>
                         <input type="hidden" name="category" id="filterCategoryInput" value="{{ current_filters.category or '' }}">

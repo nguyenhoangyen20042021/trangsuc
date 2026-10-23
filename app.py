@@ -80,19 +80,38 @@ def payment_status_info(status):
     }
     return mapping.get(status, {'text': status, 'class': 'badge-secondary'})
 
-@app.context_processor
-def inject_global_data():
-    categories = query_all("""
-        SELECT dm.*, 
-               (SELECT ha.DuongDanAnh 
-                FROM SanPham sp 
-                JOIN HinhAnhSanPham ha ON ha.MaSanPham = sp.MaSanPham 
-                WHERE sp.MaDanhMuc = dm.MaDanhMuc 
-                ORDER BY sp.MaSanPham ASC, ha.ThuTuHienThi ASC LIMIT 1
-               ) AS HinhAnhDaiDien
-        FROM DanhMuc dm 
+def build_category_tree():
+    """Lấy danh mục từ DB và tổ chức cây cha - con kèm số lượng sản phẩm."""
+    all_categories = query_all("""
+        SELECT dm.*, COUNT(sp.MaSanPham) AS SoLuongSP
+        FROM DanhMuc dm
+        LEFT JOIN SanPham sp ON dm.MaDanhMuc = sp.MaDanhMuc AND sp.TrangThai = 'DangBan'
+        GROUP BY dm.MaDanhMuc
         ORDER BY dm.MaDanhMuc ASC
     """)
+    
+    category_tree = []
+    sub_map = {}
+    for c in all_categories:
+        c_dict = dict(c)
+        p_id = c_dict.get('MaDanhMucCha')
+        if not p_id:
+            c_dict['children'] = []
+            category_tree.append(c_dict)
+        else:
+            if p_id not in sub_map:
+                sub_map[p_id] = []
+            sub_map[p_id].append(c_dict)
+            
+    for p in category_tree:
+        p['children'] = sub_map.get(p['MaDanhMuc'], [])
+        p['TongSoLuongSP'] = p.get('SoLuongSP', 0) + sum(ch.get('SoLuongSP', 0) for ch in p['children'])
+        
+    return category_tree, all_categories
+
+@app.context_processor
+def inject_global_data():
+    category_tree, all_categories = build_category_tree()
     
     # Số lượng sản phẩm trong giỏ hàng
     cart_count = 0
@@ -110,7 +129,8 @@ def inject_global_data():
         """, (session['user_id'],))
         
     return {
-        'nav_categories': categories,
+        'category_tree': category_tree,
+        'nav_categories': all_categories,
         'cart_count': cart_count,
         'current_user': user,
         'now': datetime.datetime.now(),
@@ -210,9 +230,18 @@ def products():
     """
     params = []
 
+    selected_category = None
     if cat_slug:
-        sql += " AND dm.Slug = %s"
-        params.append(cat_slug)
+        selected_category = query_one("SELECT * FROM DanhMuc WHERE Slug = %s", (cat_slug,))
+        if selected_category:
+            sub_ids = query_all("SELECT MaDanhMuc FROM DanhMuc WHERE MaDanhMucCha = %s", (selected_category['MaDanhMuc'],))
+            cat_ids = [selected_category['MaDanhMuc']] + [s['MaDanhMuc'] for s in sub_ids]
+            in_placeholder = ','.join(['%s'] * len(cat_ids))
+            sql += f" AND sp.MaDanhMuc IN ({in_placeholder})"
+            params.extend(cat_ids)
+        else:
+            sql += " AND dm.Slug = %s"
+            params.append(cat_slug)
     if material:
         sql += " AND sp.ChatLieu = %s"
         params.append(material)
@@ -250,25 +279,16 @@ def products():
 
     products_list = query_all(sql, params)
 
-    categories_with_count = query_all("""
-        SELECT dm.*, COUNT(sp.MaSanPham) AS SoLuongSP
-        FROM DanhMuc dm
-        LEFT JOIN SanPham sp ON dm.MaDanhMuc = sp.MaDanhMuc AND sp.TrangThai = 'DangBan'
-        GROUP BY dm.MaDanhMuc
-        ORDER BY dm.MaDanhMuc ASC
-    """)
+    category_tree, categories_with_count = build_category_tree()
 
     materials = query_all("SELECT DISTINCT ChatLieu FROM SanPham WHERE ChatLieu IS NOT NULL AND ChatLieu != ''")
     styles = query_all("SELECT DISTINCT PhongCach FROM SanPham WHERE PhongCach IS NOT NULL AND PhongCach != ''")
     audiences = query_all("SELECT DISTINCT DoiTuong FROM SanPham WHERE DoiTuong IS NOT NULL AND DoiTuong != ''")
 
-    selected_category = None
-    if cat_slug:
-        selected_category = query_one("SELECT * FROM DanhMuc WHERE Slug = %s", (cat_slug,))
-
     return render_template('products.html', 
                            products=products_list, 
                            categories=categories_with_count,
+                           category_tree=category_tree,
                            materials=materials, 
                            styles=styles, 
                            audiences=audiences,

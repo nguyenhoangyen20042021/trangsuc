@@ -124,58 +124,38 @@
                     </a>
                 </div>
 
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', category='bac') }}" class="lb-nav-link">
-                        BẠC <i class="fa-solid fa-angle-down"></i>
-                    </a>
-                    <div class="lb-dropdown">
-                        <a href="{{ url_for('products', category='nhan-bac') }}">Nhẫn Bạc</a>
-                        <a href="{{ url_for('products', category='day-chuyen-bac') }}">Dây Chuyền Bạc</a>
-                        <a href="{{ url_for('products', category='bong-tai-bac') }}">Bông Tai Bạc</a>
-                        <a href="{{ url_for('products', category='vong-bac') }}">Vòng Bạc</a>
+                <!-- Danh Mục Động Từ Database (Phân cấp Cha - Con) -->
+                {% for parent_cat in category_tree %}
+                    <div class="lb-nav-item">
+                        <a href="{{ url_for('products', category=parent_cat.Slug) }}" 
+                           class="lb-nav-link {% if request.args.get('category') == parent_cat.Slug or (selected_category and (selected_category.MaDanhMuc == parent_cat.MaDanhMuc or selected_category.MaDanhMucCha == parent_cat.MaDanhMuc)) %}active{% endif %}">
+                            {{ parent_cat.TenDanhMuc|upper }}
+                            {% if parent_cat.children %}
+                                <i class="fa-solid fa-angle-down"></i>
+                            {% endif %}
+                        </a>
+                        {% if parent_cat.children %}
+                            <div class="lb-dropdown">
+                                <a href="{{ url_for('products', category=parent_cat.Slug) }}" style="font-weight: 700; color: var(--lb-rg-primary); border-bottom: 1px dashed var(--lb-border-soft); display: flex; justify-content: space-between; align-items: center;">
+                                    <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 4px;"></i> Tất Cả {{ parent_cat.TenDanhMuc }}</span>
+                                    {% if parent_cat.TongSoLuongSP is defined and parent_cat.TongSoLuongSP > 0 %}
+                                        <small style="opacity: 0.75; font-size: 0.72rem;">({{ parent_cat.TongSoLuongSP }})</small>
+                                    {% endif %}
+                                </a>
+                                {% for sub_cat in parent_cat.children %}
+                                    <a href="{{ url_for('products', category=sub_cat.Slug) }}" 
+                                       class="{% if request.args.get('category') == sub_cat.Slug %}active{% endif %}"
+                                       style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>{{ sub_cat.TenDanhMuc }}</span>
+                                        {% if sub_cat.SoLuongSP is defined and sub_cat.SoLuongSP > 0 %}
+                                            <small style="color: var(--lb-text-muted); font-size: 0.72rem;">({{ sub_cat.SoLuongSP }})</small>
+                                        {% endif %}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
-                </div>
-
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', category='vang') }}" class="lb-nav-link">
-                        VÀNG <i class="fa-solid fa-angle-down"></i>
-                    </a>
-                    <div class="lb-dropdown">
-                        <a href="{{ url_for('products', category='nhan-vang') }}">Nhẫn Vàng 18K</a>
-                        <a href="{{ url_for('products', category='day-chuyen-vang') }}">Dây Chuyền Vàng</a>
-                        <a href="{{ url_for('products', category='bong-tai-vang') }}">Bông Tai Vàng</a>
-                        <a href="{{ url_for('products', category='lac-tay-vang') }}">Lắc Tay Vàng</a>
-                    </div>
-                </div>
-
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', category='da-moissanite') }}" class="lb-nav-link {% if request.args.get('category','').startswith('moissanite') %}active{% endif %}">
-                        ĐÁ MOISSANITE <i class="fa-solid fa-angle-down"></i>
-                    </a>
-                    <div class="lb-dropdown">
-                        <a href="{{ url_for('products', category='nhan-moissanite') }}">Nhẫn Moissanite</a>
-                        <a href="{{ url_for('products', category='day-chuyen-moissanite') }}">Dây Chuyền</a>
-                        <a href="{{ url_for('products', category='bong-tai-moissanite') }}">Bông Tai</a>
-                        <a href="{{ url_for('products', category='set-moissanite') }}">Bộ Trang Sức Set</a>
-                    </div>
-                </div>
-
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', category='lab-grown-diamond') }}" class="lb-nav-link">
-                        LAB GROWN DIAMOND
-                    </a>
-                </div>
-
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', category='da-phong-thuy') }}" class="lb-nav-link">
-                        ĐÁ PHONG THỦY <i class="fa-solid fa-angle-down"></i>
-                    </a>
-                    <div class="lb-dropdown">
-                        <a href="{{ url_for('products', category='da-thach-anh') }}">Thạch Anh</a>
-                        <a href="{{ url_for('products', category='da-obsidian') }}">Obsidian</a>
-                        <a href="{{ url_for('products', category='da-jade') }}">Ngọc Bích</a>
-                    </div>
-                </div>
+                {% endfor %}
 
                 <div class="lb-nav-item">
                     <a href="{{ url_for('products', sort='discount') }}" class="lb-nav-link" style="color:var(--lb-rg-primary);">

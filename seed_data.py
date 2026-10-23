@@ -30,7 +30,7 @@ def seed_database():
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """, u)
 
-        # 3. Danh mục sản phẩm
+        # 3. Danh mục sản phẩm (Cha)
         categories = [
             ('Nhẫn Kim Cương & Nhẫn Cưới', 'nhan-kim-cuong', 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80', 'Bộ sưu tập nhẫn đính hôn, nhẫn cưới và nhẫn kim cương tự nhiên đẳng cấp.'),
             ('Dây Chuyền & Mặt Dây', 'day-chuyen-mat-day', 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80', 'Dây chuyền vàng 18K, bạch kim phối kim cương và đá quý tinh xảo.'),
@@ -46,10 +46,36 @@ def seed_database():
                 cat_map[cat[1]] = row['MaDanhMuc']
             else:
                 cursor.execute("""
-                    INSERT INTO DanhMuc (TenDanhMuc, Slug, HinhAnh, MoTa)
-                    VALUES (%s, %s, %s, %s)
-                """, cat)
+                    INSERT INTO DanhMuc (TenDanhMuc, Slug, MoTa)
+                    VALUES (%s, %s, %s)
+                """, (cat[0], cat[1], cat[3]))
                 cat_map[cat[1]] = cursor.lastrowid
+
+        # 3.1 Danh mục con (Sub-categories)
+        subcategories = [
+            ('Nhẫn Cầu Hôn Solitaire', 'nhan-cau-hon-solitaire', cat_map.get('nhan-kim-cuong'), 'Các mẫu nhẫn cầu hôn kim cương giác cắt tròn Brilliant kiêu sa.'),
+            ('Nhẫn Cưới Cặp Uyên Ương', 'nhan-cuoi-cap', cat_map.get('nhan-kim-cuong'), 'Nhẫn cưới vàng 18K và bạch kim minh chứng cho tình yêu vĩnh cửu.'),
+            ('Nhẫn Nữ Kim Cương Moissanite', 'nhan-moissanite', cat_map.get('nhan-kim-cuong'), 'Nhẫn Moissanite nước D giác cắt giác tinh hoa rực rỡ.'),
+            ('Dây Chuyền Vàng Ý 18K', 'day-chuyen-vang-18k', cat_map.get('day-chuyen-mat-day'), 'Dây chuyền vàng Ý thanh mảnh, tôn vinh bờ vai quý phái.'),
+            ('Mặt Dây Chuyền Đính Kim Cương', 'mat-day-kim-cuong', cat_map.get('day-chuyen-mat-day'), 'Mặt dây chuyền hình giọt nước và trái tim đính đá lấp lánh.'),
+            ('Vòng Tay Tennis Diamond', 'vong-tay-tennis', cat_map.get('vong-tay-lac'), 'Vòng tay Tennis đính dải kim cương liên hoàn sang trọng.'),
+            ('Lắc Tay Bạc & Vàng Quý Cô', 'lac-tay-quy-co', cat_map.get('vong-tay-lac'), 'Lắc tay đính đá quý phong cách thanh lịch hiện đại.'),
+            ('Bông Tai Nụ Halo Kiêu Sa', 'bong-tai-nu-halo', cat_map.get('bong-tai'), 'Bông tai nụ viền hào quang Halo sáng bừng gương mặt.'),
+            ('Bông Tai Dáng Dài Dạ Hội', 'bong-tai-dang-dai', cat_map.get('bong-tai'), 'Bông tai chùm dài đính đá quý chuyển động uyển chuyển.'),
+            ('Trang Sức Ruby Huyết Bồ Câu', 'trang-suc-ruby-hoang-gia', cat_map.get('bo-suu-tap-hoang-gia'), 'Trang sức đá quý Ruby đỏ rực quý phái biểu tượng quyền uy.'),
+            ('Trang Sức Emerald Ngọc Lục Bảo', 'trang-suc-emerald-hoang-gia', cat_map.get('bo-suu-tap-hoang-gia'), 'Trang sức đá ngọc lục bảo Emerald Columbia thiên nhiên quý hiếm.')
+        ]
+        for sub in subcategories:
+            cursor.execute("SELECT MaDanhMuc FROM DanhMuc WHERE Slug = %s", (sub[1],))
+            row = cursor.fetchone()
+            if row:
+                cat_map[sub[1]] = row['MaDanhMuc']
+            else:
+                cursor.execute("""
+                    INSERT INTO DanhMuc (TenDanhMuc, Slug, MaDanhMucCha, MoTa)
+                    VALUES (%s, %s, %s, %s)
+                """, sub)
+                cat_map[sub[1]] = cursor.lastrowid
 
         # 4. Sản phẩm mẫu & biến thể
         products = [
