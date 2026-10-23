@@ -112,67 +112,80 @@
     </header>
 
     <!-- ═══════════════════════════════════════════════════════════
-         NAVIGATION BAR
+         NAVIGATION BAR (Hỗ trợ cuộn ngang mượt mà khi danh mục dài)
     ═══════════════════════════════════════════════════════════ -->
     <nav class="lb-navbar" aria-label="Danh mục sản phẩm">
-        <div class="lb-container">
-            <div class="lb-nav-inner" id="navMenu">
+        <div class="lb-container lb-nav-container">
+            <!-- Nút cuộn trái khi tràn -->
+            <button type="button" class="lb-nav-scroll-btn lb-nav-scroll-prev" id="btnNavScrollLeft" aria-label="Cuộn sang trái" title="Cuộn sang trái">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
 
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('index') }}" class="lb-nav-link {% if request.endpoint == 'index' %}active{% endif %}">
-                        TRANG CHỦ
-                    </a>
-                </div>
+            <!-- Khung cuộn ngang mượt mà -->
+            <div class="lb-nav-scroll-wrap" id="navScrollWrap">
+                <div class="lb-nav-inner" id="navMenu">
 
-                <!-- Danh Mục Động Từ Database (Phân cấp Cha - Con) -->
-                {% for parent_cat in category_tree %}
                     <div class="lb-nav-item">
-                        <a href="{{ url_for('products', category=parent_cat.Slug) }}" 
-                           class="lb-nav-link {% if request.args.get('category') == parent_cat.Slug or (selected_category and (selected_category.MaDanhMuc == parent_cat.MaDanhMuc or selected_category.MaDanhMucCha == parent_cat.MaDanhMuc)) %}active{% endif %}">
-                            {{ parent_cat.TenDanhMuc|upper }}
-                            {% if parent_cat.children %}
-                                <i class="fa-solid fa-angle-down"></i>
-                            {% endif %}
+                        <a href="{{ url_for('index') }}" class="lb-nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            TRANG CHỦ
                         </a>
-                        {% if parent_cat.children %}
-                            <div class="lb-dropdown">
-                                <a href="{{ url_for('products', category=parent_cat.Slug) }}" style="font-weight: 700; color: var(--lb-rg-primary); border-bottom: 1px dashed var(--lb-border-soft); display: flex; justify-content: space-between; align-items: center;">
-                                    <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 4px;"></i> Tất Cả {{ parent_cat.TenDanhMuc }}</span>
-                                    {% if parent_cat.TongSoLuongSP is defined and parent_cat.TongSoLuongSP > 0 %}
-                                        <small style="opacity: 0.75; font-size: 0.72rem;">({{ parent_cat.TongSoLuongSP }})</small>
-                                    {% endif %}
-                                </a>
-                                {% for sub_cat in parent_cat.children %}
-                                    <a href="{{ url_for('products', category=sub_cat.Slug) }}" 
-                                       class="{% if request.args.get('category') == sub_cat.Slug %}active{% endif %}"
-                                       style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span>{{ sub_cat.TenDanhMuc }}</span>
-                                        {% if sub_cat.SoLuongSP is defined and sub_cat.SoLuongSP > 0 %}
-                                            <small style="color: var(--lb-text-muted); font-size: 0.72rem;">({{ sub_cat.SoLuongSP }})</small>
+                    </div>
+
+                    <!-- Danh Mục Động Từ Database (Phân cấp Cha - Con) -->
+                    {% for parent_cat in category_tree %}
+                        <div class="lb-nav-item">
+                            <a href="{{ url_for('products', category=parent_cat.Slug) }}" 
+                               class="lb-nav-link {% if request.args.get('category') == parent_cat.Slug or (selected_category and (selected_category.MaDanhMuc == parent_cat.MaDanhMuc or selected_category.MaDanhMucCha == parent_cat.MaDanhMuc)) %}active{% endif %}">
+                                {{ parent_cat.TenDanhMuc|upper }}
+                                {% if parent_cat.children %}
+                                    <i class="fa-solid fa-angle-down"></i>
+                                {% endif %}
+                            </a>
+                            {% if parent_cat.children %}
+                                <div class="lb-dropdown">
+                                    <a href="{{ url_for('products', category=parent_cat.Slug) }}" style="font-weight: 700; color: var(--lb-rg-primary); border-bottom: 1px dashed var(--lb-border-soft); display: flex; justify-content: space-between; align-items: center;">
+                                        <span><i class="fa-solid fa-gem" style="font-size: 0.75rem; margin-right: 4px;"></i> Tất Cả {{ parent_cat.TenDanhMuc }}</span>
+                                        {% if parent_cat.TongSoLuongSP is defined and parent_cat.TongSoLuongSP > 0 %}
+                                            <small style="opacity: 0.75; font-size: 0.72rem;">({{ parent_cat.TongSoLuongSP }})</small>
                                         {% endif %}
                                     </a>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                                    {% for sub_cat in parent_cat.children %}
+                                        <a href="{{ url_for('products', category=sub_cat.Slug) }}" 
+                                           class="{% if request.args.get('category') == sub_cat.Slug %}active{% endif %}"
+                                           style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span>{{ sub_cat.TenDanhMuc }}</span>
+                                            {% if sub_cat.SoLuongSP is defined and sub_cat.SoLuongSP > 0 %}
+                                                <small style="color: var(--lb-text-muted); font-size: 0.72rem;">({{ sub_cat.SoLuongSP }})</small>
+                                            {% endif %}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="lb-nav-item">
+                        <a href="{{ url_for('products', sort='discount') }}" class="lb-nav-link" style="color:var(--lb-rg-primary);">
+                            <i class="fa-solid fa-tag" style="font-size:0.7rem;"></i>
+                            SẢN PHẨM KHUYẾN MÃI
+                        </a>
                     </div>
-                {% endfor %}
 
-                <div class="lb-nav-item">
-                    <a href="{{ url_for('products', sort='discount') }}" class="lb-nav-link" style="color:var(--lb-rg-primary);">
-                        <i class="fa-solid fa-tag" style="font-size:0.7rem;"></i>
-                        SẢN PHẨM KHUYẾN MÃI
-                    </a>
+                    <div class="lb-nav-item">
+                        <a href="#footer" class="lb-nav-link">LIÊN HỆ</a>
+                    </div>
+
+                    <div class="lb-nav-item">
+                        <a href="#about" class="lb-nav-link">GIỚI THIỆU</a>
+                    </div>
+
                 </div>
-
-                <div class="lb-nav-item">
-                    <a href="#footer" class="lb-nav-link">LIÊN HỆ</a>
-                </div>
-
-                <div class="lb-nav-item">
-                    <a href="#about" class="lb-nav-link">GIỚI THIỆU</a>
-                </div>
-
             </div>
+
+            <!-- Nút cuộn phải khi tràn -->
+            <button type="button" class="lb-nav-scroll-btn lb-nav-scroll-next" id="btnNavScrollRight" aria-label="Cuộn sang phải" title="Cuộn sang phải">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </div>
     </nav>
 

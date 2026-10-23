@@ -102,8 +102,8 @@
                                     <a href="{{ url_for('products', **dict(request.args, category=parent.Slug)) }}" 
                                        class="lb-category-item {% if is_parent_active %}active{% endif %}"
                                        style="font-weight: 600; {% if is_child_active and not is_parent_active %}color: var(--lb-rg-primary);{% endif %}">
-                                        <span style="display: flex; align-items: center; gap: 0.4rem;">
-                                            <i class="fa-solid {% if parent.children %}fa-folder-open{% else %}fa-folder{% endif %}" style="font-size: 0.75rem; color: var(--lb-rg-primary);"></i>
+                                        <span style="display: flex; align-items: center; gap: 0.45rem;">
+                                            <i class="fa-solid {{ parent.Slug|category_icon }}" style="font-size: 0.82rem; color: var(--lb-rg-primary);"></i>
                                             {{ parent.TenDanhMuc }}
                                         </span>
                                         {% if parent.TongSoLuongSP is defined and parent.TongSoLuongSP > 0 %}
@@ -119,8 +119,8 @@
                                                 <a href="{{ url_for('products', **dict(request.args, category=sub.Slug)) }}" 
                                                    class="lb-category-item {% if current_filters.category == sub.Slug %}active{% endif %}"
                                                    style="font-size: 0.82rem; padding: 0.32rem 0.6rem; border-radius: 6px;">
-                                                    <span style="display: flex; align-items: center; gap: 0.35rem;">
-                                                        <i class="fa-solid fa-angle-right" style="font-size: 0.62rem; opacity: 0.6;"></i>
+                                                    <span style="display: flex; align-items: center; gap: 0.4rem;">
+                                                        <i class="fa-regular fa-gem" style="font-size: 0.62rem; color: var(--lb-rg-light); opacity: 0.85;"></i>
                                                         {{ sub.TenDanhMuc }}
                                                     </span>
                                                     {% if sub.SoLuongSP is defined and sub.SoLuongSP > 0 %}

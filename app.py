@@ -60,6 +60,19 @@ def currency_filter(val):
     except Exception:
         return f"{val} ₫"
 
+@app.template_filter('category_icon')
+def category_icon_filter(slug_or_name):
+    """Icon chuẩn kim hoàn cao cấp cho từng loại danh mục trang sức."""
+    if not slug_or_name:
+        return 'fa-gem'
+    s = str(slug_or_name).lower()
+    if 'nhan' in s:
+        return 'fa-ring'
+    elif 'hoang-gia' in s or 'bo-suu-tap' in s or 'crown' in s:
+        return 'fa-crown'
+    else:
+        return 'fa-gem'
+
 @app.template_filter('order_status_info')
 def order_status_info(status):
     mapping = {

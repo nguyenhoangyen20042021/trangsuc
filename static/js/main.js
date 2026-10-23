@@ -152,6 +152,134 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // 9. Navbar Horizontal Scroll & Dropdown Positioning
+    const navScrollWrap = document.getElementById('navScrollWrap');
+    const btnNavLeft = document.getElementById('btnNavScrollLeft');
+    const btnNavRight = document.getElementById('btnNavScrollRight');
+
+    if (navScrollWrap) {
+        // Cập nhật trạng thái hiển thị của các nút cuộn
+        function updateNavScrollButtons() {
+            if (!btnNavLeft || !btnNavRight) return;
+            const scrollWidth = navScrollWrap.scrollWidth;
+            const clientWidth = navScrollWrap.clientWidth;
+            const hasOverflow = scrollWidth > clientWidth + 4;
+
+            if (hasOverflow) {
+                btnNavLeft.classList.add('is-visible');
+                btnNavRight.classList.add('is-visible');
+
+                const currentScroll = navScrollWrap.scrollLeft;
+                const isAtStart = currentScroll <= 4;
+                const isAtEnd = currentScroll + clientWidth >= scrollWidth - 6;
+
+                btnNavLeft.classList.toggle('is-disabled', isAtStart);
+                btnNavRight.classList.toggle('is-disabled', isAtEnd);
+            } else {
+                btnNavLeft.classList.remove('is-visible');
+                btnNavRight.classList.remove('is-visible');
+            }
+        }
+
+        // Click nút cuộn trái / phải
+        if (btnNavLeft) {
+            btnNavLeft.addEventListener('click', function () {
+                navScrollWrap.scrollBy({ left: -240, behavior: 'smooth' });
+            });
+        }
+        if (btnNavRight) {
+            btnNavRight.addEventListener('click', function () {
+                navScrollWrap.scrollBy({ left: 240, behavior: 'smooth' });
+            });
+        }
+
+        // Lăn con lăn chuột (Mouse Wheel) để cuộn ngang trên thanh menu
+        navScrollWrap.addEventListener('wheel', function (e) {
+            if (navScrollWrap.scrollWidth > navScrollWrap.clientWidth) {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    navScrollWrap.scrollLeft += e.deltaY;
+                    updateNavScrollButtons();
+                }
+            }
+        }, { passive: false });
+
+        // Kéo chuột để cuộn ngang (Drag to Scroll)
+        let isPointerDown = false;
+        let startPageX = 0;
+        let initialScrollLeft = 0;
+
+        navScrollWrap.addEventListener('mousedown', function (e) {
+            // Không can thiệp nếu click vào thẻ <a>
+            if (e.target.closest('a')) return;
+            isPointerDown = true;
+            startPageX = e.pageX - navScrollWrap.offsetLeft;
+            initialScrollLeft = navScrollWrap.scrollLeft;
+            navScrollWrap.style.cursor = 'grabbing';
+            navScrollWrap.style.userSelect = 'none';
+        });
+
+        window.addEventListener('mouseup', function () {
+            if (isPointerDown) {
+                isPointerDown = false;
+                navScrollWrap.style.cursor = '';
+                navScrollWrap.style.userSelect = '';
+            }
+        });
+
+        navScrollWrap.addEventListener('mousemove', function (e) {
+            if (!isPointerDown) return;
+            e.preventDefault();
+            const x = e.pageX - navScrollWrap.offsetLeft;
+            const walk = (x - startPageX) * 1.4;
+            navScrollWrap.scrollLeft = initialScrollLeft - walk;
+            updateNavScrollButtons();
+        });
+
+        // Lắng nghe scroll & resize
+        navScrollWrap.addEventListener('scroll', updateNavScrollButtons);
+        window.addEventListener('resize', updateNavScrollButtons);
+        // Kiểm tra sau khi font và styles render
+        setTimeout(updateNavScrollButtons, 100);
+        setTimeout(updateNavScrollButtons, 500);
+
+        // Định vị Dropdown thông minh (chống bị cắt bởi overflow)
+        const navItemsWithDropdown = navScrollWrap.querySelectorAll('.lb-nav-item');
+        navItemsWithDropdown.forEach(function (item) {
+            const dropdown = item.querySelector('.lb-dropdown');
+            if (!dropdown) return;
+
+            function positionDropdown() {
+                const rect = item.getBoundingClientRect();
+                dropdown.classList.add('is-fixed');
+                dropdown.style.top = (rect.bottom + 2) + 'px';
+                
+                const dropdownWidth = dropdown.offsetWidth || 220;
+                let leftPos = rect.left;
+                if (leftPos + dropdownWidth > window.innerWidth - 12) {
+                    leftPos = window.innerWidth - dropdownWidth - 12;
+                }
+                dropdown.style.left = Math.max(10, leftPos) + 'px';
+            }
+
+            item.addEventListener('mouseenter', positionDropdown);
+            item.addEventListener('focusin', positionDropdown);
+
+            item.addEventListener('mouseleave', function () {
+                dropdown.classList.remove('is-fixed');
+                dropdown.style.top = '';
+                dropdown.style.left = '';
+            });
+
+            // Khi cuộn navbar, nếu dropdown đang mở thì cập nhật lại vị trí
+            navScrollWrap.addEventListener('scroll', function () {
+                if (dropdown.classList.contains('is-fixed')) {
+                    positionDropdown();
+                }
+            });
+        });
+    }
 });
 
 // Toast Helper Function
