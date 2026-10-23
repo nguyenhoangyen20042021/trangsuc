@@ -4,15 +4,955 @@
 
 {% block content %}
 
+<!-- Embedded Styles for Ultra-Luxury LUNA BELLE Design -->
+<style>
+    :root {
+        --lb-rg-primary: #B76E79;
+        --lb-rg-secondary: #C9956C;
+        --lb-rg-dark: #8C4A52;
+        --lb-rg-light: #E8C3C8;
+        --lb-rg-pale: #F7E8EA;
+        --lb-bg-blush: #FDF0F0;
+        --lb-bg-section: #FAFAFA;
+        --lb-text-dark: #2C222E;
+        --lb-text-body: #4A3B4E;
+        --lb-text-muted: #7A6B7E;
+        --lb-border-card: #F0E2E5;
+        --lb-border-soft: #EAE6EB;
+        --lb-footer-bg: #32212B;
+        --lb-shadow-sm: 0 4px 12px rgba(183, 110, 121, 0.06);
+        --lb-shadow-md: 0 8px 24px rgba(183, 110, 121, 0.12);
+        --lb-shadow-lg: 0 16px 36px rgba(183, 110, 121, 0.18);
+        --lb-r-sm: 8px;
+        --lb-r-md: 14px;
+        --lb-r-lg: 20px;
+        --lb-r-xl: 28px;
+        --lb-font-serif: 'Playfair Display', Georgia, serif;
+        --lb-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --lb-ease: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    body {
+        font-family: var(--lb-font-sans);
+        color: var(--lb-text-body);
+        background-color: #FFFFFF;
+    }
+
+    .lb-container {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Buttons */
+    .lb-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.8rem;
+        font-weight: 600;
+        font-size: 0.92rem;
+        border-radius: 50px;
+        transition: var(--lb-ease);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .lb-btn-primary {
+        background: linear-gradient(135deg, var(--lb-rg-primary), var(--lb-rg-secondary));
+        color: white !important;
+        box-shadow: 0 6px 18px rgba(183, 110, 121, 0.35);
+    }
+
+    .lb-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(183, 110, 121, 0.45);
+        filter: brightness(1.05);
+    }
+
+    .lb-btn-outline {
+        background: transparent;
+        border: 1.5px solid var(--lb-rg-primary);
+        color: var(--lb-rg-primary) !important;
+    }
+
+    .lb-btn-outline:hover {
+        background: var(--lb-rg-pale);
+        transform: translateY(-2px);
+    }
+
+    .lb-btn-ghost {
+        background: transparent;
+        color: var(--lb-rg-dark);
+        padding: 0.5rem 1rem;
+    }
+
+    .lb-btn-ghost:hover {
+        color: var(--lb-rg-primary);
+    }
+
+    /* ════════ HERO BANNER ════════ */
+    .lb-hero {
+        position: relative;
+        padding: 3.5rem 2rem;
+        margin: 1.5rem auto 3rem;
+        max-width: 1320px;
+        background: linear-gradient(135deg, #FFF0F2 0%, #FDF6F0 50%, #FAF0F5 100%);
+        border-radius: var(--lb-r-xl);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: center;
+        gap: 2.5rem;
+        box-shadow: var(--lb-shadow-sm);
+        border: 1px solid var(--lb-border-card);
+    }
+
+    .lb-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .lb-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--lb-rg-light);
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--lb-rg-dark);
+        margin-bottom: 1.2rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .lb-hero-title {
+        font-family: var(--lb-font-serif);
+        font-size: 2.8rem;
+        line-height: 1.2;
+        font-weight: 700;
+        color: var(--lb-text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .lb-hero-title span {
+        background: linear-gradient(135deg, var(--lb-rg-primary), var(--lb-rg-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .lb-hero-subtitle {
+        font-size: 1.05rem;
+        color: var(--lb-text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .lb-hero-btns {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .lb-hero-visual {
+        position: relative;
+        width: 100%;
+        height: 420px;
+        border-radius: var(--lb-r-lg);
+        overflow: hidden;
+        box-shadow: var(--lb-shadow-lg);
+    }
+
+    .lb-hero-visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .lb-hero-visual-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 60%, rgba(50, 33, 43, 0.25) 100%);
+    }
+
+    .lb-hero-float-card {
+        position: absolute;
+        bottom: 2rem;
+        left: -1.5rem;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--lb-border-card);
+        padding: 1rem 1.3rem;
+        border-radius: var(--lb-r-md);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--lb-shadow-md);
+        z-index: 3;
+    }
+
+    .lb-hero-float-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--lb-rg-pale);
+        color: var(--lb-rg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .lb-hero-float-text strong {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--lb-text-dark);
+    }
+
+    .lb-hero-float-text span {
+        font-size: 0.78rem;
+        color: var(--lb-text-muted);
+    }
+
+    /* Sparkles */
+    .lb-sparkle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: var(--lb-rg-secondary);
+        border-radius: 50%;
+        box-shadow: 0 0 12px 3px var(--lb-rg-light);
+        animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 0.3;
+            transform: scale(0.8);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.4);
+        }
+    }
+
+    /* ════════ TRUST BAR ════════ */
+    .lb-trust-bar {
+        background: #FFFFFF;
+        padding: 1.8rem 0;
+        border-top: 1px solid var(--lb-border-soft);
+        border-bottom: 1px solid var(--lb-border-soft);
+        margin-bottom: 3.5rem;
+    }
+
+    .lb-trust-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .lb-trust-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .lb-trust-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--lb-bg-blush);
+        color: var(--lb-rg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+
+    .lb-trust-text h5 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--lb-text-dark);
+        margin: 0 0 0.15rem;
+    }
+
+    .lb-trust-text p {
+        font-size: 0.78rem;
+        color: var(--lb-text-muted);
+        margin: 0;
+    }
+
+    /* ════════ SECTION HEADERS ════════ */
+    .lb-section {
+        padding: 4rem 0;
+    }
+
+    .lb-section-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--lb-rg-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .lb-section-title {
+        font-family: var(--lb-font-serif);
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: var(--lb-text-dark);
+        margin-bottom: 0.6rem;
+    }
+
+    .lb-section-subtitle {
+        font-size: 0.95rem;
+        color: var(--lb-text-muted);
+        max-width: 600px;
+    }
+
+    .lb-text-center {
+        text-align: center;
+    }
+
+    .lb-text-center .lb-section-subtitle {
+        margin: 0 auto;
+    }
+
+    /* ════════ SHOP LAYOUT (GRID + SIDEBAR) ════════ */
+    .lb-shop-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 2.5rem;
+        align-items: start;
+    }
+
+    .lb-products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--lb-border-soft);
+    }
+
+    .lb-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.8rem;
+    }
+
+    /* Product Card */
+    .lb-product-card {
+        background: #FFFFFF;
+        border: 1px solid var(--lb-border-card);
+        border-radius: var(--lb-r-lg);
+        overflow: hidden;
+        transition: var(--lb-ease);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .lb-product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--lb-shadow-lg);
+        border-color: var(--lb-rg-light);
+    }
+
+    .lb-product-thumb {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        background: #FBF9FA;
+    }
+
+    .lb-product-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .lb-product-card:hover .lb-product-thumb img {
+        transform: scale(1.08);
+    }
+
+    .lb-discount-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: linear-gradient(135deg, #E65C00, #F9D423);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.25rem 0.65rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        z-index: 2;
+    }
+
+    .lb-wishlist-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(4px);
+        border: none;
+        color: var(--lb-text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--lb-ease);
+        z-index: 2;
+    }
+
+    .lb-wishlist-btn:hover {
+        background: #FFFFFF;
+        color: #E63946;
+        transform: scale(1.1);
+    }
+
+    .lb-product-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(44, 34, 46, 0.25);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: var(--lb-ease);
+    }
+
+    .lb-product-card:hover .lb-product-overlay {
+        opacity: 1;
+    }
+
+    .lb-quick-view-btn {
+        background: #FFFFFF;
+        color: var(--lb-text-dark);
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        transition: var(--lb-ease);
+    }
+
+    .lb-quick-view-btn:hover {
+        background: var(--lb-rg-primary);
+        color: white;
+    }
+
+    .lb-product-info {
+        padding: 1.3rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .lb-product-cat {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--lb-rg-primary);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.3rem;
+    }
+
+    .lb-product-name {
+        font-family: var(--lb-font-serif);
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--lb-text-dark);
+        margin: 0 0 0.5rem;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .lb-product-name a {
+        color: inherit;
+        text-decoration: none;
+        transition: var(--lb-ease);
+    }
+
+    .lb-product-name a:hover {
+        color: var(--lb-rg-primary);
+    }
+
+    .lb-stars {
+        color: #FFC107;
+        font-size: 0.78rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .lb-product-material {
+        font-size: 0.8rem;
+        color: var(--lb-text-muted);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .lb-product-pricing {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.8rem;
+        border-top: 1px dashed var(--lb-border-soft);
+    }
+
+    .lb-price-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .lb-price-label {
+        font-size: 0.68rem;
+        color: var(--lb-text-muted);
+        text-transform: uppercase;
+    }
+
+    .lb-price-current {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--lb-rg-primary);
+    }
+
+    .lb-price-original {
+        font-size: 0.82rem;
+        color: var(--lb-text-muted);
+        text-decoration: line-through;
+        margin-left: 0.3rem;
+    }
+
+    .lb-btn-detail {
+        padding: 0.45rem 0.9rem;
+        border-radius: 50px;
+        background: var(--lb-rg-pale);
+        color: var(--lb-rg-dark);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--lb-ease);
+    }
+
+    .lb-btn-detail:hover {
+        background: var(--lb-rg-primary);
+        color: white;
+    }
+
+    /* ════════ SIDEBAR FILTER ════════ */
+    .lb-sidebar-filter {
+        background: var(--lb-bg-blush);
+        border: 1.5px solid var(--lb-border-card);
+        border-radius: var(--lb-r-lg);
+        padding: 1.8rem;
+        position: sticky;
+        top: 2rem;
+        box-shadow: var(--lb-shadow-sm);
+    }
+
+    .lb-filter-title {
+        font-family: var(--lb-font-serif);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--lb-text-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid var(--lb-rg-light);
+    }
+
+    .lb-filter-group {
+        margin-bottom: 1.6rem;
+    }
+
+    .lb-filter-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--lb-text-dark);
+        margin-bottom: 0.8rem;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Range Slider */
+    .lb-price-slider-wrap {
+        padding: 0 0.2rem;
+    }
+
+    .lb-price-slider {
+        width: 100%;
+        accent-color: var(--lb-rg-primary);
+        cursor: pointer;
+    }
+
+    .lb-price-values {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        color: var(--lb-text-dark);
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    /* Checkbox list */
+    .lb-filter-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .lb-checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.88rem;
+        color: var(--lb-text-body);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .lb-checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--lb-rg-primary);
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .lb-checkbox-item:hover {
+        color: var(--lb-rg-primary);
+    }
+
+    .lb-btn-apply-filter {
+        width: 100%;
+        background: linear-gradient(135deg, var(--lb-rg-dark), var(--lb-text-dark));
+        color: white !important;
+        padding: 0.85rem;
+        border-radius: var(--lb-r-md);
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: var(--lb-ease);
+        box-shadow: 0 4px 12px rgba(44, 34, 46, 0.25);
+    }
+
+    .lb-btn-apply-filter:hover {
+        background: var(--lb-rg-primary);
+        transform: translateY(-2px);
+    }
+
+    /* ════════ PROMO BANNER ════════ */
+    .lb-promo-banner {
+        background: linear-gradient(135deg, #B76E79 0%, #8C4A52 100%);
+        border-radius: var(--lb-r-xl);
+        padding: 3.5rem 3rem;
+        color: white;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--lb-shadow-lg);
+    }
+
+    .lb-promo-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .lb-promo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .lb-promo-title {
+        font-family: var(--lb-font-serif);
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+    }
+
+    .lb-promo-desc {
+        font-size: 0.98rem;
+        opacity: 0.9;
+        max-width: 650px;
+        margin-bottom: 1.8rem;
+        line-height: 1.6;
+    }
+
+    .lb-promo-code-box {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        border: 2px dashed rgba(255, 255, 255, 0.4);
+        border-radius: var(--lb-r-lg);
+        padding: 1.8rem 2.2rem;
+        text-align: center;
+        min-width: 240px;
+    }
+
+    .lb-promo-code-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.85;
+        margin-bottom: 0.4rem;
+    }
+
+    .lb-promo-code-value {
+        font-family: monospace;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 3px;
+        color: #FFFFFF;
+        margin-bottom: 0.4rem;
+    }
+
+    .lb-promo-code-note {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+
+    /* ════════ FOOTER ════════ */
+    .lb-footer {
+        background: var(--lb-footer-bg);
+        color: #E0D6DF;
+        padding: 5rem 0 2rem;
+        border-top: 4px solid var(--lb-rg-primary);
+        font-size: 0.9rem;
+    }
+
+    .lb-footer-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+        gap: 3rem;
+        margin-bottom: 4rem;
+    }
+
+    .lb-footer-brand p {
+        color: #A898A9;
+        line-height: 1.7;
+        margin-top: 1.2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.88rem;
+    }
+
+    .lb-footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        margin-bottom: 0.8rem;
+        color: #D2C7D3;
+        font-size: 0.88rem;
+    }
+
+    .lb-footer-contact-item i {
+        color: var(--lb-rg-primary);
+        margin-top: 0.2rem;
+    }
+
+    .lb-footer-heading {
+        font-family: var(--lb-font-serif);
+        font-size: 1.15rem;
+        color: #FFFFFF;
+        font-weight: 700;
+        margin-bottom: 1.4rem;
+        position: relative;
+        padding-bottom: 0.6rem;
+    }
+
+    .lb-footer-heading::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 35px;
+        height: 2px;
+        background: var(--lb-rg-primary);
+    }
+
+    .lb-footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .lb-footer-links li {
+        margin-bottom: 0.7rem;
+    }
+
+    .lb-footer-links a {
+        color: #BBB0BD;
+        text-decoration: none;
+        transition: var(--lb-ease);
+    }
+
+    .lb-footer-links a:hover {
+        color: var(--lb-rg-light);
+        padding-left: 4px;
+    }
+
+    .lb-newsletter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .lb-newsletter-input {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 0.85rem 1.2rem;
+        border-radius: 50px;
+        color: white;
+        font-size: 0.88rem;
+        outline: none;
+        transition: var(--lb-ease);
+    }
+
+    .lb-newsletter-input:focus {
+        border-color: var(--lb-rg-primary);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .lb-social-links {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+
+    .lb-social-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: var(--lb-ease);
+    }
+
+    .lb-social-icon:hover {
+        background: var(--lb-rg-primary);
+        transform: translateY(-3px);
+    }
+
+    .lb-footer-bottom {
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+        color: #8C7C8D;
+        font-size: 0.82rem;
+    }
+
+    /* ════════ RESPONSIVE ════════ */
+    @media (max-width: 1024px) {
+        .lb-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .lb-hero-visual {
+            height: 320px;
+        }
+
+        .lb-shop-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .lb-sidebar-filter {
+            position: static;
+            order: -1;
+            margin-bottom: 2rem;
+        }
+
+        .lb-footer-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .lb-promo-banner {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .lb-promo-desc {
+            margin: 0 auto 1.8rem;
+        }
+
+        .lb-promo-code-box {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .lb-hero-title {
+            font-size: 2rem;
+        }
+
+        .lb-footer-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .lb-promo-banner {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+
 <!-- ═══════════════════════════════ HERO BANNER ═══════════════════════════════ -->
 <section class="lb-hero" aria-label="Hero Banner">
-    <div class="lb-hero-bg-pattern"></div>
     <!-- Sparkle particles -->
-    <div class="lb-sparkle"></div>
-    <div class="lb-sparkle"></div>
-    <div class="lb-sparkle"></div>
-    <div class="lb-sparkle"></div>
-    <div class="lb-sparkle"></div>
+    <div class="lb-sparkle" style="top:15%; left:10%;"></div>
+    <div class="lb-sparkle" style="top:65%; left:45%;"></div>
+    <div class="lb-sparkle" style="top:25%; left:85%;"></div>
+    <div class="lb-sparkle" style="top:80%; left:20%;"></div>
 
     <!-- Hero Content -->
     <div class="lb-hero-content">
@@ -25,33 +965,36 @@
             <span>Xu Hướng Trang Sức Hiện Đại</span>
         </h1>
         <p class="lb-hero-subtitle">
-            Lấp lánh như kim cương thật · Giá cả phải chăng · Bảo hành trọn đời
+            Lấp lánh vượt trội như kim cương tự nhiên · Giá cả hợp lý · Bảo hành trọn đời
         </p>
         <div class="lb-hero-btns">
             <a href="{{ url_for('products') }}" class="lb-btn lb-btn-primary" id="heroCTA">
                 <i class="fa-solid fa-gem"></i> Khám Phá Ngay
             </a>
             <a href="{{ url_for('ai_consultant') }}" class="lb-btn lb-btn-outline" id="heroAI">
-                <i class="fa-solid fa-robot"></i> Tư Vấn Miễn Phí
+                <i class="fa-solid fa-robot"></i> Tư Vấn AI LunaStylist
             </a>
         </div>
     </div>
 
     <!-- Hero Visual Side -->
-    <div class="lb-hero-visual" aria-hidden="true">
-        <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&auto=format&fit=crop&q=85"
-            alt="Trang sức Moissanite Luna Belle" loading="eager">
-        <div class="lb-hero-visual-overlay"></div>
-    </div>
-
-    <!-- Floating Card -->
-    <div class="lb-hero-float-card" aria-hidden="true">
-        <div class="lb-hero-float-icon">
-            <i class="fa-solid fa-shield-halved"></i>
+    <div style="position:relative;">
+        <div class="lb-hero-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&auto=format&fit=crop&q=85"
+                alt="Trang sức Moissanite Luna Belle" loading="eager"
+                onerror="this.src='https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=900&auto=format&fit=crop&q=85';">
+            <div class="lb-hero-visual-overlay"></div>
         </div>
-        <div class="lb-hero-float-text">
-            <strong>Bảo Hành Trọn Đời</strong>
-            <span>Chính sách 1-đổi-1 trong 30 ngày</span>
+
+        <!-- Floating Card -->
+        <div class="lb-hero-float-card" aria-hidden="true">
+            <div class="lb-hero-float-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="lb-hero-float-text">
+                <strong>Bảo Hành Trọn Đời</strong>
+                <span>Chính sách 1-đổi-1 trong 30 ngày</span>
+            </div>
         </div>
     </div>
 </section>
@@ -64,28 +1007,28 @@
                 <div class="lb-trust-icon"><i class="fa-solid fa-gem"></i></div>
                 <div class="lb-trust-text">
                     <h5>Moissanite Chứng Nhận</h5>
-                    <p>100% đá thật, kiểm định quốc tế</p>
+                    <p>100% kiểm định GRA quốc tế</p>
                 </div>
             </div>
             <div class="lb-trust-item">
                 <div class="lb-trust-icon"><i class="fa-solid fa-truck-fast"></i></div>
                 <div class="lb-trust-text">
                     <h5>Giao Hàng Toàn Quốc</h5>
-                    <p>Miễn phí cho đơn từ 2.000.000 ₫</p>
+                    <p>Miễn phí đơn từ 2.000.000 ₫</p>
                 </div>
             </div>
             <div class="lb-trust-item">
                 <div class="lb-trust-icon"><i class="fa-solid fa-rotate-left"></i></div>
                 <div class="lb-trust-text">
                     <h5>Đổi Trả 30 Ngày</h5>
-                    <p>Không hài lòng, hoàn tiền 100%</p>
+                    <p>Cam kết hoàn tiền 100%</p>
                 </div>
             </div>
             <div class="lb-trust-item">
                 <div class="lb-trust-icon"><i class="fa-solid fa-headset"></i></div>
                 <div class="lb-trust-text">
                     <h5>Hỗ Trợ 24/7</h5>
-                    <p>Hotline & AI tư vấn mọi lúc</p>
+                    <p>Hotline & Trợ lý AI sẵn sàng</p>
                 </div>
             </div>
             <div class="lb-trust-item">
@@ -104,17 +1047,18 @@
     <div class="lb-container">
         <div class="lb-section-tag"><i class="fa-solid fa-star"></i> Danh Mục Nổi Bật</div>
         <h2 class="lb-section-title">Bộ Sưu Tập Tuyển Chọn</h2>
-        <p class="lb-section-subtitle">Từ Moissanite tinh tế đến Lab Grown Diamond rực rỡ – mỗi viên đá kể một câu
-            chuyện.</p>
+        <p class="lb-section-subtitle">Từ Moissanite tinh tế đến Lab Grown Diamond rực rỡ – mỗi thiết kế kể một câu
+            chuyện đẳng cấp.</p>
+
         <div
-            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem;margin-top:2.5rem;">
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1.5rem;margin-top:2.5rem;">
             {% for cat in nav_categories %}
             <a href="{{ url_for('products', category=cat.Slug) }}"
-                style="display:flex;flex-direction:column;align-items:center;gap:0.8rem;padding:1.8rem 1rem;background:white;border-radius:var(--lb-r-lg);border:1.5px solid var(--lb-border-card);box-shadow:var(--lb-shadow-sm);transition:var(--lb-ease);text-decoration:none;color:inherit;"
-                onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='var(--lb-shadow-lg)';this.style.borderColor='var(--lb-rg-pale)';"
+                style="display:flex;flex-direction:column;align-items:center;gap:0.9rem;padding:1.8rem 1rem;background:white;border-radius:var(--lb-r-lg);border:1.5px solid var(--lb-border-card);box-shadow:var(--lb-shadow-sm);transition:var(--lb-ease);text-decoration:none;color:inherit;"
+                onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='var(--lb-shadow-md)';this.style.borderColor='var(--lb-rg-light)';"
                 onmouseout="this.style.transform='';this.style.boxShadow='var(--lb-shadow-sm)';this.style.borderColor='var(--lb-border-card)';">
                 <div
-                    style="width:68px;height:68px;border-radius:50%;overflow:hidden;border:2px solid var(--lb-rg-pale);box-shadow:0 4px 12px rgba(183,110,121,0.18);background:var(--lb-blush-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid var(--lb-rg-light);box-shadow:0 4px 12px rgba(183,110,121,0.18);background:var(--lb-bg-blush);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <img src="{{ cat.HinhAnhDaiDien or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=200&auto=format&fit=crop&q=80' }}"
                         alt="{{ cat.TenDanhMuc }}"
                         style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;"
@@ -122,8 +1066,9 @@
                         loading="lazy">
                 </div>
                 <span
-                    style="font-family:var(--lb-font-serif);font-weight:600;font-size:0.92rem;color:var(--lb-text-dark);text-align:center;">{{
-                    cat.TenDanhMuc }}</span>
+                    style="font-family:var(--lb-font-serif);font-weight:600;font-size:0.95rem;color:var(--lb-text-dark);text-align:center;">
+                    {{ cat.TenDanhMuc }}
+                </span>
             </a>
             {% endfor %}
         </div>
@@ -131,18 +1076,18 @@
 </section>
 
 <!-- ═══════════════════════════════ MAIN: PRODUCTS + SIDEBAR ═══════════════════════════════ -->
-<section class="lb-products-section" id="sanpham">
+<section class="lb-section" id="sanpham">
     <div class="lb-container">
         <div class="lb-shop-layout">
 
-            <!-- LEFT: Product Grid -->
+            <!-- LEFT COLUMN: Product Grid -->
             <div>
                 <div class="lb-products-header">
                     <div>
                         <div class="lb-section-tag"><i class="fa-solid fa-fire"></i> Bán Chạy Nhất</div>
                         <h2 class="lb-section-title" style="margin-bottom:0;">Sản Phẩm Nổi Bật</h2>
                     </div>
-                    <a href="{{ url_for('products') }}" class="lb-btn lb-btn-ghost lb-btn-sm">
+                    <a href="{{ url_for('products') }}" class="lb-btn lb-btn-ghost">
                         Xem tất cả <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 </div>
@@ -151,7 +1096,8 @@
                     {% for p in bestseller_products %}
                     <article class="lb-product-card" id="product-{{ p.MaSanPham }}">
                         <div class="lb-product-thumb">
-                            <img src="{{ p.HinhAnhChinh }}" alt="{{ p.TenSanPham }}" loading="lazy">
+                            <img src="{{ p.HinhAnhChinh }}" alt="{{ p.TenSanPham }}" loading="lazy"
+                                onerror="this.src='https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500&auto=format&fit=crop&q=80';">
 
                             <!-- Discount Badge -->
                             {% if p.GiaGiam and p.GiaGiam > 0 %}
@@ -162,7 +1108,7 @@
                             <span class="lb-discount-badge">GIẢM GIÁ</span>
                             {% endif %}
 
-                            <!-- Wishlist -->
+                            <!-- Wishlist Button -->
                             <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ p.MaSanPham }}"
                                 title="Thêm vào yêu thích" aria-label="Thêm vào danh sách yêu thích">
                                 <i class="fa-regular fa-heart"></i>
@@ -175,6 +1121,7 @@
                                 </a>
                             </div>
                         </div>
+
                         <div class="lb-product-info">
                             <div class="lb-product-cat">{{ p.TenDanhMuc }}</div>
                             <h3 class="lb-product-name">
@@ -186,23 +1133,26 @@
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star-half-stroke"></i>
-                                <span style="font-size:0.72rem;color:var(--lb-text-muted);margin-left:4px;">({{
-                                    (p.MaSanPham * 7 % 80) + 20 }})</span>
+                                <span style="font-size:0.72rem;color:var(--lb-text-muted);margin-left:4px;">
+                                    ({{ (p.MaSanPham * 7 % 80) + 20 }})
+                                </span>
                             </div>
                             <div class="lb-product-material">
-                                <i class="fa-solid fa-gem" style="color:var(--lb-rg-light);"></i>
+                                <i class="fa-solid fa-gem" style="color:var(--lb-rg-primary);"></i>
                                 {{ p.ChatLieu }}{% if p.PhongCach %} · {{ p.PhongCach }}{% endif %}
                             </div>
                             <div class="lb-product-pricing">
                                 <div class="lb-price-group">
                                     <span class="lb-price-label">Giá từ</span>
-                                    <span class="lb-price-current">{{ (p.GiaMin or p.GiaCoSo)|currency }}</span>
-                                    {% if p.GiaGiam and p.GiaGiam > 0 %}
-                                    <span class="lb-price-original">{{ p.GiaCoSo|currency }}</span>
-                                    {% endif %}
+                                    <div>
+                                        <span class="lb-price-current">{{ (p.GiaMin or p.GiaCoSo)|currency }}</span>
+                                        {% if p.GiaGiam and p.GiaGiam > 0 %}
+                                        <span class="lb-price-original">{{ p.GiaCoSo|currency }}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-btn-detail">
-                                    <i class="fa-solid fa-eye"></i> Chi Tiết
+                                    Chi Tiết
                                 </a>
                             </div>
                         </div>
@@ -210,14 +1160,14 @@
                     {% endfor %}
                 </div>
 
-                <!-- Featured Products Section -->
-                <div style="margin-top:3rem;">
+                <!-- Featured Season Products -->
+                <div style="margin-top:4rem;">
                     <div class="lb-products-header">
                         <div>
                             <div class="lb-section-tag"><i class="fa-solid fa-sparkles"></i> Mới Nhất</div>
-                            <h2 class="lb-section-title" style="margin-bottom:0;">Sản Phẩm Nổi Bật Mùa Này</h2>
+                            <h2 class="lb-section-title" style="margin-bottom:0;">Bộ Sưu Tập Mùa Này</h2>
                         </div>
-                        <a href="{{ url_for('products', sort='newest') }}" class="lb-btn lb-btn-ghost lb-btn-sm">
+                        <a href="{{ url_for('products', sort='newest') }}" class="lb-btn lb-btn-ghost">
                             Xem thêm <i class="fa-solid fa-arrow-right"></i>
                         </a>
                     </div>
@@ -225,10 +1175,11 @@
                         {% for p in featured_products %}
                         <article class="lb-product-card">
                             <div class="lb-product-thumb">
-                                <img src="{{ p.HinhAnhChinh }}" alt="{{ p.TenSanPham }}" loading="lazy">
+                                <img src="{{ p.HinhAnhChinh }}" alt="{{ p.TenSanPham }}" loading="lazy"
+                                    onerror="this.src='https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&auto=format&fit=crop&q=80';">
                                 <span class="lb-discount-badge"
-                                    style="background:linear-gradient(135deg,#B76E79,#C9956C);">
-                                    <i class="fa-solid fa-star" style="font-size:0.62rem;"></i> Nổi Bật
+                                    style="background: linear-gradient(135deg, var(--lb-rg-primary), var(--lb-rg-secondary));">
+                                    <i class="fa-solid fa-star" style="font-size:0.65rem;"></i> NỔI BẬT
                                 </span>
                                 <button class="lb-wishlist-btn wishlist-toggle-btn" data-product-id="{{ p.MaSanPham }}"
                                     aria-label="Yêu thích">
@@ -249,11 +1200,12 @@
                                     <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                                     <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                                     <i class="fa-solid fa-star"></i>
-                                    <span style="font-size:0.72rem;color:var(--lb-text-muted);margin-left:4px;">({{
-                                        (p.MaSanPham * 11 % 60) + 30 }})</span>
+                                    <span style="font-size:0.72rem;color:var(--lb-text-muted);margin-left:4px;">
+                                        ({{ (p.MaSanPham * 11 % 60) + 30 }})
+                                    </span>
                                 </div>
                                 <div class="lb-product-material">
-                                    <i class="fa-solid fa-gem" style="color:var(--lb-rg-light);"></i>
+                                    <i class="fa-solid fa-gem" style="color:var(--lb-rg-primary);"></i>
                                     {{ p.ChatLieu }}{% if p.DoiTuong %} · {{ p.DoiTuong }}{% endif %}
                                 </div>
                                 <div class="lb-product-pricing">
@@ -262,7 +1214,7 @@
                                         <span class="lb-price-current">{{ (p.GiaMin or p.GiaCoSo)|currency }}</span>
                                     </div>
                                     <a href="{{ url_for('product_detail', slug=p.Slug) }}" class="lb-btn-detail">
-                                        <i class="fa-solid fa-eye"></i> Chi Tiết
+                                        Chi Tiết
                                     </a>
                                 </div>
                             </div>
@@ -272,115 +1224,105 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Sidebar Filter -->
-            <aside class="lb-sidebar" id="filterSidebar" aria-label="Bộ lọc tìm kiếm">
-                <div class="lb-sidebar-title">
-                    <i class="fa-solid fa-sliders"></i>
+            <!-- RIGHT COLUMN: Sidebar Filter -->
+            <aside class="lb-sidebar-filter" aria-label="Bộ lọc sản phẩm">
+                <div class="lb-filter-title">
+                    <i class="fa-solid fa-sliders" style="color:var(--lb-rg-primary);"></i>
                     BỘ LỌC TÌM KIẾM
                 </div>
 
                 <form action="{{ url_for('products') }}" method="GET" id="filterForm">
-
-                    <!-- Price Range -->
+                    <!-- Filter 1: Price Range -->
                     <div class="lb-filter-group">
-                        <div class="lb-filter-label">
-                            <i class="fa-solid fa-tag"></i> Khoảng Giá
-                        </div>
-                        <div class="lb-price-range-display">
-                            <span id="priceMin">500.000 ₫</span>
-                            <span id="priceMax">50.000.000 ₫</span>
-                        </div>
-                        <input type="range" class="lb-slider" id="priceSlider" min="500000" max="100000000"
-                            step="500000" value="50000000" name="max_price" aria-label="Giá tối đa">
-                    </div>
-
-                    <!-- Loại Trang Sức -->
-                    <div class="lb-filter-group">
-                        <div class="lb-filter-label">
-                            <i class="fa-solid fa-ring"></i> Loại Trang Sức
-                        </div>
-                        <div class="lb-checkbox-list">
-                            <label class="lb-checkbox-item"><input type="checkbox" name="type" value="nhan">
-                                Nhẫn</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="type" value="day-chuyen"> Dây
-                                Chuyền</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="type" value="bong-tai"> Bông
-                                Tai</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="type" value="lac-tay"> Lắc Tay
-                                / Vòng Tay</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="type" value="set"> Bộ Trang Sức
-                                Set</label>
+                        <label class="lb-filter-label">Mức Giá Tối Đa</label>
+                        <div class="lb-price-slider-wrap">
+                            <input type="range" class="lb-price-slider" id="priceSlider" name="max_price" min="500000"
+                                max="50000000" step="500000" value="25000000">
+                            <div class="lb-price-values">
+                                <span>500.000 ₫</span>
+                                <span id="priceMax" style="color:var(--lb-rg-primary);">25.000.000 ₫</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Chất Liệu -->
+                    <!-- Filter 2: Jewelry Type -->
                     <div class="lb-filter-group">
-                        <div class="lb-filter-label">
-                            <i class="fa-solid fa-coins"></i> Chất Liệu
-                        </div>
-                        <div class="lb-checkbox-list">
-                            <label class="lb-checkbox-item"><input type="checkbox" name="material" value="bac-925"> Bạc
-                                925</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="material" value="vang-18k">
-                                Vàng 18K</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="material" value="vang-trang">
-                                Vàng Trắng 18K</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="material" value="vang-hong">
-                                Vàng Hồng 18K</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="material" value="platinum">
-                                Platinum</label>
+                        <label class="lb-filter-label">Loại Trang Sức</label>
+                        <div class="lb-filter-checkboxes">
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="type" value="nhan"> Nhẫn Trang Sức
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="type" value="day-chuyen"> Dây Chuyền & Mặt Dây
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="type" value="bong-tai"> Bông Tai Tinh Tế
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="type" value="vong-tay"> Vòng Tay / Lắc Tay
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Loại Đá -->
+                    <!-- Filter 3: Material -->
                     <div class="lb-filter-group">
-                        <div class="lb-filter-label">
-                            <i class="fa-solid fa-gem"></i> Loại Đá
-                        </div>
-                        <div class="lb-checkbox-list">
-                            <label class="lb-checkbox-item"><input type="checkbox" name="stone" value="moissanite"> Đá
-                                Moissanite</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="stone" value="lab-diamond"> Lab
-                                Grown Diamond</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="stone" value="da-phong-thuy">
-                                Đá Phong Thủy</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="stone" value="khong-da"> Không
-                                đá</label>
+                        <label class="lb-filter-label">Chất Liệu Khung</label>
+                        <div class="lb-filter-checkboxes">
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="material" value="bac-925"> Bạc Ý 925 Cao Cấp
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="material" value="vang-14k"> Vàng 14K (Trắng/Vàng)
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="material" value="vang-18k"> Vàng 18K Quý Phái
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="material" value="vang-hong"> Vàng Hồng Rose Gold
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Thương Hiệu / Phong Cách -->
+                    <!-- Filter 4: Gem Type -->
                     <div class="lb-filter-group">
-                        <div class="lb-filter-label">
-                            <i class="fa-solid fa-palette"></i> Phong Cách
-                        </div>
-                        <div class="lb-checkbox-list">
-                            <label class="lb-checkbox-item"><input type="checkbox" name="style" value="tinh-te"> Tinh Tế
-                                · Thanh Lịch</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="style" value="co-dien"> Cổ Điển
-                                · Vintage</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="style" value="hien-dai"> Hiện
-                                Đại · Minimalist</label>
-                            <label class="lb-checkbox-item"><input type="checkbox" name="style" value="luxury"> Luxury ·
-                                Đẳng Cấp</label>
+                        <label class="lb-filter-label">Loại Đá Chủ</label>
+                        <div class="lb-filter-checkboxes">
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="gem" value="moissanite" checked> Đá Moissanite Premium
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="gem" value="lab-diamond"> Lab Grown Diamond
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="gem" value="da-phong-thuy"> Đá Phong Thủy Tự Nhiên
+                            </label>
                         </div>
                     </div>
 
-                    <button type="submit" class="lb-apply-btn" id="applyFilter">
+                    <!-- Filter 5: Brand / Line -->
+                    <div class="lb-filter-group">
+                        <label class="lb-filter-label">Thương Hiệu</label>
+                        <div class="lb-filter-checkboxes">
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="brand" value="luna-belle" checked> LUNA BELLE Signature
+                            </label>
+                            <label class="lb-checkbox-item">
+                                <input type="checkbox" name="brand" value="luna-heritage"> Luna Heritage Edition
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="lb-btn-apply-filter">
                         <i class="fa-solid fa-filter"></i> ÁP DỤNG BỘ LỌC
                     </button>
-                    <a href="{{ url_for('products') }}"
-                        style="display:block;text-align:center;margin-top:0.75rem;font-size:0.78rem;color:var(--lb-text-muted);text-decoration:underline;cursor:pointer;">
-                        Xóa bộ lọc
-                    </a>
                 </form>
             </aside>
 
-        </div><!-- end .lb-shop-layout -->
+        </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════ PROMO VOUCHER ═══════════════════════════════ -->
+<!-- ═══════════════════════════════ PROMO VOUCHER BANNER ═══════════════════════════════ -->
 <section style="padding:0 0 4rem;">
     <div class="lb-container">
         <div class="lb-promo-banner">
@@ -390,18 +1332,17 @@
                 </div>
                 <div class="lb-promo-title">Giảm Ngay 15% Cho Đơn Hàng Đầu Tiên</div>
                 <p class="lb-promo-desc">
-                    Nhập mã <strong
-                        style="color:rgba(255,255,255,0.95);font-size:1.15rem;letter-spacing:1px;">LUNABELLE15</strong>
-                    khi thanh toán để được giảm ngay 15% (tối đa 2.000.000 ₫).
-                    Tặng kèm hộp quà nhung cao cấp và thiệp chúc mừng thủ công.
+                    Nhập mã <strong style="color:#FFF;font-size:1.15rem;letter-spacing:1px;">LUNABELLE15</strong>
+                    khi thanh toán để được nhận ngay giảm giá 15% (tối đa 2.000.000 ₫).
+                    Tặng kèm hộp quà nhung cao cấp và thiệp chúc mừng thủ công tinh xảo.
                 </p>
-                <div style="display:flex;gap:1rem;flex-wrap:wrap;position:relative;z-index:1;">
-                    <button class="lb-btn lb-btn-outline" onclick="navigator.clipboard.writeText('LUNABELLE15');"
-                        style="background:rgba(255,255,255,0.22);color:white;border-color:rgba(255,255,255,0.5);">
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;position:relative;z-index:2;">
+                    <button class="lb-btn lb-btn-outline" onclick="copyPromoCode()" id="copyCodeBtn"
+                        style="background:rgba(255,255,255,0.18);color:white !important;border-color:rgba(255,255,255,0.6);">
                         <i class="fa-regular fa-copy"></i> Sao Chép Mã
                     </button>
                     <a href="{{ url_for('products') }}" class="lb-btn lb-btn-primary"
-                        style="background:rgba(255,255,255,0.25);backdrop-filter:blur(8px);">
+                        style="background:white;color:var(--lb-rg-dark) !important;">
                         Mua Sắm Ngay <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 </div>
@@ -424,44 +1365,47 @@
                 <div class="lb-section-tag"><i class="fa-solid fa-heart"></i> Câu Chuyện LUNA BELLE</div>
                 <h2 class="lb-section-title">Vẻ Đẹp Lấp Lánh Như Ánh Trăng</h2>
                 <p style="color:var(--lb-text-muted);font-size:0.96rem;line-height:1.8;margin-bottom:1.3rem;">
-                    LUNA BELLE ra đời từ niềm đam mê mãnh liệt với vẻ đẹp của người phụ nữ Việt Nam.
-                    Chúng tôi tin rằng mỗi người phụ nữ xứng đáng sở hữu những viên đá lấp lánh nhất –
-                    không cần phải trả giá của kim cương tự nhiên.
+                    LUNA BELLE ra đời từ niềm đam mê mãnh liệt với tôn vinh nét quyến rũ độc bản của phụ nữ. Chúng tôi
+                    tin rằng mỗi người phụ nữ đều xứng đáng tỏa sáng rực rỡ với những viên đá đạt độ hoàn hảo đỉnh cao –
+                    mà không cần trả mức chi phí đắt đỏ của kim cương tự nhiên.
                 </p>
                 <p style="color:var(--lb-text-muted);font-size:0.96rem;line-height:1.8;margin-bottom:2rem;">
-                    Đá Moissanite của chúng tôi có độ sáng vượt trội hơn kim cương, chỉ số cứng 9.25/10
-                    trên thang Mohs, và được chứng nhận bởi các tổ chức quốc tế uy tín.
+                    Đá Moissanite LUNA BELLE đạt chỉ số chiết suất khúc xạ cao hơn kim cương (2.65 - 2.69), độ cứng
+                    9.25/10 Mohs, được cắt gọt tinh xảo bởi các nghệ nhân giàu kinh nghiệm và đi kèm chứng nhận quốc tế.
                 </p>
+
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;">
                     <div style="border-left:3px solid var(--lb-rg-primary);padding-left:1rem;">
                         <div
-                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;background:var(--lb-rg-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;color:var(--lb-rg-primary);">
                             10.000+</div>
-                        <p style="font-size:0.83rem;color:var(--lb-text-muted);">Khách hàng hài lòng</p>
+                        <p style="font-size:0.83rem;color:var(--lb-text-muted);margin:0;">Khách hàng tin dùng</p>
                     </div>
                     <div style="border-left:3px solid var(--lb-rg-primary);padding-left:1rem;">
                         <div
-                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;background:var(--lb-rg-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;color:var(--lb-rg-primary);">
                             500+</div>
-                        <p style="font-size:0.83rem;color:var(--lb-text-muted);">Mẫu trang sức độc quyền</p>
+                        <p style="font-size:0.83rem;color:var(--lb-text-muted);margin:0;">Mẫu thiết kế độc quyền</p>
                     </div>
                     <div style="border-left:3px solid var(--lb-rg-primary);padding-left:1rem;">
                         <div
-                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;background:var(--lb-rg-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;color:var(--lb-rg-primary);">
                             5 Năm</div>
-                        <p style="font-size:0.83rem;color:var(--lb-text-muted);">Kinh nghiệm trong ngành</p>
+                        <p style="font-size:0.83rem;color:var(--lb-text-muted);margin:0;">Thương hiệu uy tín</p>
                     </div>
                     <div style="border-left:3px solid var(--lb-rg-primary);padding-left:1rem;">
                         <div
-                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;background:var(--lb-rg-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                            style="font-family:var(--lb-font-serif);font-size:2rem;font-weight:700;color:var(--lb-rg-primary);">
                             4.9★</div>
-                        <p style="font-size:0.83rem;color:var(--lb-text-muted);">Đánh giá trung bình</p>
+                        <p style="font-size:0.83rem;color:var(--lb-text-muted);margin:0;">Đánh giá hài lòng</p>
                     </div>
                 </div>
+
                 <a href="{{ url_for('ai_consultant') }}" class="lb-btn lb-btn-primary">
-                    <i class="fa-solid fa-robot"></i> Khám Phá Trợ Lý AI LunaStylist
+                    <i class="fa-solid fa-robot"></i> Trải Nghiệm Trợ Lý Stylist AI
                 </a>
             </div>
+
             <div style="position:relative;">
                 <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=700&auto=format&fit=crop&q=80"
                     alt="Nghệ nhân chế tác trang sức Luna Belle"
@@ -469,12 +1413,12 @@
                     loading="lazy">
                 <div
                     style="position:absolute;bottom:-18px;left:-18px;background:white;border:1px solid var(--lb-border-card);border-radius:var(--lb-r-lg);padding:1.1rem 1.3rem;display:flex;align-items:center;gap:0.9rem;box-shadow:var(--lb-shadow-md);">
-                    <i class="fa-solid fa-certificate"
-                        style="font-size:2.2rem;background:var(--lb-rg-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></i>
+                    <i class="fa-solid fa-certificate" style="font-size:2.2rem;color:var(--lb-rg-primary);"></i>
                     <div>
-                        <div style="font-weight:700;color:var(--lb-text-dark);font-size:0.9rem;">Chất Lượng Được Kiểm
-                            Chứng</div>
-                        <div style="font-size:0.75rem;color:var(--lb-rg-primary);">Chứng nhận Moissanite quốc tế</div>
+                        <div style="font-weight:700;color:var(--lb-text-dark);font-size:0.9rem;">Chất Lượng Cam Kết
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--lb-rg-primary);">Chứng nhận Moissanite GRA Quốc Tế
+                        </div>
                     </div>
                 </div>
             </div>
@@ -486,18 +1430,19 @@
 <section class="lb-section">
     <div class="lb-container">
         <div class="lb-text-center" style="margin-bottom:2.5rem;">
-            <div class="lb-section-tag"><i class="fa-solid fa-comments"></i> Đánh Giá Khách Hàng</div>
-            <h2 class="lb-section-title">Khách Hàng Nói Gì Về LUNA BELLE</h2>
-            <p class="lb-section-subtitle">Hàng ngàn khách hàng đã tin tưởng chúng tôi và chia sẻ trải nghiệm của mình.
-            </p>
+            <div class="lb-section-tag"><i class="fa-solid fa-comments"></i> Đánh Giá Từ Khách Hàng</div>
+            <h2 class="lb-section-title">Cảm Nhận Về LUNA BELLE</h2>
+            <p class="lb-section-subtitle">Hàng ngàn phản hồi yêu thương từ những khách hàng đã chọn LUNA BELLE cho các
+                dịp đặc biệt.</p>
         </div>
+
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.5rem;">
             {% for rev in latest_reviews %}
             <div style="background:white;border:1px solid var(--lb-border-card);border-radius:var(--lb-r-lg);padding:1.8rem;position:relative;box-shadow:var(--lb-shadow-sm);transition:var(--lb-ease);"
-                onmouseover="this.style.boxShadow='var(--lb-shadow-lg)';this.style.transform='translateY(-3px)';"
+                onmouseover="this.style.boxShadow='var(--lb-shadow-lg)';this.style.transform='translateY(-4px)';"
                 onmouseout="this.style.boxShadow='var(--lb-shadow-sm)';this.style.transform='';">
                 <div
-                    style="position:absolute;top:1.5rem;right:1.5rem;color:var(--lb-blush-200);font-size:2rem;font-family:serif;line-height:1;">
+                    style="position:absolute;top:1.2rem;right:1.5rem;color:var(--lb-rg-light);font-size:2.5rem;font-family:serif;line-height:1;">
                     "</div>
                 <div class="lb-stars" style="margin-bottom:0.9rem;">
                     {% for i in range(rev.SoSao) %}<i class="fa-solid fa-star"></i>{% endfor %}
@@ -509,7 +1454,7 @@
                 <div
                     style="display:flex;align-items:center;gap:0.9rem;border-top:1px solid var(--lb-border-soft);padding-top:1rem;">
                     <div
-                        style="width:42px;height:42px;border-radius:50%;background:var(--lb-rg-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:1rem;">
+                        style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--lb-rg-primary),var(--lb-rg-secondary));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:1rem;">
                         {{ rev.HoTen[:1] }}
                     </div>
                     <div>
@@ -524,15 +1469,122 @@
     </div>
 </section>
 
-<!-- Price slider JS -->
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer class="lb-footer">
+    <div class="lb-container">
+        <div class="lb-footer-grid">
+            <!-- Col 1: Brand Info -->
+            <div class="lb-footer-brand">
+                <div
+                    style="font-family:var(--lb-font-serif);font-size:1.6rem;font-weight:800;letter-spacing:1px;color:#FFF;display:flex;align-items:center;gap:0.6rem;">
+                    <i class="fa-solid fa-crown" style="color:var(--lb-rg-primary);font-size:1.3rem;"></i>
+                    LUNA BELLE
+                </div>
+                <p>
+                    Thương hiệu trang sức Moissanite & Đá quý cao cấp. Mang đến phong cách tinh tế, hiện đại cùng cam
+                    kết chất lượng chuẩn quốc tế.
+                </p>
+                <div class="lb-footer-contact-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>Địa chỉ: Biên Hòa, Tỉnh Đồng Nai, Việt Nam</span>
+                </div>
+                <div class="lb-footer-contact-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>Hotline: 1900 xxxx (8:00 - 21:00)</span>
+                </div>
+                <div class="lb-footer-contact-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Email: support@lunabelle.vn</span>
+                </div>
+            </div>
+
+            <!-- Col 2: Navigation Links -->
+            <div>
+                <h4 class="lb-footer-heading">VỀ LUNA BELLE</h4>
+                <ul class="lb-footer-links">
+                    <li><a href="{{ url_for('index') }}">Trang Chủ</a></li>
+                    <li><a href="#about">Giới Thiệu Thương Hiệu</a></li>
+                    <li><a href="{{ url_for('products') }}">Sản Phẩm Moissanite</a></li>
+                    <li><a href="{{ url_for('ai_consultant') }}">Tư Vấn AI LunaStylist</a></li>
+                    <li><a href="#">Tin Tức & Blog Trang Sức</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3: Customer Policies -->
+            <div>
+                <h4 class="lb-footer-heading">CHÍNH SÁCH & HỖ TRỢ</h4>
+                <ul class="lb-footer-links">
+                    <li><a href="#">Chính Sách Bảo Hành Trọn Đời</a></li>
+                    <li><a href="#">Chính Sách Đổi Trả 30 Ngày</a></li>
+                    <li><a href="#">Hướng Dẫn Đo Size Nhẫn</a></li>
+                    <li><a href="#">Hình Thức Thanh Toán</a></li>
+                    <li><a href="#">Chính Sách Vận Chuyển</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 4: Newsletter & Socials -->
+            <div>
+                <h4 class="lb-footer-heading">ĐĂNG KÝ NHẬN UƯ ĐÃI</h4>
+                <p style="font-size:0.85rem;color:#A898A9;">Nhận thông tin bộ sưu tập mới và mã giảm giá đặc quyền
+                    riêng.</p>
+                <form class="lb-newsletter-form"
+                    onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký nhận tin từ LUNA BELLE!');">
+                    <input type="email" class="lb-newsletter-input" placeholder="Nhập email của bạn..." required>
+                    <button type="submit" class="lb-btn lb-btn-primary" style="padding:0.7rem;">
+                        Đăng Ký ngay
+                    </button>
+                </form>
+                <div class="lb-social-links">
+                    <a href="#" class="lb-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="lb-social-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="lb-social-icon" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="#" class="lb-social-icon" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="lb-footer-bottom">
+            <p>© 2026 LUNA BELLE Jewelry. Tất cả quyền được bảo lưu. Thiết kế giao diện sang trọng & hiện đại.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Interactive Scripts -->
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        // Dynamic Price Slider updating
         const slider = document.getElementById('priceSlider');
         const maxEl = document.getElementById('priceMax');
-        if (!slider || !maxEl) return;
-        const fmt = v => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
-        slider.addEventListener('input', () => { maxEl.textContent = fmt(slider.value); });
-    })();
+        if (slider && maxEl) {
+            const fmt = v => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+            slider.addEventListener('input', () => {
+                maxEl.textContent = fmt(slider.value);
+            });
+        }
+    });
+
+    // Copy Voucher Code logic
+    function copyPromoCode() {
+        const code = 'LUNABELLE15';
+        const dummy = document.createElement('textarea');
+        document.body.appendChild(dummy);
+        dummy.value = code;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+
+        const btn = document.getElementById('copyCodeBtn');
+        if (btn) {
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã Sao Chép!';
+            btn.style.background = 'rgba(255, 255, 255, 0.4)';
+            setTimeout(() => {
+                btn.innerHTML = origHTML;
+                btn.style.background = 'rgba(255,255,255,0.18)';
+            }, 2000);
+        }
+    }
 </script>
 
 {% endblock %}
