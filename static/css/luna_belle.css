@@ -195,8 +195,9 @@ button, input, select, textarea { font-family: inherit; outline: none; border: n
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgba(183, 110, 121, 0.25) transparent;
+  scrollbar-color: transparent transparent; /* Mặc định ẩn scrollbar */
   padding: 0 2px;
+  transition: scrollbar-color 0.25s ease;
 }
 .lb-nav-scroll-wrap::-webkit-scrollbar {
   height: 3px;
@@ -205,11 +206,23 @@ button, input, select, textarea { font-family: inherit; outline: none; border: n
   background: transparent;
 }
 .lb-nav-scroll-wrap::-webkit-scrollbar-thumb {
-  background: rgba(183, 110, 121, 0.25);
+  background: transparent; /* Mặc định ẩn thanh trượt */
   border-radius: 99px;
-  transition: background 0.2s ease;
+  transition: background 0.25s ease;
 }
+
+/* Khi di chuột vào Header Navbar -> Hiển thị thanh cuộn */
+.lb-navbar:hover .lb-nav-scroll-wrap,
+.lb-nav-container:hover .lb-nav-scroll-wrap,
+.lb-nav-scroll-wrap:hover {
+  scrollbar-color: rgba(183, 110, 121, 0.35) transparent;
+}
+.lb-navbar:hover .lb-nav-scroll-wrap::-webkit-scrollbar-thumb,
+.lb-nav-container:hover .lb-nav-scroll-wrap::-webkit-scrollbar-thumb,
 .lb-nav-scroll-wrap:hover::-webkit-scrollbar-thumb {
+  background: rgba(183, 110, 121, 0.35);
+}
+.lb-nav-scroll-wrap::-webkit-scrollbar-thumb:hover {
   background: var(--lb-rg-primary);
 }
 
@@ -270,7 +283,7 @@ button, input, select, textarea { font-family: inherit; outline: none; border: n
   transform: rotate(-180deg);
 }
 
-/* Nút cuộn điều hướng trái/phải */
+/* Nút cuộn điều hướng trái/phải: Ẩn mặc định, chỉ hiển thị khi rê chuột vào navbar */
 .lb-nav-scroll-btn {
   display: none;
   align-items: center;
@@ -285,25 +298,38 @@ button, input, select, textarea { font-family: inherit; outline: none; border: n
   cursor: pointer;
   z-index: 105;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.85);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease, color 0.2s ease;
   font-size: 0.72rem;
   outline: none;
+  pointer-events: none;
 }
 .lb-nav-scroll-btn.is-visible {
   display: inline-flex;
+}
+/* Khi di chuột vào navbar/container thì các nút mới hiện lên mượt mà */
+.lb-navbar:hover .lb-nav-scroll-btn.is-visible,
+.lb-nav-container:hover .lb-nav-scroll-btn.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1);
 }
 .lb-nav-scroll-btn:hover {
   background: var(--lb-rg-gradient);
   color: #ffffff;
   border-color: transparent;
-  transform: scale(1.1);
+  transform: scale(1.1) !important;
   box-shadow: 0 4px 14px rgba(183, 110, 121, 0.35);
 }
 .lb-nav-scroll-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.95) !important;
 }
-.lb-nav-scroll-btn.is-disabled {
-  opacity: 0.3;
+.lb-navbar:hover .lb-nav-scroll-btn.is-disabled,
+.lb-nav-container:hover .lb-nav-scroll-btn.is-disabled {
+  opacity: 0.25;
   pointer-events: none;
   cursor: default;
 }
