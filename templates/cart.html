@@ -114,7 +114,12 @@
                         <span style="font-size: 0.82rem; color: #065F46; font-weight: 500;">
                             <i class="fa-solid fa-tag"></i> Mã: <strong>{{ applied_voucher.MaCode }}</strong>
                         </span>
-                        <span style="color: #047857; font-weight: 700; font-size: 0.92rem;">-{{ discount_amount|currency }}</span>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <span style="color: #047857; font-weight: 700; font-size: 0.92rem;">-{{ discount_amount|currency }}</span>
+                            <a href="{{ url_for('remove_voucher', next='cart') }}" title="Gỡ mã giảm giá" style="color: #EF4444; font-size: 0.75rem; text-decoration: underline; cursor: pointer;">
+                                <i class="fa-solid fa-xmark"></i> Gỡ
+                            </a>
+                        </div>
                     </div>
                 {% endif %}
 

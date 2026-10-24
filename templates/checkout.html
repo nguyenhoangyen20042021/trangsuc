@@ -124,7 +124,7 @@
                     </h3>
 
                     <!-- Mini items list -->
-                    <div style="display: flex; flex-direction: column; gap: 0.9rem; max-height: 280px; overflow-y: auto; margin-bottom: 1.3rem; padding-right: 4px;">
+                    <div style="display: flex; flex-direction: column; gap: 0.9rem; max-height: 260px; overflow-y: auto; margin-bottom: 1.2rem; padding-right: 4px;">
                         {% for item in items %}
                             <div style="display: flex; gap: 12px; align-items: center;">
                                 <div style="width: 52px; height: 52px; border-radius: var(--lb-r-sm); overflow: hidden; border: 1px solid var(--lb-border-card); flex-shrink: 0; background: #fff;">
@@ -139,14 +139,95 @@
                         {% endfor %}
                     </div>
 
+                    <!-- Voucher & Promo Section -->
+                    <div class="lb-checkout-voucher-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                            <span style="font-size: 0.84rem; font-weight: 600; color: var(--lb-text-dark); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-ticket" style="color: var(--lb-rg-primary);"></i> Mã Ưu Đãi / Voucher
+                            </span>
+                            {% if available_vouchers %}
+                                <button type="button" id="btnToggleVouchers" style="background: none; border: none; color: var(--lb-rg-primary); font-size: 0.76rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0;">
+                                    <span>Chọn mã</span>
+                                    <i class="fa-solid fa-chevron-down" id="vouchersChevron" style="font-size: 0.65rem; transition: transform 0.2s;"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Applied Voucher Box -->
+                        <div id="checkoutVoucherApplied" class="lb-voucher-applied-box" style="{% if not applied_voucher %}display: none;{% endif %} margin-bottom: 0.5rem;">
+                            <div style="flex: 1;">
+                                <div class="lb-voucher-applied-title">
+                                    <i class="fa-solid fa-circle-check" style="color: #10B981;"></i>
+                                    <span id="appliedVoucherCode">{{ applied_voucher.MaCode if applied_voucher else '' }}</span>
+                                </div>
+                                <span class="lb-voucher-applied-desc" id="appliedVoucherDesc">
+                                    {% if applied_voucher %}
+                                        {% if applied_voucher.LoaiGiamGia == 'PERCENT' %}
+                                            Giảm {{ applied_voucher.GiaTriGiam|int }}%{% if applied_voucher.GiaTriGiamToiDa %} (tối đa {{ applied_voucher.GiaTriGiamToiDa|currency }}){% endif %}
+                                        {% else %}
+                                            Giảm {{ applied_voucher.GiaTriGiam|currency }}
+                                        {% endif %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <button type="button" id="btnRemoveVoucher" class="lb-voucher-btn-remove" title="Gỡ bỏ mã ưu đãi">
+                                <i class="fa-solid fa-xmark"></i> Gỡ
+                            </button>
+                        </div>
+
+                        <!-- Voucher Input Group -->
+                        <div id="checkoutVoucherInputWrap" style="{% if applied_voucher %}display: none;{% endif %}">
+                            <div class="lb-voucher-input-group">
+                                <div style="position: relative; flex: 1;">
+                                    <i class="fa-solid fa-tag" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--lb-rg-primary); font-size: 0.8rem;"></i>
+                                    <input type="text" id="checkoutVoucherCode" class="lb-voucher-input" placeholder="Nhập mã (VD: AURA2026)" autocomplete="off">
+                                </div>
+                                <button type="button" id="btnApplyVoucher" class="lb-btn lb-btn-primary lb-voucher-btn-apply">
+                                    <span id="btnApplyText">Áp Dụng</span>
+                                    <i class="fa-solid fa-spinner fa-spin" id="btnApplySpinner" style="display: none;"></i>
+                                </button>
+                            </div>
+                            <div id="checkoutVoucherMsg" style="display: none; font-size: 0.76rem; margin-top: 0.4rem; padding-left: 0.5rem;"></div>
+                        </div>
+
+                        <!-- Available Vouchers List -->
+                        {% if available_vouchers %}
+                            <div id="availableVouchersList" style="display: none; margin-top: 0.75rem; border-top: 1px dashed var(--lb-border-card); padding-top: 0.75rem; flex-direction: column; gap: 0.5rem;">
+                                {% for v in available_vouchers %}
+                                    <div class="lb-voucher-item-card {% if v.is_eligible %}eligible{% else %}locked{% endif %}">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                                                <span class="lb-voucher-badge-code">{{ v.MaCode }}</span>
+                                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--lb-text-dark);">{{ v.description }}</span>
+                                            </div>
+                                            <div style="font-size: 0.72rem; color: var(--lb-text-muted);">
+                                                {% if v.is_eligible %}
+                                                    <span style="color: #059669;"><i class="fa-solid fa-check"></i> Đơn từ {{ v.DonHangToiThieu|currency }}</span>
+                                                {% else %}
+                                                    <span style="color: #D97706;"><i class="fa-solid fa-circle-exclamation"></i> Mua thêm {{ v.needed_amount|currency }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if v.is_eligible %}
+                                            <button type="button" class="lb-btn-use-voucher" data-code="{{ v.MaCode }}">
+                                                Dùng
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Price Calculations -->
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem;">
                         <span style="color: var(--lb-text-muted);">Tạm tính:</span>
-                        <strong style="color: var(--lb-text-dark);">{{ subtotal|currency }}</strong>
+                        <strong style="color: var(--lb-text-dark);" id="checkoutSubtotal">{{ subtotal|currency }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem;">
                         <span style="color: var(--lb-text-muted);">Vận chuyển bảo hiểm:</span>
-                        <span>
+                        <span id="checkoutShipping">
                             {% if shipping_fee == 0 %}
                                 <strong style="color: #10B981;"><i class="fa-solid fa-truck-fast"></i> Miễn phí</strong>
                             {% else %}
@@ -155,16 +236,15 @@
                         </span>
                     </div>
 
-                    {% if discount_amount > 0 %}
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem; color: #059669;">
-                            <span>Ưu đãi voucher:</span>
-                            <strong>-{{ discount_amount|currency }}</strong>
-                        </div>
-                    {% endif %}
+                    <!-- Discount Row -->
+                    <div id="checkoutDiscountRow" style="display: {% if discount_amount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between; margin-bottom: 0.7rem; font-size: 0.88rem; color: #059669;">
+                        <span><i class="fa-solid fa-tag"></i> Ưu đãi voucher:</span>
+                        <strong id="checkoutDiscountAmount">-{{ discount_amount|currency }}</strong>
+                    </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px dashed var(--lb-border-card); padding-top: 1rem; margin-top: 0.8rem; margin-bottom: 1.5rem;">
                         <span style="font-weight: 600; color: var(--lb-text-dark); font-size: 1rem;">Tổng Thanh Toán:</span>
-                        <span style="font-family: var(--lb-font-serif); font-size: 1.55rem; font-weight: 700; color: var(--lb-rg-primary);">
+                        <span id="checkoutGrandTotal" style="font-family: var(--lb-font-serif); font-size: 1.55rem; font-weight: 700; color: var(--lb-rg-primary); transition: all 0.3s ease;">
                             {{ grand_total|currency }}
                         </span>
                     </div>
@@ -182,4 +262,191 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const voucherInput = document.getElementById('checkoutVoucherCode');
+    const btnApply = document.getElementById('btnApplyVoucher');
+    const btnApplyText = document.getElementById('btnApplyText');
+    const btnApplySpinner = document.getElementById('btnApplySpinner');
+    const voucherMsg = document.getElementById('checkoutVoucherMsg');
+    const voucherAppliedBox = document.getElementById('checkoutVoucherApplied');
+    const voucherInputWrap = document.getElementById('checkoutVoucherInputWrap');
+    const appliedCodeSpan = document.getElementById('appliedVoucherCode');
+    const appliedDescSpan = document.getElementById('appliedVoucherDesc');
+    const btnRemove = document.getElementById('btnRemoveVoucher');
+    const discountRow = document.getElementById('checkoutDiscountRow');
+    const discountAmountElem = document.getElementById('checkoutDiscountAmount');
+    const grandTotalElem = document.getElementById('checkoutGrandTotal');
+    const shippingElem = document.getElementById('checkoutShipping');
+
+    const btnToggle = document.getElementById('btnToggleVouchers');
+    const vouchersList = document.getElementById('availableVouchersList');
+    const chevron = document.getElementById('vouchersChevron');
+
+    // Toggle Available Vouchers
+    if (btnToggle && vouchersList) {
+        btnToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            const isOpen = vouchersList.style.display === 'flex';
+            vouchersList.style.display = isOpen ? 'none' : 'flex';
+            if (chevron) {
+                chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        });
+    }
+
+    // Quick Apply buttons from available list
+    document.querySelectorAll('.lb-btn-use-voucher').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const code = this.getAttribute('data-code');
+            if (code) {
+                if (voucherInput) voucherInput.value = code;
+                handleApplyVoucher(code);
+            }
+        });
+    });
+
+    // Enter key inside voucher input
+    if (voucherInput) {
+        voucherInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const code = voucherInput.value.trim();
+                if (code) handleApplyVoucher(code);
+            }
+        });
+    }
+
+    // Apply button click
+    if (btnApply) {
+        btnApply.addEventListener('click', function (e) {
+            e.preventDefault();
+            const code = voucherInput ? voucherInput.value.trim() : '';
+            if (!code) {
+                showInlineError('Vui lòng nhập mã giảm giá.');
+                return;
+            }
+            handleApplyVoucher(code);
+        });
+    }
+
+    // Remove voucher click
+    if (btnRemove) {
+        btnRemove.addEventListener('click', function (e) {
+            e.preventDefault();
+            handleRemoveVoucher();
+        });
+    }
+
+    function showInlineError(msg) {
+        if (!voucherMsg) return;
+        voucherMsg.style.display = 'block';
+        voucherMsg.style.color = '#EF4444';
+        voucherMsg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${msg}`;
+    }
+
+    function clearInlineMsg() {
+        if (!voucherMsg) return;
+        voucherMsg.style.display = 'none';
+        voucherMsg.textContent = '';
+    }
+
+    function setApplyLoading(isLoading) {
+        if (!btnApply) return;
+        btnApply.disabled = isLoading;
+        if (btnApplyText) btnApplyText.style.display = isLoading ? 'none' : 'inline';
+        if (btnApplySpinner) btnApplySpinner.style.display = isLoading ? 'inline-block' : 'none';
+    }
+
+    function handleApplyVoucher(code) {
+        clearInlineMsg();
+        setApplyLoading(true);
+
+        fetch('/api/voucher/apply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ voucher_code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setApplyLoading(false);
+            if (data.success) {
+                // Update applied voucher view
+                if (appliedCodeSpan) appliedCodeSpan.textContent = data.code;
+                if (appliedDescSpan) appliedDescSpan.textContent = data.voucher_desc;
+                if (voucherAppliedBox) voucherAppliedBox.style.display = 'flex';
+                if (voucherInputWrap) voucherInputWrap.style.display = 'none';
+
+                // Update pricing rows
+                if (discountAmountElem) discountAmountElem.textContent = '-' + data.discount_amount_formatted;
+                if (discountRow) discountRow.style.display = 'flex';
+                if (grandTotalElem) {
+                    grandTotalElem.textContent = data.grand_total_formatted;
+                    grandTotalElem.style.transform = 'scale(1.08)';
+                    setTimeout(() => grandTotalElem.style.transform = 'scale(1)', 250);
+                }
+
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+            } else {
+                showInlineError(data.message);
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'danger');
+                }
+            }
+        })
+        .catch(err => {
+            setApplyLoading(false);
+            console.error('Lỗi khi áp dụng voucher:', err);
+            showInlineError('Không thể kết nối máy chủ để kiểm tra mã giảm giá.');
+        });
+    }
+
+    function handleRemoveVoucher() {
+        fetch('/api/voucher/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (voucherAppliedBox) voucherAppliedBox.style.display = 'none';
+                if (voucherInputWrap) {
+                    voucherInputWrap.style.display = 'block';
+                    if (voucherInput) {
+                        voucherInput.value = '';
+                        voucherInput.focus();
+                    }
+                }
+                clearInlineMsg();
+
+                // Hide discount row and update grand total
+                if (discountRow) discountRow.style.display = 'none';
+                if (grandTotalElem) grandTotalElem.textContent = data.grand_total_formatted;
+
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'info');
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Lỗi khi gỡ voucher:', err);
+            if (typeof showToast === 'function') {
+                showToast('Không thể gỡ mã giảm giá.', 'danger');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

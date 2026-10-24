@@ -369,17 +369,20 @@ def product_detail(slug):
 
 # ----------------- CART & CHECKOUT -----------------
 
-@app.route('/cart')
-def cart():
-    """Xem giỏ hàng, cập nhật số lượng và tính voucher."""
-    cart_items = session.get('cart', {})
-    
-    # Tính toán chi tiết từng món hàng
+def calculate_order_pricing(cart_items, voucher_code=None):
+    """
+    Tính toán chi tiết sản phẩm, tạm tính, phí ship, số tiền giảm và tổng thanh toán.
+    Hỗ trợ kiểm tra điều kiện voucher và trả về applied_voucher cùng thông báo lỗi chi tiết nếu có.
+    """
     items_detail = []
     subtotal = Decimal('0')
 
     for variant_id_str, item_info in list(cart_items.items()):
-        variant_id = int(variant_id_str)
+        try:
+            variant_id = int(variant_id_str)
+        except (ValueError, TypeError):
+            continue
+
         variant = query_one("""
             SELECT bt.*, sp.TenSanPham, sp.Slug, sp.ChatLieu,
                    (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
@@ -398,58 +401,106 @@ def cart():
         items_detail.append({
             'variant_id': variant['MaBienThe'],
             'product_name': variant['TenSanPham'],
-            'slug': variant['Slug'],
-            'sku': variant['SKU'],
-            'size': variant['KichThuocSize'],
-            'gemstone': variant['LoaiDa'],
+            'slug': variant.get('Slug', ''),
+            'sku': variant.get('SKU', ''),
+            'size': variant.get('KichThuocSize', ''),
+            'gemstone': variant.get('LoaiDa', ''),
             'price': variant['GiaBan'],
-            'image': variant['HinhAnhBienThe'] or variant['HinhAnhChinh'],
+            'image': variant.get('HinhAnhBienThe') or variant.get('HinhAnhChinh'),
             'quantity': qty,
-            'stock': variant['SoLuongTonKho'],
+            'stock': variant.get('SoLuongTonKho', 0),
             'line_total': line_total
         })
 
-    # Tính phí vận chuyển (Free ship cho đơn trên 5,000,000 VND)
-    shipping_fee = Decimal('0') if (subtotal >= 5000000 or subtotal == 0) else Decimal('30000')
+    # Miễn phí vận chuyển cho đơn hàng từ 5,000,000 VND hoặc giỏ hàng trống
+    shipping_fee = Decimal('0') if (subtotal >= Decimal('5000000') or subtotal == Decimal('0')) else Decimal('30000')
 
-    # Kiểm tra voucher
     discount_amount = Decimal('0')
-    voucher_code = session.get('voucher_code')
     applied_voucher = None
+    voucher_error = None
 
-    if voucher_code and subtotal > 0:
-        applied_voucher = query_one("""
-            SELECT * FROM MaGiamGia 
-            WHERE MaCode = %s AND TrangThai = 1 AND NgayKetThuc > NOW() AND SoLuongSuDung > SoLuongDaDung
-        """, (voucher_code,))
-
-        if applied_voucher:
-            min_order = Decimal(str(applied_voucher['DonHangToiThieu']))
-            if subtotal >= min_order:
-                if applied_voucher['LoaiGiamGia'] == 'PERCENT':
-                    discount = (subtotal * Decimal(str(applied_voucher['GiaTriGiam']))) / Decimal('100')
-                    if applied_voucher['GiaTriGiamToiDa']:
-                        max_discount = Decimal(str(applied_voucher['GiaTriGiamToiDa']))
-                        discount = min(discount, max_discount)
-                    discount_amount = discount
-                else:
-                    discount_amount = Decimal(str(applied_voucher['GiaTriGiam']))
-            else:
-                flash(f"Mã {voucher_code} yêu cầu đơn hàng tối thiểu {min_order:,.0f} ₫", "warning")
-                session.pop('voucher_code', None)
-                applied_voucher = None
+    if voucher_code and subtotal > Decimal('0'):
+        v = query_one("SELECT * FROM MaGiamGia WHERE MaCode = %s", (voucher_code,))
+        if not v:
+            voucher_error = f"Mã giảm giá '{voucher_code}' không tồn tại."
+        elif not v.get('TrangThai'):
+            voucher_error = f"Mã ưu đãi '{voucher_code}' hiện đang tạm ngừng hoạt động."
+        elif v.get('NgayKetThuc') and v['NgayKetThuc'] <= datetime.datetime.now():
+            voucher_error = f"Mã ưu đãi '{voucher_code}' đã hết hạn sử dụng."
+        elif v.get('SoLuongSuDung') and v.get('SoLuongDaDung', 0) >= v['SoLuongSuDung']:
+            voucher_error = f"Mã ưu đãi '{voucher_code}' đã hết lượt sử dụng."
         else:
-            session.pop('voucher_code', None)
+            min_order = Decimal(str(v['DonHangToiThieu']))
+            if subtotal < min_order:
+                voucher_error = f"Mã '{voucher_code}' yêu cầu đơn hàng tối thiểu {currency_filter(min_order)} (Hiện tại: {currency_filter(subtotal)})."
+            else:
+                applied_voucher = v
+                if v['LoaiGiamGia'] == 'PERCENT':
+                    discount = (subtotal * Decimal(str(v['GiaTriGiam']))) / Decimal('100')
+                    if v['GiaTriGiamToiDa']:
+                        max_discount = Decimal(str(v['GiaTriGiamToiDa']))
+                        discount = min(discount, max_discount)
+                    discount_amount = min(discount, subtotal)
+                else:
+                    discount_amount = min(Decimal(str(v['GiaTriGiam'])), subtotal)
 
     grand_total = max(Decimal('0'), subtotal + shipping_fee - discount_amount)
 
+    return {
+        'items': items_detail,
+        'subtotal': subtotal,
+        'shipping_fee': shipping_fee,
+        'discount_amount': discount_amount,
+        'grand_total': grand_total,
+        'applied_voucher': applied_voucher,
+        'voucher_error': voucher_error
+    }
+
+def get_available_vouchers(subtotal=Decimal('0')):
+    """Lấy danh sách các mã giảm giá đang kích hoạt và còn hạn sử dụng."""
+    vouchers = query_all("""
+        SELECT * FROM MaGiamGia 
+        WHERE TrangThai = 1 AND NgayKetThuc > NOW() AND SoLuongSuDung > SoLuongDaDung
+        ORDER BY DonHangToiThieu ASC
+    """)
+    res = []
+    for v in vouchers:
+        v_dict = dict(v)
+        min_order = Decimal(str(v_dict['DonHangToiThieu']))
+        v_dict['is_eligible'] = (subtotal >= min_order)
+        v_dict['needed_amount'] = max(Decimal('0'), min_order - subtotal)
+        if v_dict['LoaiGiamGia'] == 'PERCENT':
+            desc = f"Giảm {v_dict['GiaTriGiam']:g}%"
+            if v_dict['GiaTriGiamToiDa']:
+                desc += f" (Tối đa {currency_filter(v_dict['GiaTriGiamToiDa'])})"
+        else:
+            desc = f"Giảm {currency_filter(v_dict['GiaTriGiam'])}"
+        v_dict['description'] = desc
+        res.append(v_dict)
+    return res
+
+@app.route('/cart')
+def cart():
+    """Xem giỏ hàng, cập nhật số lượng và tính voucher."""
+    cart_items = session.get('cart', {})
+    voucher_code = session.get('voucher_code')
+    pricing = calculate_order_pricing(cart_items, voucher_code)
+
+    if voucher_code and pricing['voucher_error']:
+        flash(pricing['voucher_error'], 'warning')
+        session.pop('voucher_code', None)
+        session.modified = True
+        pricing = calculate_order_pricing(cart_items, None)
+
+    available_vouchers = get_available_vouchers(pricing['subtotal'])
     return render_template('cart.html',
-                           items=items_detail,
-                           subtotal=subtotal,
-                           shipping_fee=shipping_fee,
-                           discount_amount=discount_amount,
-                           grand_total=grand_total,
-                           applied_voucher=applied_voucher)
+                           items=pricing['items'],
+                           subtotal=pricing['subtotal'],
+                           shipping_fee=pricing['shipping_fee'],
+                           discount_amount=pricing['discount_amount'],
+                           grand_total=pricing['grand_total'],
+                           applied_voucher=pricing['applied_voucher'],
+                           available_vouchers=available_vouchers)
 
 @app.route('/cart/add', methods=['POST'])
 def add_to_cart():
@@ -549,25 +600,91 @@ def remove_from_cart():
     return redirect(url_for('cart'))
 
 @app.route('/cart/apply-voucher', methods=['POST'])
+@app.route('/api/voucher/apply', methods=['POST'])
 def apply_voucher():
-    code = request.form.get('voucher_code', '').strip().upper()
+    """Áp dụng mã ưu đãi cho giỏ hàng hoặc trang checkout (hỗ trợ cả JSON và Form POST)."""
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        code = str(data.get('voucher_code', '')).strip().upper()
+    else:
+        code = str(request.form.get('voucher_code', '')).strip().upper()
+
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json
+    cart_items = session.get('cart', {})
+
     if not code:
         session.pop('voucher_code', None)
-        flash('Vui lòng nhập mã giảm giá.', 'warning')
-        return redirect(url_for('cart'))
+        session.modified = True
+        msg = 'Vui lòng nhập mã giảm giá.'
+        if is_ajax:
+            return jsonify({'success': False, 'message': msg}), 400
+        flash(msg, 'warning')
+        next_url = request.form.get('next') or request.referrer or url_for('cart')
+        return redirect(next_url)
 
-    voucher = query_one("""
-        SELECT * FROM MaGiamGia 
-        WHERE MaCode = %s AND TrangThai = 1 AND NgayKetThuc > NOW() AND SoLuongSuDung > SoLuongDaDung
-    """, (code,))
+    pricing = calculate_order_pricing(cart_items, voucher_code=code)
 
-    if voucher:
-        session['voucher_code'] = code
-        flash(f"Áp dụng mã ưu đãi '{code}' thành công!", 'success')
-    else:
-        flash(f"Mã giảm giá '{code}' không hợp lệ hoặc đã hết hạn.", 'danger')
+    if pricing['voucher_error']:
+        if is_ajax:
+            return jsonify({'success': False, 'message': pricing['voucher_error']}), 400
+        flash(pricing['voucher_error'], 'warning')
+        next_url = request.form.get('next') or request.referrer or url_for('cart')
+        return redirect(next_url)
 
-    return redirect(url_for('cart'))
+    session['voucher_code'] = code
+    session.modified = True
+    applied = pricing['applied_voucher']
+    success_msg = f"Áp dụng mã ưu đãi '{code}' thành công!"
+
+    if is_ajax:
+        return jsonify({
+            'success': True,
+            'message': success_msg,
+            'code': code,
+            'discount_amount': float(pricing['discount_amount']),
+            'discount_amount_formatted': currency_filter(pricing['discount_amount']),
+            'subtotal': float(pricing['subtotal']),
+            'subtotal_formatted': currency_filter(pricing['subtotal']),
+            'shipping_fee': float(pricing['shipping_fee']),
+            'shipping_fee_formatted': 'Miễn phí' if pricing['shipping_fee'] == 0 else currency_filter(pricing['shipping_fee']),
+            'grand_total': float(pricing['grand_total']),
+            'grand_total_formatted': currency_filter(pricing['grand_total']),
+            'voucher_desc': f"Giảm {applied['GiaTriGiam']:g}%" if applied['LoaiGiamGia'] == 'PERCENT' else f"Giảm {currency_filter(applied['GiaTriGiam'])}"
+        })
+
+    flash(success_msg, 'success')
+    next_url = request.form.get('next') or request.referrer or url_for('cart')
+    return redirect(next_url)
+
+@app.route('/cart/remove-voucher', methods=['POST', 'GET'])
+@app.route('/api/voucher/remove', methods=['POST'])
+def remove_voucher():
+    """Gỡ bỏ mã giảm giá hiện tại khỏi session."""
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json
+    session.pop('voucher_code', None)
+    session.modified = True
+
+    cart_items = session.get('cart', {})
+    pricing = calculate_order_pricing(cart_items, voucher_code=None)
+    msg = 'Đã gỡ bỏ mã giảm giá.'
+
+    if is_ajax:
+        return jsonify({
+            'success': True,
+            'message': msg,
+            'discount_amount': 0,
+            'discount_amount_formatted': '0 ₫',
+            'subtotal': float(pricing['subtotal']),
+            'subtotal_formatted': currency_filter(pricing['subtotal']),
+            'shipping_fee': float(pricing['shipping_fee']),
+            'shipping_fee_formatted': 'Miễn phí' if pricing['shipping_fee'] == 0 else currency_filter(pricing['shipping_fee']),
+            'grand_total': float(pricing['grand_total']),
+            'grand_total_formatted': currency_filter(pricing['grand_total'])
+        })
+
+    flash(msg, 'info')
+    next_url = request.form.get('next') or request.referrer or url_for('cart')
+    return redirect(next_url)
 
 def sync_cart_to_db(user_id, cart_dict):
     """Lưu giỏ hàng vào bảng GioHang và ChiTietGioHang."""
@@ -598,57 +715,22 @@ def checkout():
         flash('Giỏ hàng của bạn đang trống.', 'warning')
         return redirect(url_for('products'))
 
-    # Chuẩn bị dữ liệu giỏ hàng
-    items_detail = []
-    subtotal = Decimal('0')
-
-    for variant_id_str, item_info in cart_items.items():
-        variant_id = int(variant_id_str)
-        variant = query_one("""
-            SELECT bt.*, sp.TenSanPham, sp.Slug,
-                   (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
-            FROM BienTheSanPham bt
-            JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-            WHERE bt.MaBienThe = %s
-        """, (variant_id,))
-        if variant:
-            qty = item_info.get('quantity', 1)
-            line_total = Decimal(str(variant['GiaBan'])) * qty
-            subtotal += line_total
-            items_detail.append({
-                'variant_id': variant['MaBienThe'],
-                'product_name': variant['TenSanPham'],
-                'size': variant['KichThuocSize'],
-                'gemstone': variant['LoaiDa'],
-                'price': variant['GiaBan'],
-                'quantity': qty,
-                'stock': variant['SoLuongTonKho'],
-                'line_total': line_total,
-                'image': variant['HinhAnhBienThe'] or variant['HinhAnhChinh']
-            })
-
-    shipping_fee = Decimal('0') if subtotal >= 5000000 else Decimal('30000')
-
-    # Tính voucher
-    discount_amount = Decimal('0')
-    voucher_id = None
     voucher_code = session.get('voucher_code')
-    if voucher_code:
-        v = query_one("""
-            SELECT * FROM MaGiamGia 
-            WHERE MaCode = %s AND TrangThai = 1 AND NgayKetThuc > NOW() AND SoLuongSuDung > SoLuongDaDung
-        """, (voucher_code,))
-        if v and subtotal >= Decimal(str(v['DonHangToiThieu'])):
-            voucher_id = v['MaVoucher']
-            if v['LoaiGiamGia'] == 'PERCENT':
-                discount = (subtotal * Decimal(str(v['GiaTriGiam']))) / Decimal('100')
-                if v['GiaTriGiamToiDa']:
-                    discount = min(discount, Decimal(str(v['GiaTriGiamToiDa'])))
-                discount_amount = discount
-            else:
-                discount_amount = Decimal(str(v['GiaTriGiam']))
+    pricing = calculate_order_pricing(cart_items, voucher_code)
 
-    grand_total = max(Decimal('0'), subtotal + shipping_fee - discount_amount)
+    if voucher_code and pricing['voucher_error']:
+        flash(pricing['voucher_error'], 'warning')
+        session.pop('voucher_code', None)
+        session.modified = True
+        pricing = calculate_order_pricing(cart_items, None)
+
+    items_detail = pricing['items']
+    subtotal = pricing['subtotal']
+    shipping_fee = pricing['shipping_fee']
+    discount_amount = pricing['discount_amount']
+    grand_total = pricing['grand_total']
+    applied_voucher = pricing['applied_voucher']
+    voucher_id = applied_voucher['MaVoucher'] if applied_voucher else None
 
     # Nếu submit đơn hàng
     if request.method == 'POST':
@@ -730,12 +812,15 @@ def checkout():
             flash(f"Lỗi khi đặt hàng: {str(e)}", 'danger')
             return redirect(url_for('checkout'))
 
+    available_vouchers = get_available_vouchers(subtotal)
     return render_template('checkout.html',
                            items=items_detail,
                            subtotal=subtotal,
                            shipping_fee=shipping_fee,
                            discount_amount=discount_amount,
-                           grand_total=grand_total)
+                           grand_total=grand_total,
+                           applied_voucher=applied_voucher,
+                           available_vouchers=available_vouchers)
 
 @app.route('/order-success/<order_code>')
 def order_success(order_code):

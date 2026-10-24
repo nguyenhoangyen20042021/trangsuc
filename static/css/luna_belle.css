@@ -1637,6 +1637,144 @@ button, input, select, textarea { font-family: inherit; outline: none; border: n
 }
 
 /* =================================================================
+   LUNA BELLE - CHECKOUT VOUCHER & PROMO STYLES
+   ================================================================= */
+.lb-checkout-voucher-section {
+  background: var(--lb-blush-100);
+  border: 1px dashed var(--lb-border-card);
+  border-radius: var(--lb-r-md);
+  padding: 1.1rem;
+  margin-bottom: 1.3rem;
+  transition: var(--lb-ease);
+}
+.lb-checkout-voucher-section:hover {
+  border-color: var(--lb-rg-primary);
+}
+.lb-voucher-applied-box {
+  background: #ECFDF5;
+  border: 1.5px solid #10B981;
+  border-radius: var(--lb-r-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  animation: lbFadeIn 0.3s ease;
+}
+.lb-voucher-applied-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #065F46;
+}
+.lb-voucher-applied-desc {
+  display: block;
+  font-size: 0.76rem;
+  color: #047857;
+  margin-top: 2px;
+}
+.lb-voucher-btn-remove {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+  border-radius: var(--lb-r-full);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--lb-ease-fast);
+  white-space: nowrap;
+}
+.lb-voucher-btn-remove:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+.lb-voucher-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+.lb-voucher-input {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1.5px solid var(--lb-border-soft);
+  border-radius: var(--lb-r-full);
+  padding: 0.6rem 1rem 0.6rem 2.2rem;
+  font-size: 0.84rem;
+  color: var(--lb-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: var(--lb-ease);
+}
+.lb-voucher-input:focus {
+  border-color: var(--lb-rg-primary);
+  box-shadow: 0 0 0 3px rgba(183, 110, 121, 0.15);
+}
+.lb-voucher-btn-apply {
+  border-radius: var(--lb-r-full);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lb-voucher-item-card {
+  background: #FFFFFF;
+  border: 1.2px solid var(--lb-border-card);
+  border-radius: var(--lb-r-sm);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: var(--lb-ease);
+}
+.lb-voucher-item-card.eligible:hover {
+  border-color: var(--lb-rg-primary);
+  background: #FFFBF9;
+  transform: translateY(-1px);
+  box-shadow: var(--lb-shadow-sm);
+}
+.lb-voucher-item-card.locked {
+  opacity: 0.65;
+  background: #F9FAFB;
+}
+.lb-voucher-badge-code {
+  display: inline-block;
+  background: var(--lb-blush-200);
+  color: var(--lb-rg-dark);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.lb-btn-use-voucher {
+  background: var(--lb-rg-gradient);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--lb-r-full);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--lb-ease);
+}
+.lb-btn-use-voucher:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+@keyframes lbFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =================================================================
    LUNA BELLE - AUTHENTICATION STYLES
    ================================================================= */
 .lb-auth-wrapper {
