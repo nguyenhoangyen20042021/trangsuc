@@ -54,64 +54,37 @@
                     </div>
                 </div>
 
-                <!-- Payment Methods Card -->
+                <!-- Payment Methods Card (Duy nhất COD) -->
                 <div class="lb-card-white">
-                    <h3 style="font-family: var(--lb-font-serif); font-size: 1.25rem; color: var(--lb-text-dark); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
-                        <i class="fa-solid fa-credit-card" style="color: var(--lb-rg-primary);"></i> 2. Phương Thức Thanh Toán
+                    <h3 style="font-family: var(--lb-font-serif); font-size: 1.25rem; color: var(--lb-text-dark); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="fa-solid fa-hand-holding-dollar" style="color: var(--lb-rg-primary);"></i> 2. Phương Thức Thanh Toán
                     </h3>
 
-                    <div style="display: flex; flex-direction: column; gap: 0.9rem;">
-                        <!-- COD -->
-                        <label class="lb-payment-option">
-                            <input type="radio" name="payment_method" value="COD" checked style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
-                            <div>
-                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
-                                    <i class="fa-solid fa-hand-holding-dollar" style="color: var(--lb-rg-primary); margin-right: 4px;"></i> Thanh Toán Khi Nhận Hàng (COD)
-                                </strong>
-                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
-                                    Quý khách được đồng kiểm niêm phong, kiểm tra hộp nhung và chứng thư kiểm định trước khi thanh toán.
-                                </span>
-                            </div>
-                        </label>
+                    <input type="hidden" name="payment_method" value="COD">
 
-                        <!-- Bank Transfer -->
-                        <label class="lb-payment-option">
-                            <input type="radio" name="payment_method" value="BANK_TRANSFER" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
-                            <div>
-                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
-                                    <i class="fa-solid fa-qrcode" style="color: var(--lb-rg-primary); margin-right: 4px;"></i> Chuyển Khoản Ngân Hàng (Quét Mã VietQR 24/7)
-                                </strong>
-                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
-                                    Quét mã QR chuyển khoản nhanh chóng qua ứng dụng ngân hàng. Đơn hàng ưu tiên chế tác lập tức.
-                                </span>
+                    <div style="background: linear-gradient(135deg, rgba(230,126,34,0.04) 0%, rgba(212,143,122,0.08) 100%); border: 1.5px solid var(--lb-rg-primary); border-radius: var(--lb-r-md); padding: 1.3rem 1.4rem; position: relative;">
+                        <div style="display: flex; align-items: flex-start; gap: 1.1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 50%; background: #FFF5EB; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(217,119,6,0.18);">
+                                <i class="fa-solid fa-truck-ramp-box"></i>
                             </div>
-                        </label>
-
-                        <!-- MoMo -->
-                        <label class="lb-payment-option">
-                            <input type="radio" name="payment_method" value="MOMO" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
-                            <div>
-                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
-                                    <i class="fa-solid fa-wallet" style="color: #A50064; margin-right: 4px;"></i> Ví Điện Tử MoMo
-                                </strong>
-                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
-                                    Thanh toán tức thì và bảo mật qua ứng dụng Ví MoMo.
-                                </span>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem;">
+                                    <strong style="color: var(--lb-text-dark); font-size: 1.02rem;">
+                                        Thanh Toán Khi Nhận Hàng (COD)
+                                    </strong>
+                                    <span style="background: #ECFDF5; color: #059669; font-size: 0.76rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; border: 1px solid #A7F3D0; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-circle-check"></i> Phương thức chính thức
+                                    </span>
+                                </div>
+                                <p style="font-size: 0.84rem; color: var(--lb-text-muted); line-height: 1.55; margin: 0 0 0.8rem 0;">
+                                    Quý khách chỉ thanh toán tiền mặt trực tiếp cho nhân viên vận chuyển sau khi nhận hàng, kiểm tra niêm phong hộp nhung và đối chiếu đầy đủ chứng thư kiểm định đá quý.
+                                </p>
+                                <div style="display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--lb-rg-primary); font-weight: 600;">
+                                    <span><i class="fa-solid fa-shield-halved" style="margin-right: 4px;"></i> Đồng kiểm 100% trước khi trả tiền</span>
+                                    <span><i class="fa-solid fa-box-archive" style="margin-right: 4px;"></i> Đóng gói bảo hiểm đặc biệt</span>
+                                </div>
                             </div>
-                        </label>
-
-                        <!-- VNPAY -->
-                        <label class="lb-payment-option">
-                            <input type="radio" name="payment_method" value="VNPAY" style="accent-color: var(--lb-rg-primary); width: 18px; height: 18px;">
-                            <div>
-                                <strong style="display: block; color: var(--lb-text-dark); font-size: 0.92rem;">
-                                    <i class="fa-solid fa-credit-card" style="color: #005BAA; margin-right: 4px;"></i> Cổng Thanh Toán VNPAY (ATM / Visa / Mastercard)
-                                </strong>
-                                <span style="font-size: 0.78rem; color: var(--lb-text-muted); line-height: 1.4; display: block; margin-top: 2px;">
-                                    Hỗ trợ thẻ ATM nội địa và thẻ quốc tế bảo mật theo tiêu chuẩn PCI DSS quốc tế.
-                                </span>
-                            </div>
-                        </label>
+                        </div>
                     </div>
                 </div>
             </div>

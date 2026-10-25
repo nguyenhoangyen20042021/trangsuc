@@ -150,7 +150,7 @@ def inject_global_data():
         'deepseek_config': get_deepseek_config()
     }
 
-# ----------------- AUTH DECORATORS -----------------
+# ----------------- AUTH & RBAC DECORATORS -----------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -160,11 +160,12 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def admin_required(f):
+def staff_required(f):
+    """Quyền truy cập dành cho cả Nhân viên (STAFF) và Quản trị viên (ADMIN)."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Vui lòng đăng nhập bằng tài khoản quản trị.', 'warning')
+            flash('Vui lòng đăng nhập bằng tài khoản quản trị hoặc nhân viên.', 'warning')
             return redirect(url_for('login', next=request.url))
         user = query_one("""
             SELECT vt.TenVaiTro FROM NguoiDung nd 
@@ -174,6 +175,24 @@ def admin_required(f):
         if not user or user['TenVaiTro'] not in ['ADMIN', 'STAFF']:
             flash('Bạn không có quyền truy cập trang quản trị.', 'danger')
             return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    """Quyền truy cập NGHIÊM NGẶT chỉ dành riêng cho Quản trị viên cao cấp (ADMIN)."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Vui lòng đăng nhập bằng tài khoản quản trị viên.', 'warning')
+            return redirect(url_for('login', next=request.url))
+        user = query_one("""
+            SELECT vt.TenVaiTro FROM NguoiDung nd 
+            JOIN VaiTro vt ON nd.MaVaiTro = vt.MaVaiTro 
+            WHERE nd.MaNguoiDung = %s
+        """, (session['user_id'],))
+        if not user or user['TenVaiTro'] != 'ADMIN':
+            flash('Quyền hạn không đủ: Chức năng này chỉ dành riêng cho Quản trị viên (ADMIN)!', 'danger')
+            return redirect(url_for('admin_dashboard'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -215,7 +234,6 @@ def index():
     return render_template('index.html', 
                            featured_products=featured_products, 
                            bestseller_products=bestseller_products,
-                           latest_reviews=[],
                            active_vouchers=active_vouchers)
 
 @app.route('/products')
@@ -345,9 +363,6 @@ def product_detail(slug):
         ORDER BY ThuTuHienThi ASC
     """, (product['MaSanPham'],))
 
-    reviews = []
-    avg_rating = 5.0
-
     # Sản phẩm liên quan cùng danh mục
     related_products = query_all("""
         SELECT sp.*, MIN(bt.GiaBan) as GiaMin,
@@ -363,8 +378,6 @@ def product_detail(slug):
                            product=product,
                            variants=variants,
                            gallery=gallery,
-                           reviews=reviews,
-                           avg_rating=avg_rating,
                            related_products=related_products)
 
 # ----------------- CART & CHECKOUT -----------------
@@ -738,7 +751,7 @@ def checkout():
         phone = request.form.get('phone', '').strip()
         address = request.form.get('address', '').strip()
         note = request.form.get('note', '').strip()
-        payment_method = request.form.get('payment_method', 'COD')
+        payment_method = 'COD'  # Phương thức thanh toán duy nhất: COD (Thanh toán khi nhận hàng)
 
         if not fullname or not phone or not address:
             flash('Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.', 'danger')
@@ -824,17 +837,14 @@ def checkout():
 
 @app.route('/order-success/<order_code>')
 def order_success(order_code):
-    """Trang thông báo đặt hàng thành công và hiển thị mã QR VietQR (nếu chuyển khoản)."""
+    """Trang thông báo đặt hàng thành công (phương thức thanh toán khi nhận hàng COD)."""
     order = query_one("SELECT * FROM DonHang WHERE MaDonHangCode = %s", (order_code,))
     if not order:
         abort(404)
 
     items = query_all("SELECT * FROM ChiTietDonHang WHERE MaDonHang = %s", (order['MaDonHang'],))
 
-    # Sinh link VietQR động
-    vietqr_url = f"https://img.vietqr.io/image/MB-0901234567-compact2.png?amount={int(order['TongThanhToan'])}&addInfo={order['MaDonHangCode']}&accountName=AURA%20JEWELRY"
-
-    return render_template('order_success.html', order=order, items=items, vietqr_url=vietqr_url)
+    return render_template('order_success.html', order=order, items=items)
 
 @app.route('/tracking', methods=['GET', 'POST'])
 def order_tracking():
@@ -910,13 +920,7 @@ def ai_consultant_api():
         'is_live_ai': result.get('is_live_ai', False)
     })
 
-# ----------------- REVIEWS -----------------
 
-@app.route('/product/<int:product_id>/review', methods=['POST'])
-@login_required
-def add_review(product_id):
-    flash('Cảm ơn quý khách đã gửi đánh giá quý báu cho LUNA BELLE!', 'success')
-    return redirect(request.referrer or url_for('index'))
 
 # ----------------- AUTHENTICATION -----------------
 
@@ -1046,12 +1050,12 @@ def profile():
 # ----------------- ADMIN DASHBOARD & MANAGEMENT -----------------
 
 @app.route('/admin')
-@admin_required
+@staff_required
 def admin_redirect():
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/dashboard')
-@admin_required
+@staff_required
 def admin_dashboard():
     now = datetime.datetime.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1227,7 +1231,7 @@ def admin_dashboard():
                            date_to=date_to_str or (end_date.strftime('%Y-%m-%d') if end_date else ''))
 
 @app.route('/admin/products')
-@admin_required
+@staff_required
 def admin_products():
     products = query_all("""
         SELECT sp.*, dm.TenDanhMuc, COUNT(bt.MaBienThe) AS SoBienThe, SUM(bt.SoLuongTonKho) AS TongTonKho,
@@ -1241,7 +1245,7 @@ def admin_products():
     return render_template('admin/products.html', products=products)
 
 @app.route('/admin/product/new', methods=['GET', 'POST'])
-@admin_required
+@staff_required
 def admin_product_new():
     categories = query_all("SELECT * FROM DanhMuc ORDER BY TenDanhMuc ASC")
     if request.method == 'POST':
@@ -1343,7 +1347,7 @@ def admin_product_new():
     return render_template('admin/product_form.html', product=None, categories=categories, variants=[], gallery=[])
 
 @app.route('/admin/product/edit/<int:id>', methods=['GET', 'POST'])
-@admin_required
+@staff_required
 def admin_product_edit(id):
     product = query_one("""
         SELECT sp.*, 
@@ -1463,7 +1467,7 @@ def admin_product_delete(id):
 # ----------------- ADMIN CATEGORY MANAGEMENT -----------------
 
 @app.route('/admin/categories')
-@admin_required
+@staff_required
 def admin_categories():
     categories = query_all("""
         SELECT dm.*, COUNT(sp.MaSanPham) AS SoLuongSanPham,
@@ -1476,7 +1480,7 @@ def admin_categories():
     return render_template('admin/categories.html', categories=categories)
 
 @app.route('/admin/category/new', methods=['GET', 'POST'])
-@admin_required
+@staff_required
 def admin_category_new():
     parent_categories = query_all("SELECT * FROM DanhMuc WHERE MaDanhMucCha IS NULL ORDER BY TenDanhMuc ASC")
     if request.method == 'POST':
@@ -1505,7 +1509,7 @@ def admin_category_new():
     return render_template('admin/category_form.html', category=None, parent_categories=parent_categories)
 
 @app.route('/admin/category/edit/<int:id>', methods=['GET', 'POST'])
-@admin_required
+@staff_required
 def admin_category_edit(id):
     category = query_one("SELECT * FROM DanhMuc WHERE MaDanhMuc = %s", (id,))
     if not category:
@@ -1690,7 +1694,7 @@ def admin_user_delete(id):
     return redirect(url_for('admin_users'))
 
 @app.route('/admin/orders')
-@admin_required
+@staff_required
 def admin_orders():
     status_filter = request.args.get('status')
     sql = """
@@ -1708,7 +1712,7 @@ def admin_orders():
     return render_template('admin/orders.html', orders=orders, current_status=status_filter)
 
 @app.route('/admin/order/<int:id>')
-@admin_required
+@staff_required
 def admin_order_detail(id):
     order = query_one("""
         SELECT dh.*, nd.HoTen, nd.Email, nd.SoDienThoai AS PhoneUser
@@ -1731,7 +1735,7 @@ def admin_order_detail(id):
     return render_template('admin/order_detail.html', order=order, items=items)
 
 @app.route('/admin/order/<int:id>/status', methods=['POST'])
-@admin_required
+@staff_required
 def admin_order_update_status(id):
     new_order_status = request.form.get('order_status')
     new_payment_status = request.form.get('payment_status')

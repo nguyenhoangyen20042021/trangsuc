@@ -77,11 +77,13 @@
                             <a href="{{ url_for('admin_product_edit', id=p.MaSanPham) }}" class="btn btn-sm btn-glass" title="Chỉnh sửa chi tiết">
                                 <i class="fa-solid fa-pen-to-square"></i> Sửa
                             </a>
+                            {% if current_user.TenVaiTro == 'ADMIN' %}
                             <form action="{{ url_for('admin_product_delete', id=p.MaSanPham) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm trang sức này?');" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" title="Xóa sản phẩm">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Xóa sản phẩm (Chỉ Admin)">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

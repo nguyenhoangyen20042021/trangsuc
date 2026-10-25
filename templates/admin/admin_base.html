@@ -45,8 +45,15 @@
             </div>
 
             <nav class="admin-nav">
+                <!-- Vận Hành Cửa Hàng (ADMIN & STAFF) -->
+                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--admin-muted); padding: 0.5rem 1rem 0.2rem; font-weight: 700;">
+                    Vận Hành Cửa Hàng
+                </div>
                 <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-gauge-high"></i> Tổng Quan
+                </a>
+                <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint in ['admin_orders', 'admin_order_detail'] %}active{% endif %}">
+                    <i class="fa-solid fa-receipt"></i> Quản Lý Đơn Hàng
                 </a>
                 <a href="{{ url_for('admin_products') }}" class="{% if request.endpoint in ['admin_products', 'admin_product_new', 'admin_product_edit'] %}active{% endif %}">
                     <i class="fa-solid fa-gem"></i> Quản Lý Sản Phẩm
@@ -54,18 +61,22 @@
                 <a href="{{ url_for('admin_categories') }}" class="{% if request.endpoint in ['admin_categories', 'admin_category_new', 'admin_category_edit'] %}active{% endif %}">
                     <i class="fa-solid fa-layer-group"></i> Quản Lý Danh Mục
                 </a>
-                <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint in ['admin_orders', 'admin_order_detail'] %}active{% endif %}">
-                    <i class="fa-solid fa-receipt"></i> Quản Lý Đơn Hàng
-                </a>
-                <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint in ['admin_users', 'admin_user_new', 'admin_user_edit'] %}active{% endif %}">
-                    <i class="fa-solid fa-users"></i> Quản Lý Người Dùng
-                </a>
-                <a href="{{ url_for('admin_vouchers') }}" class="{% if request.endpoint == 'admin_vouchers' %}active{% endif %}">
-                    <i class="fa-solid fa-tag"></i> Quản Lý Voucher
-                </a>
-                <a href="{{ url_for('admin_ai_settings') }}" class="{% if request.endpoint == 'admin_ai_settings' %}active{% endif %}">
-                    <i class="fa-solid fa-robot"></i> Cấu Hình DeepSeek AI
-                </a>
+
+                <!-- Quản Trị Hệ Thống (CHỈ DÀNH RIÊNG CHO ADMIN) -->
+                {% if current_user.TenVaiTro == 'ADMIN' %}
+                    <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--admin-gold); padding: 1.2rem 1rem 0.2rem; font-weight: 700;">
+                        Quản Trị Hệ Thống
+                    </div>
+                    <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint in ['admin_users', 'admin_user_new', 'admin_user_edit'] %}active{% endif %}">
+                        <i class="fa-solid fa-users-gear"></i> Quản Lý Người Dùng
+                    </a>
+                    <a href="{{ url_for('admin_vouchers') }}" class="{% if request.endpoint == 'admin_vouchers' %}active{% endif %}">
+                        <i class="fa-solid fa-tag"></i> Quản Lý Voucher
+                    </a>
+                    <a href="{{ url_for('admin_ai_settings') }}" class="{% if request.endpoint == 'admin_ai_settings' %}active{% endif %}">
+                        <i class="fa-solid fa-robot"></i> Cấu Hình DeepSeek AI
+                    </a>
+                {% endif %}
                 
                 <div style="margin-top: 2rem; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
                     <a href="{{ url_for('index') }}" target="_blank">
@@ -84,7 +95,19 @@
                 <div>
                     <span style="font-size: 0.88rem; color: var(--admin-muted);">Xin chào, </span>
                     <strong style="color: var(--admin-text); font-size: 0.98rem; font-weight: 700;">{{ current_user.HoTen }}</strong>
-                    <span style="margin-left: 10px; background: #FFF0F2; color: var(--admin-rose); border: 1px solid var(--admin-border); font-size: 0.74rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px;">{{ current_user.TenVaiTro }}</span>
+                    {% if current_user.TenVaiTro == 'ADMIN' %}
+                        <span style="margin-left: 10px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; font-size: 0.74rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-crown" style="margin-right: 4px; color: #EAB308;"></i> Quản Trị Viên (ADMIN)
+                        </span>
+                    {% elif current_user.TenVaiTro == 'STAFF' %}
+                        <span style="margin-left: 10px; background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; font-size: 0.74rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-user-gear" style="margin-right: 4px;"></i> Nhân Viên (STAFF)
+                        </span>
+                    {% else %}
+                        <span style="margin-left: 10px; background: #FFF0F2; color: var(--admin-rose); border: 1px solid var(--admin-border); font-size: 0.74rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px;">
+                            {{ current_user.TenVaiTro }}
+                        </span>
+                    {% endif %}
                 </div>
                 <div>
                     <span style="font-size: 0.86rem; color: var(--admin-muted);">

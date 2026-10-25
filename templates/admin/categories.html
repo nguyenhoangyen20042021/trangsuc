@@ -67,12 +67,14 @@
                             <a href="{{ url_for('admin_category_edit', id=cat.MaDanhMuc) }}" class="btn btn-sm btn-outline-gold" title="Chỉnh sửa">
                                 <i class="fa-solid fa-pen-to-square"></i> Sửa
                             </a>
+                            {% if current_user.TenVaiTro == 'ADMIN' %}
                             <form action="{{ url_for('admin_category_delete', id=cat.MaDanhMuc) }}" method="POST" 
                                   onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục \'{{ cat.TenDanhMuc }}\'?');" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" style="background: #FFF1F2; color: #EF4444; border: 1px solid #FECDD3;" title="Xóa">
+                                <button type="submit" class="btn btn-sm btn-danger" style="background: #FFF1F2; color: #EF4444; border: 1px solid #FECDD3;" title="Xóa (Chỉ Admin)">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
