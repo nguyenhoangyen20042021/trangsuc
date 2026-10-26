@@ -21,12 +21,10 @@ import {
   TableRow
 } from '@mui/material';
 import {
-  Person as PersonIcon,
-  ReceiptLong as OrdersIcon,
   Lock as LockIcon,
-  Save as SaveIcon,
-  LocalShipping as TrackIcon
+  Save as SaveIcon
 } from '@mui/icons-material';
+import { LuxuryUserIcon, OrderTrackingProductIcon, LuxuryGiaIcon } from '../components/icons/ProductIcons';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../services/api';
@@ -88,7 +86,7 @@ export const ProfilePage = () => {
 
   return (
     <Box sx={{ py: 6, pb: 14 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Typography
           variant="h3"
           component="h1"
@@ -131,7 +129,8 @@ export const ProfilePage = () => {
               </Typography>
 
               <Chip
-                label={currentUser?.TenVaiTro === 'ADMIN' ? '👑 Quản Trị Viên' : '💎 Khách Hàng VIP'}
+                icon={<LuxuryGiaIcon sx={{ fontSize: 16, color: '#FFFFFF !important' }} />}
+                label={currentUser?.TenVaiTro === 'ADMIN' ? 'Quản Trị Viên' : 'Khách Hàng VIP'}
                 color="primary"
                 size="small"
                 sx={{ mt: 1, mb: 2, fontWeight: 700 }}
@@ -161,8 +160,8 @@ export const ProfilePage = () => {
                   }
                 }}
               >
-                <Tab icon={<PersonIcon />} iconPosition="start" label="Hồ Sơ Cá Nhân" />
-                <Tab icon={<OrdersIcon />} iconPosition="start" label="Lịch Sử Mua Hàng" />
+                <Tab icon={<LuxuryUserIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Hồ Sơ Cá Nhân" />
+                <Tab icon={<OrderTrackingProductIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Lịch Sử Mua Hàng" />
                 <Tab icon={<LockIcon />} iconPosition="start" label="Bảo Mật & Mật Khẩu" />
               </Tabs>
             </Paper>
@@ -283,7 +282,7 @@ export const ProfilePage = () => {
                                 to={`/order-tracking?code=${ord.id}`}
                                 size="small"
                                 variant="outlined"
-                                startIcon={<TrackIcon />}
+                                startIcon={<OrderTrackingProductIcon sx={{ fontSize: 16 }} />}
                                 sx={{ borderRadius: 20, fontSize: '0.75rem', whiteSpace: 'nowrap' }}
                               >
                                 Theo dõi

@@ -13,26 +13,48 @@ import {
   Divider
 } from '@mui/material';
 import {
-  Diamond as DiamondIcon,
-  WorkspacePremium as GIAIcon,
-  LocalShipping as ShippingIcon,
-  PublishedWithChanges as WarrantyIcon,
-  SmartToy as AiIcon,
   ArrowForward as ArrowForwardIcon,
   ContentCopy as CopyIcon,
   AutoAwesome as SparkleIcon,
   HandymanOutlined as CraftIcon
 } from '@mui/icons-material';
+import {
+  RingProductIcon,
+  NecklaceProductIcon,
+  BraceletProductIcon,
+  EarringsProductIcon,
+  RoyalCrownProductIcon,
+  AllJewelryProductIcon,
+  OrderTrackingProductIcon,
+  LuxurySparkleIcon,
+  LuxuryGiaIcon,
+  getCategoryProductIcon
+} from '../components/icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_VOUCHERS } from '../services/api';
+import {
+  MOCK_PRODUCTS,
+  MOCK_CATEGORIES,
+  MOCK_VOUCHERS,
+  getStoredProducts,
+  fetchProducts,
+  getStoredVouchers,
+  fetchVouchers
+} from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export const HomePage = () => {
   const { notify } = useAuth();
+  const [products, setProducts] = React.useState(getStoredProducts);
+  const [vouchers, setVouchers] = React.useState(getStoredVouchers);
 
-  const featuredProducts = MOCK_PRODUCTS.filter(p => p.LaNoiBat === 1).slice(0, 4);
-  const bestsellers = [...MOCK_PRODUCTS].sort((a, b) => b.TongBan - a.TongBan).slice(0, 4);
+  React.useEffect(() => {
+    fetchProducts().then(data => { if (data && data.length) setProducts(data); });
+    fetchVouchers().then(data => { if (data && data.length) setVouchers(data); });
+  }, []);
+
+  const featuredProducts = products.filter(p => p.LaNoiBat === 1).slice(0, 4);
+  const bestsellers = [...products].sort((a, b) => b.TongBan - a.TongBan).slice(0, 4);
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -54,7 +76,7 @@ export const HomePage = () => {
           borderBottom: '1px solid rgba(197, 168, 128, 0.18)'
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="lg">
           <Grid container spacing={{ xs: 4, md: 8 }} sx={{ alignItems: 'center' }}>
             
             {/* Left Content Column */}
@@ -165,7 +187,7 @@ export const HomePage = () => {
                   to="/ai-consultant"
                   variant="outlined"
                   size="large"
-                  startIcon={<AiIcon sx={{ color: '#D4AF37' }} />}
+                  startIcon={<LuxurySparkleIcon sx={{ color: '#D4AF37' }} />}
                   sx={{
                     px: 3.5,
                     py: 1.6,
@@ -242,7 +264,7 @@ export const HomePage = () => {
                     boxShadow: '0 12px 30px rgba(0,0,0,0.08)'
                   }}
                 >
-                  <GIAIcon sx={{ color: '#D4AF37', fontSize: 34 }} />
+                  <LuxuryGiaIcon sx={{ color: '#D4AF37', fontSize: 32 }} />
                   <Box>
                     <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', color: '#8B3A48', letterSpacing: '0.06em' }}>
                       GIA CERTIFICATE
@@ -259,7 +281,7 @@ export const HomePage = () => {
       </Box>
 
       {/* 2. Brand Heritage Pillars (Minimalist luxury 4-pillar strip) */}
-      <Container maxWidth="xl" sx={{ mt: -3.5, position: 'relative', zIndex: 10 }}>
+      <Container maxWidth="lg" sx={{ mt: -3.5, position: 'relative', zIndex: 10 }}>
         <Paper
           elevation={0}
           sx={{
@@ -274,7 +296,7 @@ export const HomePage = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <Box sx={{ p: 1.4, borderRadius: 2, bgcolor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' }}>
-                  <GIAIcon />
+                  <LuxuryGiaIcon sx={{ fontSize: 24 }} />
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>Kiểm Định GIA Quốc Tế</Typography>
@@ -286,7 +308,7 @@ export const HomePage = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <Box sx={{ p: 1.4, borderRadius: 2, bgcolor: 'rgba(183, 110, 121, 0.1)', color: '#B76E79' }}>
-                  <WarrantyIcon />
+                  <RingProductIcon sx={{ fontSize: 24 }} />
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>Bảo Hành & Xi Mạ Trọn Đời</Typography>
@@ -298,7 +320,7 @@ export const HomePage = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <Box sx={{ p: 1.4, borderRadius: 2, bgcolor: 'rgba(212, 175, 55, 0.1)', color: '#D4AF37' }}>
-                  <ShippingIcon />
+                  <OrderTrackingProductIcon sx={{ fontSize: 24 }} />
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>Giao Hỏa Tốc Có Bảo Hiểm</Typography>
@@ -310,7 +332,7 @@ export const HomePage = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <Box sx={{ p: 1.4, borderRadius: 2, bgcolor: 'rgba(183, 110, 121, 0.1)', color: '#B76E79' }}>
-                  <AiIcon />
+                  <LuxurySparkleIcon sx={{ fontSize: 24 }} />
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>Trợ Lý AI Stylist 24/7</Typography>
@@ -323,7 +345,7 @@ export const HomePage = () => {
       </Container>
 
       {/* 3. Bento Grid Categories Showcase (Xu Hướng Bento Grid Hiện Đại) */}
-      <Container maxWidth="xl" sx={{ mt: 10 }}>
+      <Container maxWidth="lg" sx={{ mt: 10 }}>
         <Box sx={{ textAlign: 'center', mb: 5 }}>
           <Typography
             variant="caption"
@@ -393,7 +415,12 @@ export const HomePage = () => {
                   p: { xs: 3, md: 4 }
                 }}
               >
-                <Chip label="BỘ SƯU TẬP CHỦ ĐẠO" size="small" sx={{ bgcolor: 'rgba(212, 175, 55, 0.9)', color: '#2C1F20', fontWeight: 700, width: 'fit-content', mb: 1, fontSize: '0.68rem' }} />
+                <Chip
+                  icon={<RingProductIcon sx={{ fontSize: '15px !important', color: '#2C1F20 !important' }} />}
+                  label="BỘ SƯU TẬP CHỦ ĐẠO"
+                  size="small"
+                  sx={{ bgcolor: 'rgba(212, 175, 55, 0.9)', color: '#2C1F20', fontWeight: 700, width: 'fit-content', mb: 1, fontSize: '0.68rem' }}
+                />
                 <Typography variant="h4" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1 }}>
                   {MOCK_CATEGORIES[0]?.TenDanhMuc}
                 </Typography>
@@ -450,9 +477,12 @@ export const HomePage = () => {
                     p: 3
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                    {MOCK_CATEGORIES[1]?.TenDanhMuc}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <NecklaceProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
+                    <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
+                      {MOCK_CATEGORIES[1]?.TenDanhMuc}
+                    </Typography>
+                  </Box>
                   <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
                     Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
                   </Typography>
@@ -499,9 +529,12 @@ export const HomePage = () => {
                     p: 3
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                    {MOCK_CATEGORIES[2]?.TenDanhMuc}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BraceletProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
+                    <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
+                      {MOCK_CATEGORIES[2]?.TenDanhMuc}
+                    </Typography>
+                  </Box>
                   <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
                     Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
                   </Typography>
@@ -615,7 +648,7 @@ export const HomePage = () => {
       </Container>
 
       {/* 4. Curated Masterpieces (Sản Phẩm Tinh Tuyển Nổi Bật) */}
-      <Container maxWidth="xl" sx={{ mt: 12 }}>
+      <Container maxWidth="lg" sx={{ mt: 12 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 4.5 }}>
           <Box>
             <Typography variant="caption" sx={{ color: '#B76E79', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
@@ -645,7 +678,7 @@ export const HomePage = () => {
       </Container>
 
       {/* 5. Editorial Artisanal Craftsmanship Spotlight */}
-      <Container maxWidth="xl" sx={{ mt: 13 }}>
+      <Container maxWidth="lg" sx={{ mt: 13 }}>
         <Paper
           elevation={0}
           sx={{
@@ -719,7 +752,7 @@ export const HomePage = () => {
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                  <GIAIcon sx={{ color: '#B76E79', mt: 0.3 }} />
+                  <LuxuryGiaIcon sx={{ color: '#B76E79', mt: 0.3, fontSize: 24 }} />
                   <Box>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>
                       Vàng Ý 750 (18K) Đúc Đặc Tinh Khiết
@@ -736,7 +769,7 @@ export const HomePage = () => {
       </Container>
 
       {/* 6. Special Voucher Privileges */}
-      <Container maxWidth="xl" sx={{ mt: 12 }}>
+      <Container maxWidth="lg" sx={{ mt: 12 }}>
         <Paper
           elevation={0}
           sx={{
@@ -760,7 +793,7 @@ export const HomePage = () => {
 
             <Grid size={{ xs: 12, md: 7.5 }}>
               <Grid container spacing={2}>
-                {MOCK_VOUCHERS.map((v) => (
+                {vouchers.map((v) => (
                   <Grid key={v.MaCode} size={{ xs: 12, sm: 4 }}>
                     <Card
                       sx={{
@@ -797,7 +830,7 @@ export const HomePage = () => {
       </Container>
 
       {/* 7. Bestsellers */}
-      <Container maxWidth="xl" sx={{ mt: 12 }}>
+      <Container maxWidth="lg" sx={{ mt: 12 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 4.5 }}>
           <Box>
             <Typography variant="caption" sx={{ color: '#B76E79', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -21,11 +21,12 @@ import {
   Stack
 } from '@mui/material';
 import {
-  PersonAdd as AddUserIcon,
   Edit as EditIcon,
   Block as BlockIcon,
   CheckCircle as ActiveIcon
 } from '@mui/icons-material';
+import { LuxuryUserIcon } from '../../components/icons/ProductIcons';
+import { getStoredUsers, fetchUsers, createUser } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const INITIAL_USERS = [
@@ -37,7 +38,13 @@ const INITIAL_USERS = [
 
 export const AdminUsersPage = () => {
   const { notify } = useAuth();
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const [users, setUsers] = useState(getStoredUsers);
+
+  useEffect(() => {
+    fetchUsers().then(data => {
+      if (data && data.length) setUsers(data);
+    });
+  }, []);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
@@ -65,7 +72,7 @@ export const AdminUsersPage = () => {
     notify(`Đã ${active ? 'khóa' : 'mở khóa'} tài khoản "${name}"!`, 'info');
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.username.trim() || !formData.fullName.trim()) {
       notify('Vui lòng điền đầy đủ tên đăng nhập và họ tên!', 'warning');
@@ -76,7 +83,8 @@ export const AdminUsersPage = () => {
       setUsers(prev => prev.map(u => (u.id === editingUser.id ? { ...u, ...formData } : u)));
       notify(`Đã cập nhật tài khoản "${formData.fullName}"!`, 'success');
     } else {
-      setUsers([...users, { id: Date.now(), ...formData, active: true }]);
+      const newUser = await createUser(formData);
+      setUsers(prev => [...prev, newUser]);
       notify(`Đã tạo tài khoản người dùng mới thành công!`, 'success');
     }
     setOpenDialog(false);
@@ -97,7 +105,7 @@ export const AdminUsersPage = () => {
         <Button
           variant="contained"
           color="primary"
-          startIcon={<AddUserIcon />}
+          startIcon={<LuxuryUserIcon sx={{ fontSize: 18 }} />}
           onClick={handleOpenAdd}
           sx={{ borderRadius: 20, px: 3, fontWeight: 700 }}
         >
@@ -131,7 +139,7 @@ export const AdminUsersPage = () => {
                   <TableCell>{u.phone}</TableCell>
                   <TableCell>
                     <Chip
-                      label={u.role === 'ADMIN' ? '👑 ADMIN' : (u.role === 'STAFF' ? '💼 STAFF' : '💎 CUSTOMER')}
+                      label={u.role}
                       color={u.role === 'ADMIN' ? 'error' : (u.role === 'STAFF' ? 'primary' : 'default')}
                       size="small"
                       sx={{ fontWeight: 700 }}
@@ -205,9 +213,9 @@ export const AdminUsersPage = () => {
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               >
-                <MenuItem value="CUSTOMER">💎 CUSTOMER (Khách hàng)</MenuItem>
-                <MenuItem value="STAFF">💼 STAFF (Nhân viên kinh doanh)</MenuItem>
-                <MenuItem value="ADMIN">👑 ADMIN (Quản trị viên toàn quyền)</MenuItem>
+                <MenuItem value="CUSTOMER">CUSTOMER (Khách hàng)</MenuItem>
+                <MenuItem value="STAFF">STAFF (Nhân viên kinh doanh)</MenuItem>
+                <MenuItem value="ADMIN">ADMIN (Quản trị viên toàn quyền)</MenuItem>
               </TextField>
             </Stack>
           </DialogContent>

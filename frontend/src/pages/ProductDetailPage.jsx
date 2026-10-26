@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -20,24 +20,27 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  TextField
+  TextField,
+  CircularProgress
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
-  ShoppingBag as CartIcon,
-  FlashOn as BuyNowIcon,
   Add as AddIcon,
   Remove as RemoveIcon,
-  WorkspacePremium as GIAIcon,
-  Security as WarrantyIcon,
-  LocalShipping as ShippingIcon,
   CheckCircle as CheckIcon,
   Send as SendIcon,
   RateReview as ReviewIcon
 } from '@mui/icons-material';
+import {
+  LuxuryBagIcon as CartIcon,
+  LuxurySparkleIcon as BuyNowIcon,
+  LuxuryGiaIcon as GIAIcon,
+  RingProductIcon as WarrantyIcon,
+  OrderTrackingProductIcon as ShippingIcon
+} from '../components/icons/ProductIcons';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MOCK_PRODUCTS, formatCurrency } from '../services/api';
+import { MOCK_PRODUCTS, formatCurrency, getStoredProducts, fetchProductById } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
@@ -48,15 +51,46 @@ export const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const { currentUser, notify } = useAuth();
 
-  // Find product by Slug or MaSanPham
-  const product = MOCK_PRODUCTS.find(p => p.Slug === id || String(p.MaSanPham) === id) || MOCK_PRODUCTS[0];
-
-  const [activeImage, setActiveImage] = useState(product.HinhAnhChinh);
-  const [selectedVariant, setSelectedVariant] = useState(
-    product.bienthe && product.bienthe.length > 0 ? product.bienthe[0] : null
+  const [product, setProduct] = useState(() => {
+    const all = getStoredProducts();
+    return all.find(p => p.Slug === id || String(p.MaSanPham) === String(id)) || null;
+  });
+  const [loading, setLoading] = useState(!product);
+  const [activeImage, setActiveImage] = useState(() => product?.HinhAnhChinh || '');
+  const [selectedVariant, setSelectedVariant] = useState(() =>
+    product?.bienthe && product.bienthe.length > 0 ? product.bienthe[0] : null
   );
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const initialFind = getStoredProducts().find(p => p.Slug === id || String(p.MaSanPham) === String(id));
+    if (initialFind) {
+      setProduct(initialFind);
+      setActiveImage(initialFind.HinhAnhChinh || (initialFind.gallery && initialFind.gallery[0]) || '');
+      setSelectedVariant(initialFind.bienthe && initialFind.bienthe.length > 0 ? initialFind.bienthe[0] : null);
+      setQuantity(1);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
+    fetchProductById(id).then((fetched) => {
+      if (!isMounted) return;
+      if (fetched) {
+        setProduct(fetched);
+        setActiveImage(fetched.HinhAnhChinh || (fetched.gallery && fetched.gallery[0]) || '');
+        setSelectedVariant(fetched.bienthe && fetched.bienthe.length > 0 ? fetched.bienthe[0] : null);
+        setQuantity(1);
+      }
+      setLoading(false);
+    }).catch(() => {
+      if (isMounted) setLoading(false);
+    });
+
+    return () => { isMounted = false; };
+  }, [id]);
 
   // Reviews state & form
   const [reviews, setReviews] = useState([
@@ -97,8 +131,34 @@ export const ProductDetailPage = () => {
     notify('Cảm ơn Quý khách đã gửi nhận xét đánh giá sản phẩm!', 'success');
   };
 
-  const relatedProducts = MOCK_PRODUCTS.filter(p => p.MaSanPham !== product.MaSanPham).slice(0, 4);
+  if (loading && !product) {
+    return (
+      <Box sx={{ py: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress sx={{ color: 'primary.main', mb: 2 }} />
+        <Typography variant="body1" sx={{ color: 'text.secondary', letterSpacing: '0.04em' }}>
+          Đang tải chi tiết kiệt tác kim hoàn...
+        </Typography>
+      </Box>
+    );
+  }
 
+  if (!product) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 12, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 2 }}>
+          Không tìm thấy thông tin sản phẩm
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+          Sản phẩm có thể đã ngừng kinh doanh hoặc đường dẫn không chính xác.
+        </Typography>
+        <Button component={Link} to="/products" variant="contained" color="primary" sx={{ borderRadius: 20, px: 3.5, py: 1 }}>
+          Xem tất cả trang sức
+        </Button>
+      </Container>
+    );
+  }
+
+  const relatedProducts = getStoredProducts().filter(p => p.MaSanPham !== product.MaSanPham).slice(0, 4);
   const currentPrice = selectedVariant ? selectedVariant.GiaBan : (product.GiaMin || product.GiaCoSo);
 
   const handleAddToCart = () => {
@@ -112,7 +172,7 @@ export const ProductDetailPage = () => {
 
   return (
     <Box sx={{ py: 4, pb: 10 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 4 }}>
           <MuiLink component={Link} to="/" color="inherit" sx={{ fontSize: '0.86rem' }}>

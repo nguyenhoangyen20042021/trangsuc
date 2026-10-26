@@ -15,18 +15,17 @@ import {
   Alert
 } from '@mui/material';
 import {
-  LocalShipping as ShippingIcon,
   Store as StoreIcon,
   CreditCard as CardIcon,
   QrCode2 as QrIcon,
   Payments as CodIcon,
-  Security as SecurityIcon,
   Lock as LockIcon
 } from '@mui/icons-material';
+import { OrderTrackingProductIcon, LuxuryGiaIcon } from '../components/icons/ProductIcons';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../services/api';
+import { formatCurrency, createOrder } from '../services/api';
 
 export const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -51,7 +50,7 @@ export const CheckoutPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (!formData.fullName || !formData.phone || !formData.address) {
       notify('Vui lòng điền đầy đủ thông tin giao hàng bắt buộc!', 'warning');
@@ -59,9 +58,27 @@ export const CheckoutPage = () => {
     }
 
     setLoading(true);
-    // Simulate placing order
-    setTimeout(() => {
-      const orderId = 'LB' + Math.floor(100000 + Math.random() * 900000);
+    try {
+      const newOrder = await createOrder({
+        userId: currentUser?.MaNguoiDung || 3,
+        fullName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        notes: formData.notes,
+        subtotal,
+        shippingFee,
+        discountAmount,
+        finalTotal,
+        paymentMethod: formData.paymentMethod,
+        items: cart.map(it => ({
+          TenSanPham: it.TenSanPham,
+          TenBienThe: it.TenBienThe,
+          SoLuong: it.SoLuong,
+          GiaBan: it.GiaBan
+        }))
+      });
+      const orderId = newOrder.id;
       clearCart();
       setLoading(false);
       navigate(`/order-success/${orderId}`, {
@@ -72,12 +89,16 @@ export const CheckoutPage = () => {
           items: cart
         }
       });
-    }, 800);
+    } catch (e) {
+      console.error('Order creation error:', e);
+      setLoading(false);
+      notify('Đã có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại!', 'error');
+    }
   };
 
   return (
     <Box sx={{ py: 5, pb: 12 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Typography
           variant="h3"
           component="h1"
@@ -197,7 +218,7 @@ export const CheckoutPage = () => {
                         label={
                           <Box sx={{ ml: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <ShippingIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                              <OrderTrackingProductIcon sx={{ color: 'primary.main', fontSize: 22 }} />
                               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                                 Giao Hàng Hỏa Tốc Kim Hoàn (Bảo hiểm 100%)
                               </Typography>
@@ -548,7 +569,7 @@ export const CheckoutPage = () => {
                   {loading ? 'Đang Xử Lý Đơn Hàng...' : 'Xác Nhận Đặt Hàng'}
                 </Button>
 
-                <Alert severity="info" icon={<SecurityIcon sx={{ color: 'primary.main' }} />} sx={{ mt: 3, borderRadius: 2, fontSize: '0.78rem' }}>
+                <Alert severity="info" icon={<LuxuryGiaIcon sx={{ color: 'primary.main', fontSize: 20 }} />} sx={{ mt: 3, borderRadius: 2, fontSize: '0.78rem' }}>
                   Thông tin thanh toán của bạn được mã hóa an toàn 256-bit SSL.
                 </Alert>
               </Paper>

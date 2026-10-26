@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -22,14 +22,29 @@ import {
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  CloudUpload as UploadIcon
 } from '@mui/icons-material';
-import { MOCK_CATEGORIES } from '../../services/api';
+import { getCategoryProductIcon } from '../../components/icons/ProductIcons';
+import {
+  MOCK_CATEGORIES,
+  getStoredCategories,
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory
+} from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminCategoriesPage = () => {
   const { notify } = useAuth();
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState(getStoredCategories);
+
+  useEffect(() => {
+    fetchCategories().then(data => {
+      if (data && data.length) setCategories(data);
+    });
+  }, []);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
   const [formData, setFormData] = useState({
@@ -61,14 +76,15 @@ export const AdminCategoriesPage = () => {
     setOpenDialog(true);
   };
 
-  const handleDelete = (id, name) => {
+  const handleDelete = async (id, name) => {
     if (window.confirm(`Bạn có chắc muốn xóa danh mục "${name}"?`)) {
+      await deleteCategory(id);
       setCategories(prev => prev.filter(c => c.MaDanhMuc !== id));
       notify(`Đã xóa danh mục "${name}"!`, 'info');
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.TenDanhMuc.trim()) {
       notify('Vui lòng nhập tên danh mục!', 'warning');
@@ -78,16 +94,15 @@ export const AdminCategoriesPage = () => {
     const slug = formData.Slug.trim() || formData.TenDanhMuc.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
     if (editingCat) {
-      setCategories(prev => prev.map(c => (c.MaDanhMuc === editingCat.MaDanhMuc ? { ...c, ...formData, Slug: slug } : c)));
+      const updatedCat = await updateCategory(editingCat.MaDanhMuc, { ...formData, Slug: slug });
+      setCategories(prev => prev.map(c => (c.MaDanhMuc === editingCat.MaDanhMuc ? updatedCat : c)));
       notify(`Đã cập nhật danh mục "${formData.TenDanhMuc}"!`, 'success');
     } else {
-      const newCat = {
-        MaDanhMuc: Date.now(),
+      const newCat = await createCategory({
         ...formData,
-        Slug: slug,
-        children: []
-      };
-      setCategories([...categories, newCat]);
+        Slug: slug
+      });
+      setCategories(prev => [...prev, newCat]);
       notify(`Đã thêm danh mục mới "${formData.TenDanhMuc}"!`, 'success');
     }
     setOpenDialog(false);
@@ -142,7 +157,10 @@ export const AdminCategoriesPage = () => {
                     />
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {cat.TenDanhMuc}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 20, color: 'primary.main' } })}
+                      <span>{cat.TenDanhMuc}</span>
+                    </Box>
                   </TableCell>
                   <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
                     /{cat.Slug}
@@ -198,12 +216,50 @@ export const AdminCategoriesPage = () => {
                 placeholder="Tự động tạo theo tên nếu để trống"
                 onChange={(e) => setFormData({ ...formData, Slug: e.target.value })}
               />
-              <TextField
-                fullWidth
-                label="Link ảnh đại diện danh mục (URL)"
-                value={formData.AnhDaiDien}
-                onChange={(e) => setFormData({ ...formData, AnhDaiDien: e.target.value })}
-              />
+              <Box>
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<UploadIcon />}
+                    component="label"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Tải ảnh từ máy tính
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setFormData(prev => ({ ...prev, AnhDaiDien: ev.target.result }));
+                            notify('Đã tải ảnh danh mục từ máy tính thành công!', 'success');
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </Button>
+                  {formData.AnhDaiDien && (
+                    <Box
+                      component="img"
+                      src={formData.AnhDaiDien}
+                      alt="Preview"
+                      sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)' }}
+                    />
+                  )}
+                </Box>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Hoặc dán URL ảnh đại diện danh mục"
+                  value={formData.AnhDaiDien}
+                  onChange={(e) => setFormData({ ...formData, AnhDaiDien: e.target.value })}
+                />
+              </Box>
               <TextField
                 fullWidth
                 multiline

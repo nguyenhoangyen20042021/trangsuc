@@ -1,18 +1,19 @@
 import React from 'react';
 import { Box, Container, Grid, Typography, Link as MuiLink, TextField, Button, Divider, Stack } from '@mui/material';
-import { Diamond as DiamondIcon, Phone as PhoneIcon, Email as EmailIcon, LocationOn as LocationIcon, Security as SecurityIcon, WorkspacePremium as PremiumIcon } from '@mui/icons-material';
+import { Phone as PhoneIcon, Email as EmailIcon, LocationOn as LocationIcon } from '@mui/icons-material';
+import { AllJewelryProductIcon, LuxuryGiaIcon, RingProductIcon } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
 
 export const Footer = () => {
   return (
     <Box sx={{ bgcolor: '#6B3A3A', color: '#FFFFFF', pt: 8, pb: 4, mt: 'auto', borderTop: '2px solid rgba(212, 175, 55, 0.4)' }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Grid container spacing={4} sx={{ mb: 6 }}>
           
           {/* Col 1: Brand & Story */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-              <DiamondIcon sx={{ color: '#D4AF37', fontSize: 28 }} />
+              <AllJewelryProductIcon sx={{ color: '#D4AF37', fontSize: 28 }} />
               <Typography variant="h5" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: '0.1em' }}>
                 LUNA BELLE
               </Typography>
@@ -22,11 +23,11 @@ export const Footer = () => {
             </Typography>
             <Stack direction="row" spacing={3}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PremiumIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
+                <LuxuryGiaIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
                 <Typography variant="caption" sx={{ color: '#F3E5AB' }}>Kiểm định GIA 100%</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <SecurityIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
+                <RingProductIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
                 <Typography variant="caption" sx={{ color: '#F3E5AB' }}>Bảo hành trọn đời</Typography>
               </Box>
             </Stack>

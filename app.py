@@ -12,7 +12,7 @@ import json
 import random
 import datetime
 from decimal import Decimal
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -20,9 +20,13 @@ from functools import wraps
 from config import Config
 from db import get_db, query_all, query_one, execute
 from ai_service import generate_deepseek_consultation, get_deepseek_config, save_deepseek_config
+from flask_cors import CORS
+from api_routes import api_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
+CORS(app)
+app.register_blueprint(api_bp)
 
 # ----------------- PRODUCT IMAGE UPLOAD CONFIGURATION -----------------
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'products')
@@ -196,45 +200,28 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ----------------- CLIENT ROUTES -----------------
+# ----------------- REACT SPA CLIENT & STATIC ROUTES -----------------
+FRONTEND_DIST = os.path.join(app.root_path, 'frontend', 'dist')
 
-@app.route('/')
-def index():
-    """Trang chủ hiển thị banner, danh mục, sản phẩm nổi bật & bán chạy."""
-    featured_products = query_all("""
-        SELECT sp.*, dm.TenDanhMuc, MIN(bt.GiaBan) AS GiaMin, MAX(bt.GiaBan) AS GiaMax,
-               (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
-        FROM SanPham sp
-        JOIN DanhMuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
-        LEFT JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-        WHERE sp.TrangThai = 'DangBan' AND sp.LaNoiBat = 1
-        GROUP BY sp.MaSanPham
-        LIMIT 8
-    """)
-    
-    bestseller_products = query_all("""
-        SELECT sp.*, dm.TenDanhMuc, MIN(bt.GiaBan) AS GiaMin, MAX(bt.GiaBan) AS GiaMax,
-               (SELECT DuongDanAnh FROM HinhAnhSanPham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh,
-               COALESCE(SUM(ctdh.SoLuong), 0) AS TongBan
-        FROM SanPham sp
-        JOIN DanhMuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
-        LEFT JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-        LEFT JOIN ChiTietDonHang ctdh ON bt.MaBienThe = ctdh.MaBienThe
-        WHERE sp.TrangThai = 'DangBan'
-        GROUP BY sp.MaSanPham
-        ORDER BY TongBan DESC, sp.LaNoiBat DESC
-        LIMIT 8
-    """)
-    active_vouchers = query_all("""
-        SELECT * FROM MaGiamGia 
-        WHERE TrangThai = 1 AND NgayKetThuc > NOW() AND SoLuongSuDung > SoLuongDaDung 
-        ORDER BY GiaTriGiam DESC LIMIT 3
-    """)
-    
-    return render_template('index.html', 
-                           featured_products=featured_products, 
-                           bestseller_products=bestseller_products,
-                           active_vouchers=active_vouchers)
+@app.route('/assets/<path:filename>')
+def serve_react_assets(filename):
+    assets_dir = os.path.join(FRONTEND_DIST, 'assets')
+    if os.path.exists(os.path.join(assets_dir, filename)):
+        return send_from_directory(assets_dir, filename)
+    abort(404)
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_spa(path):
+    if path.startswith('api') or path.startswith('static'):
+        abort(404)
+    file_path = os.path.join(FRONTEND_DIST, path)
+    if path and os.path.exists(file_path) and os.path.isfile(file_path):
+        return send_from_directory(FRONTEND_DIST, path)
+    index_file = os.path.join(FRONTEND_DIST, 'index.html')
+    if os.path.exists(index_file):
+        return send_from_directory(FRONTEND_DIST, 'index.html')
+    return redirect('http://localhost:5173')
 
 @app.route('/products')
 def products():

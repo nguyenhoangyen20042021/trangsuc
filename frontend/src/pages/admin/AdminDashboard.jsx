@@ -21,14 +21,17 @@ import {
 } from '@mui/material';
 import {
   AttachMoney as RevenueIcon,
-  ShoppingBag as OrdersIcon,
-  Diamond as ProductIcon,
-  People as UsersIcon,
   Add as AddIcon,
   TrendingUp as TrendingUpIcon,
   Visibility as ViewIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
+import {
+  LuxuryBagIcon,
+  AllJewelryProductIcon,
+  LuxuryUserIcon,
+  OrderTrackingProductIcon
+} from '../../components/icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { formatCurrency, MOCK_PRODUCTS } from '../../services/api';
 
@@ -45,7 +48,7 @@ const STATS = [
     title: 'Đơn Hàng Mới',
     value: '64 đơn',
     change: '+12 đơn trong tuần',
-    icon: <OrdersIcon sx={{ fontSize: 28, color: '#B76E79' }} />,
+    icon: <OrderTrackingProductIcon sx={{ fontSize: 28, color: '#B76E79' }} />,
     color: '#B76E79',
     bg: 'rgba(183, 110, 121, 0.1)'
   },
@@ -53,7 +56,7 @@ const STATS = [
     title: 'Sản Phẩm Đang Bán',
     value: `${MOCK_PRODUCTS.length} sản phẩm`,
     change: '3 sản phẩm sắp hết hàng',
-    icon: <ProductIcon sx={{ fontSize: 28, color: '#3b82f6' }} />,
+    icon: <AllJewelryProductIcon sx={{ fontSize: 28, color: '#3b82f6' }} />,
     color: '#3b82f6',
     bg: 'rgba(59, 130, 246, 0.1)'
   },
@@ -61,7 +64,7 @@ const STATS = [
     title: 'Khách Hàng Thành Viên',
     value: '1,280 VIP',
     change: '+35 thành viên mới',
-    icon: <UsersIcon sx={{ fontSize: 28, color: '#10b981' }} />,
+    icon: <LuxuryUserIcon sx={{ fontSize: 28, color: '#10b981' }} />,
     color: '#10b981',
     bg: 'rgba(16, 185, 129, 0.1)'
   }

@@ -20,19 +20,29 @@ import {
   ListItemIcon
 } from '@mui/material';
 import {
-  Search as SearchIcon,
-  ShoppingBag as CartIcon,
-  SmartToy as RobotIcon,
-  Person as UserIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   KeyboardArrowDown as ArrowDownIcon,
   AdminPanelSettings as AdminIcon,
   ReceiptLong as OrderIcon,
-  Logout as LogoutIcon,
-  Diamond as DiamondIcon
+  Logout as LogoutIcon
 } from '@mui/icons-material';
+import {
+  RingProductIcon,
+  NecklaceProductIcon,
+  BraceletProductIcon,
+  EarringsProductIcon,
+  RoyalCrownProductIcon,
+  AllJewelryProductIcon,
+  OrderTrackingProductIcon,
+  LuxuryBagIcon,
+  LuxurySearchIcon,
+  LuxuryUserIcon,
+  LuxurySparkleIcon,
+  LuxuryGiaIcon,
+  getCategoryProductIcon
+} from './icons/ProductIcons';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -83,7 +93,6 @@ export const Navbar = () => {
           bgcolor: '#1E1416',
           color: '#F5E6AB',
           py: 0.8,
-          textAlign: 'center',
           fontSize: '0.72rem',
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
@@ -91,7 +100,9 @@ export const Navbar = () => {
           borderBottom: '1px solid rgba(212, 175, 55, 0.25)'
         }}
       >
-        ✦ MIỄN PHÍ VẬN CHUYỂN BẢO HIỂM TOÀN QUỐC · BẢO HÀNH KIM CƯƠNG GIA TRỌN ĐỜI ✦
+        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+          ✦ MIỄN PHÍ VẬN CHUYỂN BẢO HIỂM TOÀN QUỐC · BẢO HÀNH KIM CƯƠNG GIA TRỌN ĐỜI ✦
+        </Container>
       </Box>
 
       {/* 2. Main Glassmorphism Header */}
@@ -105,7 +116,7 @@ export const Navbar = () => {
           zIndex: 1100
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ minHeight: { xs: 68, md: 76 }, justifyContent: 'space-between', gap: 2 }}>
             
             {/* Mobile Hamburger */}
@@ -144,7 +155,7 @@ export const Navbar = () => {
                   border: '1px solid rgba(212, 175, 55, 0.3)'
                 }}
               >
-                <DiamondIcon sx={{ fontSize: 22, color: '#D4AF37' }} />
+                <AllJewelryProductIcon sx={{ fontSize: 22, color: '#D4AF37' }} />
               </Box>
               <Box>
                 <Typography
@@ -199,7 +210,7 @@ export const Navbar = () => {
                 }
               }}
             >
-              <SearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 19 }} />
+              <LuxurySearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 19 }} />
               <InputBase
                 fullWidth
                 placeholder="Tìm nhẫn kim cương, dây chuyền, bông tai..."
@@ -217,7 +228,7 @@ export const Navbar = () => {
                 component={Link}
                 to="/ai-consultant"
                 variant="outlined"
-                startIcon={<RobotIcon sx={{ color: '#D4AF37' }} />}
+                startIcon={<LuxurySparkleIcon sx={{ color: '#D4AF37', fontSize: 18 }} />}
                 sx={{
                   display: { xs: 'none', md: 'inline-flex' },
                   borderColor: 'rgba(212, 175, 55, 0.4)',
@@ -253,7 +264,7 @@ export const Navbar = () => {
                       }
                     }}
                   >
-                    <CartIcon sx={{ color: '#8B3A48' }} />
+                    <LuxuryBagIcon sx={{ color: '#8B3A48', fontSize: 21 }} />
                   </Badge>
                 }
                 sx={{
@@ -278,7 +289,7 @@ export const Navbar = () => {
                 <>
                   <Button
                     onClick={(e) => setUserMenuAnchor(e.currentTarget)}
-                    startIcon={<UserIcon sx={{ color: '#8B3A48' }} />}
+                    startIcon={<LuxuryUserIcon sx={{ color: '#8B3A48', fontSize: 19 }} />}
                     endIcon={<ArrowDownIcon sx={{ fontSize: 16, display: { xs: 'none', sm: 'inline' } }} />}
                     sx={{
                       color: '#2C1F20',
@@ -315,13 +326,16 @@ export const Navbar = () => {
                       <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                         {currentUser.HoTen}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: '#B76E79', fontWeight: 600 }}>
-                        {currentUser.TenVaiTro === 'ADMIN' ? '👑 Quản Trị Viên' : '💎 Khách Hàng VIP'}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mt: 0.3 }}>
+                        <LuxuryGiaIcon sx={{ fontSize: 13, color: '#D4AF37' }} />
+                        <Typography variant="caption" sx={{ color: '#B76E79', fontWeight: 700, letterSpacing: '0.04em' }}>
+                          {currentUser.TenVaiTro === 'ADMIN' ? 'Quản Trị Viên' : 'Khách Hàng VIP'}
+                        </Typography>
+                      </Box>
                     </Box>
 
                     <MenuItem component={Link} to="/profile" onClick={() => setUserMenuAnchor(null)}>
-                      <ListItemIcon><UserIcon fontSize="small" /></ListItemIcon>
+                      <ListItemIcon><LuxuryUserIcon fontSize="small" sx={{ color: '#8B3A48' }} /></ListItemIcon>
                       <ListItemText primary="Tài khoản của tôi" />
                     </MenuItem>
 
@@ -352,7 +366,7 @@ export const Navbar = () => {
                   variant="contained"
                   color="primary"
                   size="small"
-                  startIcon={<UserIcon sx={{ fontSize: 18 }} />}
+                  startIcon={<LuxuryUserIcon sx={{ fontSize: 17 }} />}
                   sx={{
                     borderRadius: 20,
                     px: { xs: 1.2, sm: 2.2 },
@@ -380,13 +394,40 @@ export const Navbar = () => {
             position: 'relative'
           }}
         >
-          <Container maxWidth="xl" sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', position: 'relative', px: { xs: 1, sm: 2 } }}>
             <IconButton
               size="small"
               onClick={() => handleScrollNav('left')}
-              sx={{ color: '#B76E79', display: { xs: 'none', md: 'flex' }, mr: 0.5 }}
+              title="Cuộn sang trái"
+              sx={{
+                width: 34,
+                height: 34,
+                minWidth: 34,
+                flexShrink: 0,
+                mr: 1,
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(212, 175, 55, 0.4)',
+                boxShadow: '0 4px 16px rgba(183, 110, 121, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.8)',
+                color: '#8B3A48',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid rgba(183, 110, 121, 0.5)',
+                  boxShadow: '0 6px 20px rgba(183, 110, 121, 0.22)',
+                  transform: 'scale(1.1)'
+                },
+                '&:active': {
+                  transform: 'scale(0.95)'
+                }
+              }}
             >
-              <ChevronLeftIcon />
+              <ChevronLeftIcon sx={{ fontSize: 20 }} />
             </IconButton>
 
             <Box
@@ -396,85 +437,144 @@ export const Navbar = () => {
                 alignItems: 'center',
                 overflowX: 'auto',
                 whiteSpace: 'nowrap',
-                py: 0.6,
+                py: 0.8,
                 scrollbarWidth: 'none',
                 '&::-webkit-scrollbar': { display: 'none' },
-                gap: 1.2,
                 flexGrow: 1
               }}
             >
-              <Button
-                component={Link}
-                to="/"
-                sx={{
-                  color: location.pathname === '/' ? '#B76E79' : '#2C1F20',
-                  fontWeight: location.pathname === '/' ? 700 : 500,
-                  fontSize: '0.84rem',
-                  letterSpacing: '0.06em',
-                  borderRadius: 16,
-                  px: 2,
-                  borderBottom: location.pathname === '/' ? '2px solid #B76E79' : '2px solid transparent'
-                }}
-              >
-                TRANG CHỦ
-              </Button>
-
-              <Button
-                component={Link}
-                to="/products"
-                sx={{
-                  color: location.pathname === '/products' && !location.search ? '#B76E79' : '#2C1F20',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  letterSpacing: '0.06em',
-                  borderRadius: 16,
-                  px: 2
-                }}
-              >
-                TẤT CẢ TRANG SỨC
-              </Button>
-
-              {MOCK_CATEGORIES.map((cat) => (
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', margin: '0 auto', minWidth: 'max-content', gap: 0.8 }}>
                 <Button
-                  key={cat.MaDanhMuc}
-                  onClick={(e) => handleOpenCatMenu(e, cat)}
-                  endIcon={cat.children?.length > 0 ? <ArrowDownIcon sx={{ fontSize: 14 }} /> : null}
+                  component={Link}
+                  to="/"
                   sx={{
-                    color: '#2C1F20',
-                    fontWeight: 500,
-                    fontSize: '0.84rem',
-                    letterSpacing: '0.06em',
-                    borderRadius: 16,
-                    px: 2,
-                    '&:hover': { color: '#B76E79' }
+                    color: location.pathname === '/' ? '#B76E79' : '#2C1F20',
+                    bgcolor: location.pathname === '/' ? 'rgba(183, 110, 121, 0.08)' : 'transparent',
+                    fontWeight: location.pathname === '/' ? 700 : 500,
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.04em',
+                    borderRadius: 20,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    px: { xs: 1.2, md: 1.8 },
+                    py: 0.8,
+                    transition: 'all 0.2s ease',
+                    '&:hover': { color: '#B76E79', bgcolor: 'rgba(183, 110, 121, 0.04)' }
                   }}
                 >
-                  {cat.TenDanhMuc.toUpperCase()}
+                  TRANG CHỦ
                 </Button>
-              ))}
 
-              <Button
-                component={Link}
-                to="/order-tracking"
-                sx={{
-                  color: '#2C1F20',
-                  fontWeight: 500,
-                  fontSize: '0.84rem',
-                  letterSpacing: '0.06em',
-                  borderRadius: 16,
-                  px: 2
-                }}
-              >
-                TRA CỨU ĐƠN HÀNG
-              </Button>
+                <Box component="span" sx={{ width: '1px', height: 16, bgcolor: 'rgba(197, 168, 128, 0.4)', flexShrink: 0 }} />
+
+                <Button
+                  component={Link}
+                  to="/products"
+                  sx={{
+                    color: location.pathname === '/products' && !location.search ? '#B76E79' : '#2C1F20',
+                    bgcolor: location.pathname === '/products' && !location.search ? 'rgba(183, 110, 121, 0.08)' : 'transparent',
+                    fontWeight: location.pathname === '/products' && !location.search ? 700 : 500,
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.04em',
+                    borderRadius: 20,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    px: { xs: 1.2, md: 1.8 },
+                    py: 0.8,
+                    transition: 'all 0.2s ease',
+                    '&:hover': { color: '#B76E79', bgcolor: 'rgba(183, 110, 121, 0.04)' }
+                  }}
+                >
+                  TẤT CẢ TRANG SỨC
+                </Button>
+
+                {MOCK_CATEGORIES.map((cat) => {
+                  const isActive = location.search.includes(cat.Slug);
+                  return (
+                    <React.Fragment key={cat.MaDanhMuc}>
+                      <Box component="span" sx={{ width: '1px', height: 16, bgcolor: 'rgba(197, 168, 128, 0.4)', flexShrink: 0 }} />
+                      <Button
+                        onClick={(e) => handleOpenCatMenu(e, cat)}
+                        endIcon={cat.children?.length > 0 ? <ArrowDownIcon sx={{ fontSize: 14, ml: -0.2 }} /> : null}
+                        sx={{
+                          color: isActive ? '#B76E79' : '#2C1F20',
+                          bgcolor: isActive ? 'rgba(183, 110, 121, 0.08)' : 'transparent',
+                          fontWeight: isActive ? 700 : 500,
+                          fontSize: '0.82rem',
+                          letterSpacing: '0.04em',
+                          borderRadius: 20,
+                          flexShrink: 0,
+                          whiteSpace: 'nowrap',
+                          px: { xs: 1.2, md: 1.8 },
+                          py: 0.8,
+                          transition: 'all 0.25s ease',
+                          '&:hover': { color: '#B76E79', bgcolor: 'rgba(183, 110, 121, 0.04)' }
+                        }}
+                      >
+                        {cat.TenDanhMuc.toUpperCase()}
+                      </Button>
+                    </React.Fragment>
+                  );
+                })}
+
+                <Box component="span" sx={{ width: '1px', height: 16, bgcolor: 'rgba(197, 168, 128, 0.4)', flexShrink: 0 }} />
+
+                <Button
+                  component={Link}
+                  to="/order-tracking"
+                  sx={{
+                    color: location.pathname === '/order-tracking' ? '#B76E79' : '#2C1F20',
+                    bgcolor: location.pathname === '/order-tracking' ? 'rgba(183, 110, 121, 0.08)' : 'transparent',
+                    fontWeight: location.pathname === '/order-tracking' ? 700 : 500,
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.04em',
+                    borderRadius: 20,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    px: { xs: 1.2, md: 1.8 },
+                    py: 0.8,
+                    transition: 'all 0.25s ease',
+                    '&:hover': { color: '#B76E79', bgcolor: 'rgba(183, 110, 121, 0.04)' }
+                  }}
+                >
+                  TRA CỨU ĐƠN HÀNG
+                </Button>
+              </Box>
             </Box>
 
             <IconButton
               size="small"
               onClick={() => handleScrollNav('right')}
-              sx={{ color: '#B76E79', display: { xs: 'none', md: 'flex' }, ml: 0.5 }}
+              title="Cuộn sang phải"
+              sx={{
+                width: 34,
+                height: 34,
+                minWidth: 34,
+                flexShrink: 0,
+                ml: 1,
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(212, 175, 55, 0.4)',
+                boxShadow: '0 4px 16px rgba(183, 110, 121, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.8)',
+                color: '#8B3A48',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid rgba(183, 110, 121, 0.5)',
+                  boxShadow: '0 6px 20px rgba(183, 110, 121, 0.22)',
+                  transform: 'scale(1.1)'
+                },
+                '&:active': {
+                  transform: 'scale(0.95)'
+                }
+              }}
             >
-              <ChevronRightIcon />
+              <ChevronRightIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Container>
         </Box>
@@ -503,7 +603,10 @@ export const Navbar = () => {
               onClick={() => setCategoryMenuAnchor(null)}
               sx={{ fontWeight: 700, color: '#8B3A48', borderBottom: '1px dashed rgba(197, 168, 128, 0.25)' }}
             >
-              ✨ Xem tất cả {activeParentCat.TenDanhMuc}
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                <LuxurySparkleIcon sx={{ fontSize: 17, color: '#8B3A48' }} />
+              </ListItemIcon>
+              Xem tất cả {activeParentCat.TenDanhMuc}
             </MenuItem>
             {activeParentCat.children?.map((sub) => (
               <MenuItem
@@ -513,6 +616,9 @@ export const Navbar = () => {
                 onClick={() => setCategoryMenuAnchor(null)}
                 sx={{ fontSize: '0.88rem', py: 1 }}
               >
+                <ListItemIcon sx={{ minWidth: 28 }}>
+                  {getCategoryProductIcon(sub.Slug, { sx: { fontSize: 17, color: '#B76E79' } })}
+                </ListItemIcon>
                 {sub.TenDanhMuc}
               </MenuItem>
             ))}
@@ -528,7 +634,7 @@ export const Navbar = () => {
         PaperProps={{ sx: { width: 300, p: 2.5 } }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-          <DiamondIcon sx={{ color: '#D4AF37', fontSize: 24 }} />
+          <AllJewelryProductIcon sx={{ color: '#D4AF37', fontSize: 24 }} />
           <Typography variant="h6" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#8B3A48' }}>
             LUNA BELLE
           </Typography>
@@ -552,7 +658,7 @@ export const Navbar = () => {
             mb: 2.5
           }}
         >
-          <SearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 18 }} />
+          <LuxurySearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 18 }} />
           <InputBase
             fullWidth
             placeholder="Tìm trang sức..."
@@ -566,27 +672,44 @@ export const Navbar = () => {
         <List disablePadding>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+              <ListItemIcon sx={{ minWidth: 32 }}><AllJewelryProductIcon sx={{ fontSize: 18, color: '#B76E79' }} /></ListItemIcon>
               <ListItemText primary="Trang Chủ" primaryTypographyProps={{ fontWeight: 600 }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/products" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+              <ListItemIcon sx={{ minWidth: 32 }}><AllJewelryProductIcon sx={{ fontSize: 18, color: '#B76E79' }} /></ListItemIcon>
               <ListItemText primary="Tất Cả Sản Phẩm" primaryTypographyProps={{ fontWeight: 600 }} />
             </ListItemButton>
           </ListItem>
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
+
+          {/* Categories in Drawer with Product Icons */}
+          {MOCK_CATEGORIES.map(cat => (
+            <ListItem key={cat.Slug} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton component={Link} to={`/products?category=${cat.Slug}`} onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 18, color: '#D4AF37' } })}
+                </ListItemIcon>
+                <ListItemText primary={cat.TenDanhMuc} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+
+          <ListItem disablePadding sx={{ mb: 0.5, mt: 1 }}>
             <ListItemButton component={Link} to="/ai-consultant" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2, bgcolor: 'rgba(212, 175, 55, 0.08)' }}>
-              <ListItemIcon sx={{ minWidth: 36 }}><RobotIcon sx={{ color: '#D4AF37', fontSize: 20 }} /></ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 32 }}><LuxurySparkleIcon sx={{ color: '#D4AF37', fontSize: 19 }} /></ListItemIcon>
               <ListItemText primary="Tư Vấn AI Stylist" primaryTypographyProps={{ fontWeight: 700, color: '#8B3A48' }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/order-tracking" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+              <ListItemIcon sx={{ minWidth: 32 }}><OrderTrackingProductIcon sx={{ fontSize: 18, color: '#8B3A48' }} /></ListItemIcon>
               <ListItemText primary="Tra Cứu Đơn Hàng" primaryTypographyProps={{ fontWeight: 600 }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/cart" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+              <ListItemIcon sx={{ minWidth: 32 }}><LuxuryBagIcon sx={{ fontSize: 18, color: '#8B3A48' }} /></ListItemIcon>
               <ListItemText primary={`Giỏ Hàng (${cartCount})`} primaryTypographyProps={{ fontWeight: 600 }} />
             </ListItemButton>
           </ListItem>

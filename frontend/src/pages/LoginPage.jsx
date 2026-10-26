@@ -18,9 +18,9 @@ import {
 import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
-  Diamond as DiamondIcon,
   Login as LoginIcon
 } from '@mui/icons-material';
+import { AllJewelryProductIcon } from '../components/icons/ProductIcons';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -99,7 +99,7 @@ export const LoginPage = () => {
                 border: '1px solid rgba(183, 110, 121, 0.25)'
               }}
             >
-              <DiamondIcon sx={{ fontSize: 28 }} />
+              <AllJewelryProductIcon sx={{ fontSize: 26 }} />
             </Box>
             <Typography variant="h4" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#2C1F20' }}>
               Đăng Nhập

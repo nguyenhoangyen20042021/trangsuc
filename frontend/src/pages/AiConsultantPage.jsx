@@ -16,16 +16,18 @@ import {
   CircularProgress
 } from '@mui/material';
 import {
-  SmartToy as RobotIcon,
   Send as SendIcon,
-  AutoAwesome as SparkleIcon,
-  Person as UserIcon,
-  ShoppingBag as CartIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
+import {
+  LuxurySparkleIcon,
+  LuxuryUserIcon,
+  LuxuryBagIcon,
+  AllJewelryProductIcon
+} from '../components/icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { MOCK_PRODUCTS, formatCurrency } from '../services/api';
+import { MOCK_PRODUCTS, getStoredProducts, formatCurrency } from '../services/api';
 
 const QUICK_PROMPTS = [
   'Tư vấn nhẫn cầu hôn dưới 30 triệu tinh xảo',
@@ -70,22 +72,23 @@ export const AiConsultantPage = () => {
 
     // Simulate AI consultation logic
     setTimeout(() => {
+      const allProducts = getStoredProducts();
       let aiResponse = '';
       let recommended = [];
 
       const q = query.toLowerCase();
       if (q.includes('cầu hôn') || q.includes('dưới 30') || q.includes('nhẫn')) {
         aiResponse = 'Dựa trên mong muốn của Quý khách, tôi xin trân trọng đề xuất tuyệt phẩm **Nhẫn Kim Cương Solitaire Eternal Grace**. Mẫu nhẫn được đúc từ Vàng Trắng 18K với viên kim cương chuẩn GIA 4.5 ly nước F, độ sạch VVS1 trên chấu 6 trấu thanh thoát biểu tượng cho tình yêu vĩnh cửu. Đây là sự lựa chọn hoàn hảo nhất trong tầm giá dưới 30 triệu đồng!';
-        recommended = [MOCK_PRODUCTS[0], MOCK_PRODUCTS[5]];
+        recommended = [allProducts[0], allProducts[5] || allProducts[0]];
       } else if (q.includes('mệnh kim') || q.includes('phong thủy')) {
         aiResponse = 'Theo thuyết ngũ hành tương sinh, người mệnh Kim rất hợp với ánh sáng lấp lánh của Kim Cương tự nhiên, Vàng Trắng 750 (18K) hoặc Ngọc Trai biển South Sea ánh bạc. Những gam màu trắng sáng và ánh kim này sẽ kích hoạt cung tài lộc, mang đến vượng khí và may mắn cho chủ nhân!';
-        recommended = [MOCK_PRODUCTS[0], MOCK_PRODUCTS[3]];
+        recommended = [allProducts[0], allProducts[3] || allProducts[0]];
       } else if (q.includes('dạ tiệc') || q.includes('dây chuyền') || q.includes('đầm')) {
         aiResponse = 'Để tỏa sáng quý phái trong các buổi tiệc đêm sang trọng, **Dây Chuyền Mặt Tim Royal Romance Moissanite** phối cùng **Vòng Tay Tennis Diamond** là bộ đôi hoàn hảo. Ánh lửa rực rỡ từ giác cắt chuẩn quốc tế sẽ thu hút trọn vẹn mọi ánh nhìn dưới ánh đèn pha lê tiệc tối!';
-        recommended = [MOCK_PRODUCTS[1], MOCK_PRODUCTS[2]];
+        recommended = [allProducts[1] || allProducts[0], allProducts[2] || allProducts[0]];
       } else {
         aiResponse = `LUNA BELLE hân hạnh gợi ý cho Quý khách những kiệt tác kim hoàn đang được các quý cô và quý ông thượng lưu yêu thích nhất mùa này. Quý khách có thể xem chi tiết từng mẫu hoặc yêu cầu tư vấn kỹ hơn về size nhẫn và phương án khắc laser kỷ niệm nhé!`;
-        recommended = [MOCK_PRODUCTS[0], MOCK_PRODUCTS[2], MOCK_PRODUCTS[4]];
+        recommended = [allProducts[0], allProducts[2] || allProducts[0], allProducts[4] || allProducts[0]];
       }
 
       setMessages(prev => [
@@ -107,7 +110,7 @@ export const AiConsultantPage = () => {
         {/* Header Title */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Chip
-            icon={<SparkleIcon sx={{ color: '#D4AF37 !important' }} />}
+            icon={<LuxurySparkleIcon sx={{ color: '#D4AF37 !important', fontSize: 18 }} />}
             label="LUNA BELLE DEEPSEEK AI STYLIST"
             sx={{
               bgcolor: 'rgba(212, 175, 55, 0.12)',
@@ -169,7 +172,7 @@ export const AiConsultantPage = () => {
                         border: '2px solid rgba(212, 175, 55, 0.3)'
                       }}
                     >
-                      {isAi ? <RobotIcon sx={{ fontSize: 22 }} /> : <UserIcon sx={{ fontSize: 22 }} />}
+                      {isAi ? <LuxurySparkleIcon sx={{ fontSize: 20 }} /> : <LuxuryUserIcon sx={{ fontSize: 20 }} />}
                     </Avatar>
 
                     <Box sx={{ maxWidth: { xs: '85%', sm: '75%' } }}>
@@ -194,9 +197,12 @@ export const AiConsultantPage = () => {
                       {/* Attached Product Recommendations */}
                       {msg.products && msg.products.length > 0 && (
                         <Box sx={{ mt: 2 }}>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark', display: 'block', mb: 1 }}>
-                            ✨ GỢI Ý TUYỆT PHẨM DÀNH RIÊNG CHO BẠN:
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1 }}>
+                            <LuxurySparkleIcon sx={{ fontSize: 16, color: 'primary.dark' }} />
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark', letterSpacing: '0.05em' }}>
+                              GỢI Ý TUYỆT PHẨM DÀNH RIÊNG CHO BẠN:
+                            </Typography>
+                          </Box>
                           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                             {msg.products.map((prod) => (
                               <Card
@@ -241,7 +247,7 @@ export const AiConsultantPage = () => {
                                     size="small"
                                     variant="outlined"
                                     onClick={() => addToCart(prod, prod.bienthe ? prod.bienthe[0] : null, 1)}
-                                    startIcon={<CartIcon sx={{ fontSize: 13 }} />}
+                                    startIcon={<LuxuryBagIcon sx={{ fontSize: 14 }} />}
                                     sx={{ mt: 'auto', pt: 0.2, pb: 0.2, fontSize: '0.7rem', borderRadius: 12 }}
                                   >
                                     Chọn mua
@@ -260,7 +266,7 @@ export const AiConsultantPage = () => {
               {loading && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Avatar sx={{ width: 38, height: 38, bgcolor: 'primary.main', color: '#FFFFFF' }}>
-                    <RobotIcon sx={{ fontSize: 22 }} />
+                    <LuxurySparkleIcon sx={{ fontSize: 20 }} />
                   </Avatar>
                   <Paper sx={{ p: 2, borderRadius: 3, bgcolor: '#FFFFFF', border: '1px solid rgba(183,110,121,0.15)' }}>
                     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>

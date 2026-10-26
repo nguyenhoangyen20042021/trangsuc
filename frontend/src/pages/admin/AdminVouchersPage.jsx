@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -25,14 +25,25 @@ import {
   Delete as DeleteIcon,
   LocalOffer as VoucherIcon
 } from '@mui/icons-material';
-import { MOCK_VOUCHERS, formatCurrency } from '../../services/api';
+import {
+  MOCK_VOUCHERS,
+  formatCurrency,
+  getStoredVouchers,
+  fetchVouchers,
+  createVoucher,
+  deleteVoucher
+} from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminVouchersPage = () => {
   const { notify } = useAuth();
-  const [vouchers, setVouchers] = useState(
-    MOCK_VOUCHERS.map(v => ({ ...v, active: true }))
-  );
+  const [vouchers, setVouchers] = useState(getStoredVouchers);
+
+  useEffect(() => {
+    fetchVouchers().then(data => {
+      if (data && data.length) setVouchers(data);
+    });
+  }, []);
   const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState({
     MaCode: '',
@@ -56,30 +67,29 @@ export const AdminVouchersPage = () => {
     notify(`Đã ${current ? 'tạm ngưng' : 'kích hoạt lại'} mã giảm giá ${code}!`, 'info');
   };
 
-  const handleDelete = (code) => {
+  const handleDelete = async (code) => {
     if (window.confirm(`Bạn có chắc muốn xóa mã giảm giá "${code}"?`)) {
-      setVouchers(prev => prev.filter(v => v.MaCode !== code));
+      await deleteVoucher(code);
+      setVouchers(prev => prev.filter(v => v.MaCode !== code && v.MaGiamGia !== code));
       notify(`Đã xóa mã voucher "${code}"!`, 'info');
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.MaCode.trim()) {
       notify('Vui lòng nhập mã code giảm giá!', 'warning');
       return;
     }
 
-    const newVoucher = {
-      MaGiamGia: Date.now(),
+    const newVoucher = await createVoucher({
       MaCode: formData.MaCode.trim().toUpperCase(),
       GiaTriGiam: Number(formData.GiaTriGiam),
       GiaTriDonToiThieu: Number(formData.GiaTriDonToiThieu),
-      MoTa: formData.MoTa.trim() || `Giảm ${formatCurrency(formData.GiaTriGiam)} cho đơn từ ${formatCurrency(formData.GiaTriDonToiThieu)}`,
-      active: true
-    };
+      MoTa: formData.MoTa.trim() || `Giảm ${formatCurrency(formData.GiaTriGiam)} cho đơn từ ${formatCurrency(formData.GiaTriDonToiThieu)}`
+    });
 
-    setVouchers([...vouchers, newVoucher]);
+    setVouchers(prev => [newVoucher, ...prev]);
     notify(`Đã tạo mã giảm giá "${newVoucher.MaCode}" thành công!`, 'success');
     setOpenDialog(false);
   };

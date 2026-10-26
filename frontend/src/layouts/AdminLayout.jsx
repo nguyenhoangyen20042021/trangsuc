@@ -17,16 +17,18 @@ import {
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
-  Diamond as ProductIcon,
-  Category as CategoryIcon,
-  ReceiptLong as OrderIcon,
-  People as UserIcon,
-  LocalOffer as VoucherIcon,
-  SmartToy as AiIcon,
-  Storefront as StoreIcon,
   Menu as MenuIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
+import {
+  RingProductIcon,
+  NecklaceProductIcon,
+  OrderTrackingProductIcon,
+  LuxuryUserIcon,
+  AllJewelryProductIcon,
+  LuxurySparkleIcon,
+  LuxuryBagIcon
+} from '../components/icons/ProductIcons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -34,12 +36,12 @@ const drawerWidth = 260;
 
 const ADMIN_NAV_ITEMS = [
   { text: 'Tổng Quan (Dashboard)', icon: <DashboardIcon />, path: '/admin' },
-  { text: 'Quản Lý Sản Phẩm', icon: <ProductIcon />, path: '/admin/products' },
-  { text: 'Danh Mục Sản Phẩm', icon: <CategoryIcon />, path: '/admin/categories' },
-  { text: 'Quản Lý Đơn Hàng', icon: <OrderIcon />, path: '/admin/orders' },
-  { text: 'Người Dùng & Vai Trò', icon: <UserIcon />, path: '/admin/users' },
-  { text: 'Mã Giảm Giá (Voucher)', icon: <VoucherIcon />, path: '/admin/vouchers' },
-  { text: 'Cấu Hình AI Stylist', icon: <AiIcon />, path: '/admin/ai-settings' },
+  { text: 'Quản Lý Sản Phẩm', icon: <RingProductIcon sx={{ fontSize: 20 }} />, path: '/admin/products' },
+  { text: 'Danh Mục Sản Phẩm', icon: <NecklaceProductIcon sx={{ fontSize: 20 }} />, path: '/admin/categories' },
+  { text: 'Quản Lý Đơn Hàng', icon: <OrderTrackingProductIcon sx={{ fontSize: 20 }} />, path: '/admin/orders' },
+  { text: 'Người Dùng & Vai Trò', icon: <LuxuryUserIcon sx={{ fontSize: 20 }} />, path: '/admin/users' },
+  { text: 'Mã Giảm Giá (Voucher)', icon: <AllJewelryProductIcon sx={{ fontSize: 20 }} />, path: '/admin/vouchers' },
+  { text: 'Cấu Hình AI Stylist', icon: <LuxurySparkleIcon sx={{ fontSize: 20 }} />, path: '/admin/ai-settings' },
 ];
 
 export const AdminLayout = () => {
@@ -63,7 +65,7 @@ export const AdminLayout = () => {
             justifyContent: 'center'
           }}
         >
-          <ProductIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
+          <AllJewelryProductIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
         </Box>
         <Box>
           <Typography variant="subtitle1" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: '0.08em', color: '#D4AF37' }}>
@@ -126,7 +128,7 @@ export const AdminLayout = () => {
         <Button
           component={Link}
           to="/"
-          startIcon={<StoreIcon />}
+          startIcon={<LuxuryBagIcon sx={{ fontSize: 18 }} />}
           fullWidth
           variant="outlined"
           sx={{

@@ -13,9 +13,9 @@ import {
   Grid
 } from '@mui/material';
 import {
-  Diamond as DiamondIcon,
-  PersonAdd as RegisterIcon
-} from '@mui/icons-material';
+  AllJewelryProductIcon,
+  LuxuryUserIcon
+} from '../components/icons/ProductIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -97,7 +97,7 @@ export const RegisterPage = () => {
                 border: '1px solid rgba(183, 110, 121, 0.25)'
               }}
             >
-              <DiamondIcon sx={{ fontSize: 28 }} />
+              <AllJewelryProductIcon sx={{ fontSize: 26 }} />
             </Box>
             <Typography variant="h4" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#2C1F20' }}>
               Tạo Tài Khoản
@@ -203,7 +203,7 @@ export const RegisterPage = () => {
                   color="primary"
                   size="large"
                   fullWidth
-                  startIcon={<RegisterIcon />}
+                  startIcon={<LuxuryUserIcon sx={{ fontSize: 19 }} />}
                   sx={{
                     py: 1.4,
                     borderRadius: 30,

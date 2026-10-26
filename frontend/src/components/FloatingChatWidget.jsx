@@ -18,13 +18,15 @@ import {
   Collapse
 } from '@mui/material';
 import {
-  SmartToy as RobotIcon,
   Close as CloseIcon,
   Send as SendIcon,
-  ShoppingBag as CartIcon,
-  Chat as ChatIcon,
-  AutoAwesome as SparkleIcon
+  Chat as ChatIcon
 } from '@mui/icons-material';
+import {
+  LuxurySparkleIcon as RobotIcon,
+  LuxurySparkleIcon as SparkleIcon,
+  LuxuryBagIcon as CartIcon
+} from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { MOCK_PRODUCTS, formatCurrency } from '../services/api';

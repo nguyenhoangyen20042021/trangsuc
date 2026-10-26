@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -29,9 +29,18 @@ import {
   Close as CloseIcon,
   RestartAlt as ResetIcon
 } from '@mui/icons-material';
+import { AllJewelryProductIcon, getCategoryProductIcon } from '../components/icons/ProductIcons';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, formatCurrency } from '../services/api';
+import {
+  MOCK_PRODUCTS,
+  MOCK_CATEGORIES,
+  formatCurrency,
+  getStoredProducts,
+  fetchProducts,
+  getStoredCategories,
+  fetchCategories
+} from '../services/api';
 
 const MATERIALS = ['Tất cả', 'Kim Cương GIA', 'Vàng 18K & Moissanite', 'Kim Cương & Bạch Kim', 'Ngọc Trai South Sea & Vàng 18K', 'Đá Quý Emerald & Vàng Vàng 18K'];
 const STYLES = ['Tất cả', 'Sang trọng', 'Lãng mạn', 'Đẳng cấp', 'Quý phái', 'Quyền lực', 'Tối giản'];
@@ -43,6 +52,8 @@ export const ProductsPage = () => {
   const categoryParam = searchParams.get('category') || 'all';
   const queryParam = searchParams.get('search') || searchParams.get('q') || '';
 
+  const [products, setProducts] = useState(getStoredProducts);
+  const [categories, setCategories] = useState(getStoredCategories);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [selectedMaterial, setSelectedMaterial] = useState('Tất cả');
   const [selectedStyle, setSelectedStyle] = useState('Tất cả');
@@ -52,8 +63,13 @@ export const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
+  useEffect(() => {
+    fetchProducts().then(data => { if (data && data.length) setProducts(data); });
+    fetchCategories().then(data => { if (data && data.length) setCategories(data); });
+  }, []);
+
   // Synchronize when URL category changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (categoryParam !== 'all') {
       setSelectedCategory(categoryParam);
     }
@@ -70,19 +86,19 @@ export const ProductsPage = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // Search query
       if (queryParam) {
         const q = queryParam.toLowerCase();
         const matchesName = product.TenSanPham.toLowerCase().includes(q);
-        const matchesDesc = product.MoTa.toLowerCase().includes(q);
+        const matchesDesc = product.MoTa?.toLowerCase().includes(q);
         if (!matchesName && !matchesDesc) return false;
       }
 
       // Category
       if (selectedCategory !== 'all') {
         const matchesSlug = product.CatSlug === selectedCategory;
-        const parentCategory = MOCK_CATEGORIES.find(c => c.children?.some(sub => sub.Slug === selectedCategory));
+        const parentCategory = categories.find(c => c.children?.some(sub => sub.Slug === selectedCategory));
         const matchesParent = parentCategory && product.CatSlug === parentCategory.Slug;
         if (!matchesSlug && !matchesParent) return false;
       }
@@ -149,15 +165,25 @@ export const ProductsPage = () => {
           <FormControlLabel
             value="all"
             control={<Radio size="small" color="primary" />}
-            label="Tất cả danh mục"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AllJewelryProductIcon sx={{ fontSize: 16, color: selectedCategory === 'all' ? 'primary.main' : '#B76E79' }} />
+                <span>Tất cả danh mục</span>
+              </Box>
+            }
             sx={{ '& .MuiTypography-root': { fontSize: '0.88rem' } }}
           />
-          {MOCK_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <FormControlLabel
               key={cat.Slug}
               value={cat.Slug}
               control={<Radio size="small" color="primary" />}
-              label={cat.TenDanhMuc}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 16, color: selectedCategory === cat.Slug ? 'primary.main' : '#B76E79' } })}
+                  <span>{cat.TenDanhMuc}</span>
+                </Box>
+              }
               sx={{ '& .MuiTypography-root': { fontSize: '0.88rem' } }}
             />
           ))}
@@ -229,7 +255,7 @@ export const ProductsPage = () => {
 
   return (
     <Box sx={{ py: 4, pb: 10 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 3 }}>
           <MuiLink component={Link} to="/" color="inherit" sx={{ fontSize: '0.86rem' }}>

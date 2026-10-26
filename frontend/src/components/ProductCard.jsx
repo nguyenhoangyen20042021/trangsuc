@@ -9,9 +9,7 @@ import {
   Chip,
   Rating
 } from '@mui/material';
-import {
-  ShoppingBag as AddCartIcon
-} from '@mui/icons-material';
+import { LuxuryBagIcon as AddCartIcon } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../services/api';

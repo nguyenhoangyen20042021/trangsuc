@@ -22,11 +22,11 @@ import {
   Add as AddIcon,
   Remove as RemoveIcon,
   Delete as DeleteIcon,
-  ShoppingBag as EmptyCartIcon,
   ArrowBack as ArrowBackIcon,
   LocalOffer as VoucherIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
+import { LuxuryBagIcon, AllJewelryProductIcon } from '../components/icons/ProductIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../services/api';
@@ -83,7 +83,7 @@ export const CartPage = () => {
                 color: 'primary.main'
               }}
             >
-              <EmptyCartIcon sx={{ fontSize: 40 }} />
+              <LuxuryBagIcon sx={{ fontSize: 42 }} />
             </Box>
             <Typography variant="h5" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1.5 }}>
               Giỏ Hàng Của Bạn Đang Trống
@@ -97,6 +97,7 @@ export const CartPage = () => {
               variant="contained"
               color="primary"
               size="large"
+              startIcon={<AllJewelryProductIcon sx={{ fontSize: 18 }} />}
               sx={{ borderRadius: 30, px: 4 }}
             >
               Khám Phá Sản Phẩm Ngay
@@ -109,7 +110,7 @@ export const CartPage = () => {
 
   return (
     <Box sx={{ py: 5, pb: 12 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Typography
           variant="h3"
           component="h1"

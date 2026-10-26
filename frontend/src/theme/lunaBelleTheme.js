@@ -136,5 +136,23 @@ export const lunaBelleTheme = createTheme({
         },
       },
     },
+    MuiContainer: {
+      defaultProps: {
+        maxWidth: 'lg',
+      },
+      styleOverrides: {
+        root: {
+          width: '100%',
+          '@media (min-width: 1200px)': {
+            maxWidth: '75% !important',
+          },
+          '@media (min-width: 900px) and (max-width: 1199px)': {
+            maxWidth: '85% !important',
+          },
+          marginLeft: 'auto !important',
+          marginRight: 'auto !important',
+        },
+      },
+    },
   },
 });

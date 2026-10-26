@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -28,7 +28,7 @@ import {
   LocalShipping as ShipIcon,
   Print as PrintIcon
 } from '@mui/icons-material';
-import { formatCurrency } from '../../services/api';
+import { formatCurrency, getStoredOrders, fetchOrders, updateOrderStatus } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const INITIAL_ORDERS = [
@@ -96,9 +96,15 @@ const INITIAL_ORDERS = [
 
 export const AdminOrdersPage = () => {
   const { notify } = useAuth();
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [orders, setOrders] = useState(getStoredOrders);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    fetchOrders().then(data => {
+      if (data && data.length) setOrders(data);
+    });
+  }, []);
 
   const getStatusChip = (status) => {
     switch (status) {
@@ -117,7 +123,8 @@ export const AdminOrdersPage = () => {
     }
   };
 
-  const handleUpdateStatus = (orderId, newStatus) => {
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    await updateOrderStatus(orderId, newStatus);
     setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder(prev => ({ ...prev, status: newStatus }));

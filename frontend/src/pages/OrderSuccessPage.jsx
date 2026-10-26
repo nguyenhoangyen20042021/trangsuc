@@ -11,10 +11,9 @@ import {
 } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
-  LocalShipping as ShippingIcon,
-  Storefront as StoreIcon,
   ReceiptLong as ReceiptIcon
 } from '@mui/icons-material';
+import { OrderTrackingProductIcon, AllJewelryProductIcon } from '../components/icons/ProductIcons';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { formatCurrency } from '../services/api';
 
@@ -157,7 +156,7 @@ export const OrderSuccessPage = () => {
               variant="contained"
               color="primary"
               size="large"
-              startIcon={<ShippingIcon />}
+              startIcon={<OrderTrackingProductIcon sx={{ fontSize: 19 }} />}
               sx={{ borderRadius: 30, px: 3.5, fontWeight: 700 }}
             >
               Theo Dõi Lộ Trình Đơn Hàng
@@ -167,7 +166,7 @@ export const OrderSuccessPage = () => {
               to="/products"
               variant="outlined"
               size="large"
-              startIcon={<StoreIcon />}
+              startIcon={<AllJewelryProductIcon sx={{ fontSize: 18 }} />}
               sx={{ borderRadius: 30, px: 3.5, fontWeight: 600 }}
             >
               Tiếp Tục Mua Sắm
