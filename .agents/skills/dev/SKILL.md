@@ -1,119 +1,132 @@
 ---
 name: dev
 description: >-
-  Hướng dẫn quy trình phát triển tính năng mới cho project TrangSuc (Flask/Python).
-  Kích hoạt khi người dùng yêu cầu thêm tính năng, sửa lỗi, hoặc refactor code.
-  Bao gồm các bước: phân tích yêu cầu, lập kế hoạch, triển khai, kiểm thử và xác nhận.
+  Hướng dẫn quy trình phát triển tính năng mới cho project TrangSuc (Fullstack: ReactJS + MUI Frontend & Flask Python Backend).
+  Kích hoạt khi người dùng yêu cầu thêm tính năng, sửa lỗi, xây dựng UI mới với Material-UI, hoặc refactor code.
+  Bao gồm các bước: phân tích yêu cầu, lập kế hoạch kiến trúc, triển khai React + MUI, tích hợp API Flask, kiểm thử và xác nhận.
 ---
 
-# Dev Skill – Quy Trình Phát Triển Tính Năng
+# Dev Skill – Quy Trình Phát Triển Tính Năng (ReactJS + MUI & Flask)
 
-Đây là hướng dẫn chuẩn để phát triển tính năng mới cho project **TrangSuc** – ứng dụng web bán trang sức xây dựng bằng **Flask + SQLite**.
-
----
-
-## Tổng Quan Kiến Trúc Project
-
-| File/Thư mục       | Vai trò                                          |
-|--------------------|--------------------------------------------------|
-| `app.py`           | Routes Flask chính, business logic               |
-| `ai_service.py`    | Tích hợp AI (DeepSeek), tư vấn sản phẩm         |
-| `db.py`            | Kết nối và khởi tạo SQLite database              |
-| `config.py`        | Cấu hình ứng dụng (secret key, DB path, v.v.)   |
-| `seed_data.py`     | Dữ liệu mẫu để seed vào database                |
-| `templates/`       | HTML templates (Jinja2)                          |
-| `static/`          | CSS, JS, ảnh tĩnh                               |
-| `wed_trang_suc.sql`| Schema SQL database                              |
+Đây là tài liệu quy chuẩn kỹ thuật và quy trình chuẩn để phát triển cho project **TrangSuc (LUNA BELLE Elite Jewelry)** – ứng dụng thương mại điện tử trang sức cao cấp với kiến trúc:
+- **Frontend**: **ReactJS 18+**, **Material-UI (MUI v5/v6)**, **Vite**, **Emotion**, **React Router DOM**, **Axios**.
+- **Backend**: **Flask (Python)**, **SQLite / MySQL**, **DeepSeek AI Service**.
 
 ---
 
-## Quy Trình 5 Bước
+## 1. Tổng Quan Kiến Trúc Project
 
-### Bước 1: Phân Tích Yêu Cầu
-
-1. Đọc yêu cầu của người dùng, xác định rõ:
-   - **Tính năng cần thêm** là gì?
-   - **File nào** bị ảnh hưởng?
-   - **Có cần thay đổi DB schema không?**
-2. Đọc các file liên quan để hiểu code hiện tại trước khi chỉnh sửa.
-3. Nếu yêu cầu mơ hồ, hỏi thêm người dùng trước khi code.
-
-### Bước 2: Lập Kế Hoạch
-
-1. Liệt kê các thay đổi cần thực hiện theo thứ tự:
-   - DB schema (nếu cần)
-   - Model/logic trong `app.py` hoặc `ai_service.py`
-   - Routes và API endpoints
-   - Templates HTML
-   - Static files (CSS/JS)
-2. Ước tính độ phức tạp và thông báo cho người dùng.
-
-### Bước 3: Triển Khai
-
-Thực hiện thay đổi theo thứ tự ưu tiên:
-
-1. **Database trước** – Nếu cần thêm bảng/cột mới:
-   - Cập nhật `wed_trang_suc.sql`
-   - Cập nhật `db.py` (hàm `init_db` hoặc migration)
-   - Cập nhật `seed_data.py` nếu cần dữ liệu mẫu
-
-2. **Backend** – Trong `app.py`:
-   - Thêm route mới với decorator `@app.route(...)`
-   - Implement logic, truy vấn DB
-   - Trả về JSON (API) hoặc `render_template` (web page)
-
-3. **AI Service** – Trong `ai_service.py` nếu tính năng liên quan AI:
-   - Thêm hàm mới hoặc mở rộng hàm hiện tại
-   - Đảm bảo xử lý lỗi và fallback
-
-4. **Frontend** – Templates và static files:
-   - Tạo/sửa template trong `templates/`
-   - Cập nhật CSS/JS trong `static/`
-
-### Bước 4: Kiểm Thử
-
-Sau khi triển khai, kiểm thử theo checklist:
-
-```powershell
-# Chạy server để kiểm thử thủ công
-cd e:\TrangSuc
-python app.py
+```
+trangsuc/
+├── .agents/skills/dev/       # Skill tài liệu phát triển chuẩn
+├── frontend/                 # Ứng dụng ReactJS + MUI (Vite)
+│   ├── src/
+│   │   ├── components/       # UI Components tái sử dụng (Navbar, Footer, ProductCard, AIStylist,...)
+│   │   ├── layouts/          # Layout chính (MainLayout, AdminLayout)
+│   │   ├── pages/            # Các trang giao diện (Home, Products, ProductDetail, Cart, Checkout, Auth,...)
+│   │   ├── theme/            # Cấu hình MUI Theme (Palette Rose Gold, Typography Playfair/Jost, Components)
+│   │   ├── context/          # State toàn cục (AuthContext, CartContext, ThemeContext)
+│   │   ├── services/         # Tầng gọi API Flask (axios client, endpoints)
+│   │   ├── hooks/            # Custom hooks logic
+│   │   ├── App.jsx           # Routing & Providers
+│   │   └── main.jsx          # Entry point
+│   ├── vite.config.js        # Cấu hình Vite & Proxy API tới Flask (port 5000)
+│   └── package.json          # Dependencies: @mui/material, @mui/icons-material, react-router-dom,...
+├── app.py                    # Flask Server, RESTful API endpoints & logic nghiệp vụ
+├── ai_service.py             # Dịch vụ tư vấn trang sức thông minh (DeepSeek AI)
+├── db.py                     # Quản lý kết nối Database
+├── config.py                 # Biến môi trường & cấu hình Flask
+├── seed_data.py              # Dữ liệu mẫu (sản phẩm, biến thể, danh mục, voucher)
+└── templates/                # Templates Jinja2 truyền thống (legacy reference)
 ```
 
-**Checklist kiểm thử:**
-- [ ] Tính năng mới hoạt động đúng như yêu cầu
-- [ ] Không có lỗi Python (SyntaxError, ImportError, v.v.)
-- [ ] Các tính năng cũ không bị ảnh hưởng (regression)
-- [ ] Giao diện hiển thị đúng trên trình duyệt
-- [ ] Xử lý edge cases (dữ liệu rỗng, input không hợp lệ)
+---
 
-Nếu có file test sẵn:
-```powershell
-cd e:\TrangSuc
-python -m pytest test_logistic.py -v
-```
+## 2. Hệ Thống Thiết Kế & Chuẩn Material-UI (Luna Belle Design System)
 
-### Bước 5: Xác Nhận và Tổng Kết
+Thương hiệu **LUNA BELLE** định vị dòng trang sức Moissanite và Vàng 18K cao cấp. Mọi giao diện xây dựng với Material-UI phải tuân thủ chuẩn sau:
 
-1. Tóm tắt những gì đã thay đổi cho người dùng.
-2. Liệt kê các file đã chỉnh sửa với đường dẫn clickable.
-3. Hướng dẫn cách test/sử dụng tính năng mới.
-4. Đề xuất các cải tiến tiếp theo nếu có.
+### Bảng màu (Theme Palette)
+- **Primary (Rose Gold)**: `#B76E79` (Main), `#8B3A48` (Dark), `#D4939A` (Light), `#F2C4C8` (Pale)
+- **Secondary (Champagne Gold / Gold Accent)**: `#D4AF37`, `#F3E5AB`
+- **Backgrounds**: `#FFFBF9` (Nền trang chủ), `#FFF5F3` (Section nổi bật), `#FFFFFF` (Card nền trắng tinh khiết)
+- **Footer Background**: `#6B3A3A` (Đỏ vang hoàng gia sang trọng)
+- **Typography Colors**: `#2C1F20` (Text chính sắc nét), `#5A3F42` (Body), `#9E7B7E` (Muted/Ghi chú)
+
+### Typography
+- **Headings (h1, h2, h3, h4, h5, h6)**: Phông có chân sang trọng `'Playfair Display', Georgia, serif`.
+- **Body & Controls (body1, body2, button, input)**: Phông hiện đại dễ đọc `'Jost', -apple-system, sans-serif`.
+
+### Nguyên tắc code MUI (MUI Best Practices)
+1. **Sử dụng `sx` prop hoặc custom theme overrides**: Tuyệt đối không hardcode inline style thô sơ; tận dụng theme tokens:
+   ```jsx
+   <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3, boxShadow: '0 4px 20px rgba(183,110,121,0.12)' }}>
+   ```
+2. **Layout chuẩn**: Dùng `<Grid container spacing={...}>`, `<Stack direction="row" spacing={...}>` và `<Container maxWidth="lg">`.
+3. **Typography có ngữ nghĩa**: Luôn dùng `<Typography variant="h4" component="h1">` để chuẩn SEO và thẩm mỹ.
+4. **Icons**: Sử dụng `@mui/icons-material` (ví dụ `Diamond`, `ShoppingBag`, `Favorite`, `SmartToy`, `Search`, `AccountCircle`).
+5. **Interactive feedback**: Sử dụng MUI `<Snackbar>`, `<Alert>`, `<CircularProgress>`, `<Skeleton>` khi tải dữ liệu.
 
 ---
 
-## Quy Tắc Quan Trọng
+## 3. Quy Trình 5 Bước Phát Triển Tính Năng
 
-- **Đọc code hiện tại trước** – Không bao giờ viết lại nếu có thể mở rộng.
-- **Giữ nguyên style** – Theo đúng coding convention của file hiện tại.
-- **Bảo toàn comment** – Không xóa comment/docstring không liên quan.
-- **Xử lý lỗi** – Luôn dùng try/except cho DB queries và API calls.
-- **Không hardcode** – Dùng `config.py` cho các giá trị cấu hình.
+### Bước 1: Phân Tích Yêu Cầu & Thiết Kế Giao Diện
+1. Xác định:
+   - Tính năng dành cho Khách hàng (Client) hay Quản trị viên (Admin)?
+   - Cần component MUI nào (Table, Dialog, Drawer, Card, Stepper, Slider)?
+   - Dữ liệu API backend cần cung cấp (Schema DB, Payload request/response JSON)?
+2. Kiểm tra các component và theme sẵn có trong `frontend/src/` để tái sử dụng.
+
+### Bước 2: Thiết Kế API & Lập Kế Hoạch
+1. Định nghĩa RESTful API endpoint trong `app.py`:
+   - `GET /api/...` (Lấy dữ liệu)
+   - `POST /api/...` (Tạo mới)
+   - `PUT /api/...` (Cập nhật)
+   - `DELETE /api/...` (Xóa)
+2. Thêm hàm gọi API trong `frontend/src/services/api.js`.
+
+### Bước 3: Triển Khai Code
+
+#### 1. Backend (Flask) – `app.py`:
+- Viết route trả về `jsonify(...)` kèm mã HTTP chuẩn (200, 201, 400, 401, 404, 500).
+- Validate input, xử lý session/token xác thực, query database an toàn với param substitution.
+
+#### 2. Frontend (React + MUI) – `frontend/src/`:
+- **Components/Pages**: Viết React functional component, khai báo PropTypes hoặc TypeScript (nếu có).
+- **State Management**: Sử dụng `useState`, `useEffect`, hoặc Context (`CartContext`, `AuthContext`).
+- **MUI Styling**: Áp dụng theme tokens, gradients (`linear-gradient(135deg, #C9956C 0%, #B76E79 40%, #9B4D62 100%)`), hover transitions mượt mà (`transition: 'all 0.3s ease'`).
+- **Responsive**: Hỗ trợ đầy đủ màn hình Mobile (xs), Tablet (sm, md), Desktop (lg, xl) thông qua MUI responsive props `sx={{ display: { xs: 'none', md: 'flex' } }}`.
+
+### Bước 4: Kiểm Thử Đa Tầng
+
+1. **Kiểm thử Backend Flask**:
+   ```powershell
+   python app.py
+   ```
+   Đảm bảo API trả về JSON chuẩn, không dính lỗi 500 hoặc CORS.
+
+2. **Kiểm thử Frontend React + MUI**:
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+   - Truy cập `http://localhost:5173`.
+   - Kiểm tra Console trình duyệt không có cảnh báo (Warning/Error) từ React hoặc MUI.
+   - Thử nghiệm các thao tác người dùng: click, thêm giỏ hàng, chuyển trang, tương tác AI, bộ lọc sản phẩm.
+   - Kiểm tra hiển thị responsive trên giao diện Mobile và Desktop.
+
+### Bước 5: Xác Nhận & Bàn Giao
+1. Tóm tắt các file đã chỉnh sửa/tạo mới với đường dẫn `file:///`.
+2. Hướng dẫn chi tiết cách chạy và kiểm tra.
+3. Đề xuất các cải tiến về trải nghiệm UI/UX tiếp theo.
 
 ---
 
-## Tham Khảo Nhanh
+## 4. Tham Khảo Nhanh
 
-- Flask docs: https://flask.palletsprojects.com/
-- SQLite với Python: https://docs.python.org/3/library/sqlite3.html
-- Jinja2 templates: https://jinja.palletsprojects.com/
+- **MUI Core Documentation**: https://mui.com/material-ui/getting-started/
+- **MUI Icons**: https://mui.com/material-ui/material-icons/
+- **Vite Guide**: https://vitejs.dev/guide/
+- **React Router v6**: https://reactrouter.com/
+- **Flask RESTful**: https://flask.palletsprojects.com/

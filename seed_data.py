@@ -327,17 +327,7 @@ def seed_database():
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, v)
 
-        # 6. Đánh giá sản phẩm mẫu
-        cursor.execute("SELECT MaSanPham FROM SanPham LIMIT 3")
-        sample_sps = cursor.fetchall()
-        if sample_sps:
-            for s in sample_sps:
-                cursor.execute("SELECT COUNT(*) AS cnt FROM DanhGia WHERE MaSanPham = %s", (s['MaSanPham'],))
-                if cursor.fetchone()['cnt'] == 0:
-                    cursor.execute("""
-                        INSERT INTO DanhGia (MaNguoiDung, MaSanPham, SoSao, BinhLuan)
-                        VALUES (%s, %s, 5, 'Sản phẩm bên ngoài nhìn sáng bóng lộng lẫy hơn cả ảnh chụp! Đóng gói hộp nhung rất cao cấp, có đầy đủ giấy kiểm định GIA.')
-                    """, (khach_id, s['MaSanPham']))
+
 
         # 7. Đơn hàng mẫu để hiển thị thống kê & quản lý
         cursor.execute("SELECT COUNT(*) AS cnt FROM DonHang")
