@@ -217,7 +217,7 @@ def format_products_for_chat(prods):
     for p in prods:
         res.append({
             'name': p['TenSanPham'],
-            'slug': p['Slug'],
+            'slug': p.get('Slug') or f"sp-{p['MaSanPham']}",
             'price': int(p.get('GiaMin') or p.get('GiaCoSo', 0)),
             'image': p.get('HinhAnhChinh') or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800',
             'material': p['ChatLieu']
@@ -243,7 +243,7 @@ def generate_intent_form_response(intent, user_msg, products):
 Khoảnh khắc cầu hôn thiêng liêng là lời ước hẹn trọn đời. AURA trân trọng giới thiệu hai kiệt tác biểu tượng:
 1. **Nhẫn Kim Cương Solitaire Eternal Grace:** Thiết kế 6 chấu kinh điển, ôm trọn viên kim cương chủ chuẩn kiểm định GIA quốc tế, nước màu F siêu trắng phản chiếu tình yêu thuần khiết.
 2. **Cặp Nhẫn Cưới Đôi Royal Eternity:** Sự hòa quyện hoàn mỹ giữa chất vàng 18K bền vững và dải kim cương tấm nạm tinh xảo, tượng trưng cho tình nghĩa phu thê son sắt."""
-        suggested = [p for p in products if p['Slug'] in ['nhan-kim-cuong-solitaire-eternal-grace', 'cap-nhan-cuoi-doi-royal-eternity']]
+        suggested = [p for p in products if p.get('MaSanPham') in [1, 2] or 'Solitaire' in p.get('TenSanPham', '') or 'Eternity' in p.get('TenSanPham', '')]
         return reply, format_products_for_chat(suggested)
 
     elif intent == 'warranty_policy':
@@ -284,7 +284,7 @@ Mỗi viên đá quý tự nhiên tại AURA đều mang năng lượng phong th
 - **Nhẫn Nữ Ruby Huyết Bồ Câu Passionate:** Viên đá Ruby đỏ thắm giác Oval rực rỡ, biểu trưng cho ngọn lửa may mắn, thịnh vượng và quyền lực.
 - **Dây Chuyền Sapphire Xanh Hoàng Gia:** Tựa ánh biển thẳm bao bọc bởi dải kim cương kép, biểu trưng cho trí tuệ và sự bình an.
 - **Bông Tai Ngọc Trai South Sea 18K:** Ánh xà cừ thuần khiết tôn vinh nét đẹp kiêu sa của quý cô."""
-        suggested = [p for p in products if p['Slug'] in ['nhan-nu-ruby-huyet-bo-cau-passionate', 'day-chuyen-da-sapphire-hoang-gia-vuong-trieu', 'bong-tai-ngoc-trai-south-sea-dat-vang-18k']]
+        suggested = [p for p in products if p.get('MaSanPham') in [10, 7, 5] or any(k in p.get('TenSanPham', '') for k in ['Ruby', 'Sapphire', 'Ngọc Trai'])]
         return reply, format_products_for_chat(suggested)
 
     elif intent == 'greeting':
@@ -306,7 +306,7 @@ def build_deepseek_system_prompt(products):
     for p in products:
         price_str = f"{int(p.get('GiaMin') or p.get('GiaCoSo', 0)):,.0f}".replace(',', '.') + ' ₫'
         catalog_lines.append(
-            f"- [{p['TenSanPham']}] (Slug: {p['Slug']}) | Chất liệu: {p['ChatLieu']} | Phong cách: {p.get('PhongCach', 'Sang trọng')} | Đối tượng: {p.get('DoiTuong', 'Mọi khách')} | Giá từ: {price_str}"
+            f"- [{p['TenSanPham']}] (Mã SP: {p['MaSanPham']}) | Chất liệu: {p['ChatLieu']} | Phong cách: {p.get('PhongCach', 'Sang trọng')} | Đối tượng: {p.get('DoiTuong', 'Mọi khách')} | Giá từ: {price_str}"
         )
     catalog_text = "\n".join(catalog_lines)
 
@@ -331,12 +331,12 @@ def match_products_in_text(text, products):
     matched = []
     text_lower = text.lower()
     for p in products:
-        if (p['TenSanPham'].lower() in text_lower or p['Slug'].lower() in text_lower) and len(matched) < 4:
+        if (p['TenSanPham'].lower() in text_lower or f"sp-{p['MaSanPham']}" in text_lower) and len(matched) < 4:
             matched.append({
                 'name': p['TenSanPham'],
-                'slug': p['Slug'],
+                'slug': p.get('Slug') or f"sp-{p['MaSanPham']}",
                 'price': int(p.get('GiaMin') or p.get('GiaCoSo', 0)),
-                'image': p['HinhAnhChinh'],
+                'image': p.get('HinhAnhChinh') or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800',
                 'material': p['ChatLieu']
             })
     return matched

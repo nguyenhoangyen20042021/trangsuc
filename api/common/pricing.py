@@ -18,7 +18,7 @@ def calculate_order_pricing(cart_items, voucher_code=None):
             continue
 
         variant = query_one("""
-            SELECT bt.*, sp.TenSanPham, sp.Slug, sp.ChatLieu,
+            SELECT bt.*, sp.TenSanPham, sp.ChatLieu,
                    (SELECT DuongDanAnh FROM hinhanhsanpham ha WHERE ha.MaSanPham = sp.MaSanPham ORDER BY ha.ThuTuHienThi ASC LIMIT 1) AS HinhAnhChinh
             FROM bienthesanpham bt
             JOIN sanpham sp ON bt.MaSanPham = sp.MaSanPham
@@ -35,7 +35,7 @@ def calculate_order_pricing(cart_items, voucher_code=None):
         items_detail.append({
             'variant_id': variant['MaBienThe'],
             'product_name': variant['TenSanPham'],
-            'slug': variant.get('Slug', ''),
+            'slug': f"sp-{variant['MaSanPham']}",
             'sku': variant.get('SKU', ''),
             'size': variant.get('KichThuocSize', ''),
             'gemstone': variant.get('LoaiDa', ''),

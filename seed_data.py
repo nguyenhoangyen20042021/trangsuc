@@ -32,50 +32,47 @@ def seed_database():
 
         # 3. Danh mục sản phẩm (Cha)
         categories = [
-            ('Nhẫn Kim Cương & Nhẫn Cưới', 'nhan-kim-cuong', 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80', 'Bộ sưu tập nhẫn đính hôn, nhẫn cưới và nhẫn kim cương tự nhiên đẳng cấp.'),
-            ('Dây Chuyền & Mặt Dây', 'day-chuyen-mat-day', 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80', 'Dây chuyền vàng 18K, bạch kim phối kim cương và đá quý tinh xảo.'),
-            ('Vòng Tay & Lắc', 'vong-tay-lac', 'https://images.unsplash.com/photo-1611591475817-4841ff5733bc?w=800&auto=format&fit=crop&q=80', 'Vòng tay Tennis, lắc bạc Ý và lắc vàng tôn vinh cổ tay phái đẹp.'),
-            ('Bông Tai Quý Phái', 'bong-tai', 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80', 'Hoa tai kim cương, ngọc trai biển sâu kiêu sa cho mọi dịp tiệc tùng.'),
-            ('Bộ Sưu Tập Hoàng Gia', 'bo-suu-tap-hoang-gia', 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&auto=format&fit=crop&q=80', 'Tuyệt tác trang sức đá quý Ruby, Sapphire và Emerald giới hạn.')
+            ('Nhẫn Kim Cương & Nhẫn Cưới', 'Bộ sưu tập nhẫn đính hôn, nhẫn cưới và nhẫn kim cương tự nhiên đẳng cấp.'),
+            ('Dây Chuyền & Mặt Dây', 'Dây chuyền vàng 18K, bạch kim phối kim cương và đá quý tinh xảo.'),
+            ('Vòng Tay & Lắc', 'Vòng tay Tennis, lắc bạc Ý và lắc vàng tôn vinh cổ tay phái đẹp.'),
+            ('Bông Tai Quý Phái', 'Hoa tai kim cương, ngọc trai biển sâu kiêu sa cho mọi dịp tiệc tùng.'),
+            ('Bộ Sưu Tập Hoàng Gia', 'Tuyệt tác trang sức đá quý Ruby, Sapphire và Emerald giới hạn.')
         ]
         cat_map = {}
         for cat in categories:
-            cursor.execute("SELECT MaDanhMuc FROM DanhMuc WHERE Slug = %s", (cat[1],))
+            cursor.execute("SELECT MaDanhMuc FROM DanhMuc WHERE TenDanhMuc = %s", (cat[0],))
             row = cursor.fetchone()
             if row:
-                cat_map[cat[1]] = row['MaDanhMuc']
+                cat_map[cat[0]] = row['MaDanhMuc']
             else:
                 cursor.execute("""
-                    INSERT INTO DanhMuc (TenDanhMuc, Slug, MoTa)
-                    VALUES (%s, %s, %s)
-                """, (cat[0], cat[1], cat[3]))
-                cat_map[cat[1]] = cursor.lastrowid
+                    INSERT INTO DanhMuc (TenDanhMuc, MoTa)
+                    VALUES (%s, %s)
+                """, (cat[0], cat[1]))
+                cat_map[cat[0]] = cursor.lastrowid
 
         # 3.1 Danh mục con (Sub-categories)
         subcategories = [
-            ('Nhẫn Cầu Hôn Solitaire', 'nhan-cau-hon-solitaire', cat_map.get('nhan-kim-cuong'), 'Các mẫu nhẫn cầu hôn kim cương giác cắt tròn Brilliant kiêu sa.'),
-            ('Nhẫn Cưới Cặp Uyên Ương', 'nhan-cuoi-cap', cat_map.get('nhan-kim-cuong'), 'Nhẫn cưới vàng 18K và bạch kim minh chứng cho tình yêu vĩnh cửu.'),
-            ('Nhẫn Nữ Kim Cương Moissanite', 'nhan-moissanite', cat_map.get('nhan-kim-cuong'), 'Nhẫn Moissanite nước D giác cắt giác tinh hoa rực rỡ.'),
-            ('Dây Chuyền Vàng Ý 18K', 'day-chuyen-vang-18k', cat_map.get('day-chuyen-mat-day'), 'Dây chuyền vàng Ý thanh mảnh, tôn vinh bờ vai quý phái.'),
-            ('Mặt Dây Chuyền Đính Kim Cương', 'mat-day-kim-cuong', cat_map.get('day-chuyen-mat-day'), 'Mặt dây chuyền hình giọt nước và trái tim đính đá lấp lánh.'),
-            ('Vòng Tay Tennis Diamond', 'vong-tay-tennis', cat_map.get('vong-tay-lac'), 'Vòng tay Tennis đính dải kim cương liên hoàn sang trọng.'),
-            ('Lắc Tay Bạc & Vàng Quý Cô', 'lac-tay-quy-co', cat_map.get('vong-tay-lac'), 'Lắc tay đính đá quý phong cách thanh lịch hiện đại.'),
-            ('Bông Tai Nụ Halo Kiêu Sa', 'bong-tai-nu-halo', cat_map.get('bong-tai'), 'Bông tai nụ viền hào quang Halo sáng bừng gương mặt.'),
-            ('Bông Tai Dáng Dài Dạ Hội', 'bong-tai-dang-dai', cat_map.get('bong-tai'), 'Bông tai chùm dài đính đá quý chuyển động uyển chuyển.'),
-            ('Trang Sức Ruby Huyết Bồ Câu', 'trang-suc-ruby-hoang-gia', cat_map.get('bo-suu-tap-hoang-gia'), 'Trang sức đá quý Ruby đỏ rực quý phái biểu tượng quyền uy.'),
-            ('Trang Sức Emerald Ngọc Lục Bảo', 'trang-suc-emerald-hoang-gia', cat_map.get('bo-suu-tap-hoang-gia'), 'Trang sức đá ngọc lục bảo Emerald Columbia thiên nhiên quý hiếm.')
+            ('Nhẫn Cầu Hôn Solitaire', cat_map.get('Nhẫn Kim Cương & Nhẫn Cưới'), 'Các mẫu nhẫn cầu hôn kim cương giác cắt tròn Brilliant kiêu sa.'),
+            ('Nhẫn Cưới Cặp Uyên Ương', cat_map.get('Nhẫn Kim Cương & Nhẫn Cưới'), 'Nhẫn cưới vàng 18K và bạch kim minh chứng cho tình yêu vĩnh cửu.'),
+            ('Nhẫn Nữ Kim Cương Moissanite', cat_map.get('Nhẫn Kim Cương & Nhẫn Cưới'), 'Nhẫn Moissanite nước D giác cắt giác tinh hoa rực rỡ.'),
+            ('Dây Chuyền Vàng Ý 18K', cat_map.get('Dây Chuyền & Mặt Dây'), 'Dây chuyền vàng Ý thanh mảnh, tôn vinh bờ vai quý phái.'),
+            ('Mặt Dây Chuyền Đính Kim Cương', cat_map.get('Dây Chuyền & Mặt Dây'), 'Mặt dây chuyền hình giọt nước và trái tim đính đá lấp lánh.'),
+            ('Vòng Tay Tennis Diamond', cat_map.get('Vòng Tay & Lắc'), 'Vòng tay Tennis đính dải kim cương liên hoàn sang trọng.'),
+            ('Lắc Tay Bạc & Vàng Quý Cô', cat_map.get('Vòng Tay & Lắc'), 'Lắc tay đính đá quý phong cách thanh lịch hiện đại.'),
+            ('Bông Tai Nụ Halo Kiêu Sa', cat_map.get('Bông Tai Quý Phái'), 'Bông tai nụ viền hào quang Halo sáng bừng gương mặt.'),
+            ('Bông Tai Dáng Dài Dạ Hội', cat_map.get('Bông Tai Quý Phái'), 'Bông tai chùm dài đính đá quý chuyển động uyển chuyển.'),
+            ('Trang Sức Ruby Huyết Bồ Câu', cat_map.get('Bộ Sưu Tập Hoàng Gia'), 'Trang sức đá quý Ruby đỏ rực quý phái biểu tượng quyền uy.'),
+            ('Trang Sức Emerald Ngọc Lục Bảo', cat_map.get('Bộ Sưu Tập Hoàng Gia'), 'Trang sức đá ngọc lục bảo Emerald Columbia thiên nhiên quý hiếm.')
         ]
         for sub in subcategories:
-            cursor.execute("SELECT MaDanhMuc FROM DanhMuc WHERE Slug = %s", (sub[1],))
+            cursor.execute("SELECT MaDanhMuc FROM DanhMuc WHERE TenDanhMuc = %s", (sub[0],))
             row = cursor.fetchone()
-            if row:
-                cat_map[sub[1]] = row['MaDanhMuc']
-            else:
+            if not row:
                 cursor.execute("""
-                    INSERT INTO DanhMuc (TenDanhMuc, Slug, MaDanhMucCha, MoTa)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO DanhMuc (TenDanhMuc, MaDanhMucCha, MoTa)
+                    VALUES (%s, %s, %s)
                 """, sub)
-                cat_map[sub[1]] = cursor.lastrowid
 
         # 4. Sản phẩm mẫu & biến thể
         products = [
@@ -286,16 +283,16 @@ def seed_database():
         ]
 
         for p in products:
-            cursor.execute("SELECT MaSanPham FROM SanPham WHERE Slug = %s", (p['slug'],))
+            cursor.execute("SELECT MaSanPham FROM SanPham WHERE TenSanPham = %s", (p['ten'],))
             sp_row = cursor.fetchone()
-            cat_id = cat_map[p['danhmuc']]
+            cat_id = 1
             if not sp_row:
                 cursor.execute("""
-                    INSERT INTO SanPham (TenSanPham, Slug, MaDanhMuc, ChatLieu, PhongCach, DoiTuong, GiaCoSo, MoTaChiTiet, HinhAnhChinh, LaBanChay, LaNoiBat, LuotXem, TrangThai)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'DangBan')
+                    INSERT INTO SanPham (TenSanPham, MaDanhMuc, ChatLieu, PhongCach, DoiTuong, GiaCoSo, MoTaChiTiet, LaNoiBat, TrangThai)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'DangBan')
                 """, (
-                    p['ten'], p['slug'], cat_id, p['chatlieu'], p['phongcach'], p['doituong'],
-                    p['gia'], p['mota'], p['anh'], p['banchay'], p['noibat'], 150
+                    p['ten'], cat_id, p['chatlieu'], p['phongcach'], p['doituong'],
+                    p['gia'], p['mota'], 1 if p.get('noibat') else 0
                 ))
                 sp_id = cursor.lastrowid
                 

@@ -9,7 +9,7 @@ def get_products():
     """Retrieve full list of products with category and variant information."""
     try:
         sql = """
-            SELECT sp.*, dm.TenDanhMuc, dm.Slug AS CatSlug
+            SELECT sp.*, dm.TenDanhMuc
             FROM sanpham sp
             LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
             ORDER BY sp.NgayTao DESC, sp.MaSanPham DESC
@@ -48,8 +48,8 @@ def get_products():
             prod_dict = {
                 'MaSanPham': pid,
                 'TenSanPham': p['TenSanPham'],
-                'Slug': p['Slug'] or f"sp-{pid}",
-                'CatSlug': p['CatSlug'] or 'nhan-kim-cuong',
+                'Slug': f"sp-{pid}",
+                'CatSlug': str(p.get('MaDanhMuc', 1)),
                 'TenDanhMuc': p['TenDanhMuc'] or 'Trang Sức',
                 'ChatLieu': p.get('ChatLieu') or 'Vàng 18K',
                 'PhongCach': p.get('PhongCach') or 'Sang trọng',
@@ -78,18 +78,27 @@ def get_product(id_or_slug):
         is_id = str(id_or_slug).isdigit()
         if is_id:
             p = query_one("""
-                SELECT sp.*, dm.TenDanhMuc, dm.Slug AS CatSlug
+                SELECT sp.*, dm.TenDanhMuc
                 FROM sanpham sp
                 LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
                 WHERE sp.MaSanPham = %s
             """, (int(id_or_slug),))
         else:
-            p = query_one("""
-                SELECT sp.*, dm.TenDanhMuc, dm.Slug AS CatSlug
-                FROM sanpham sp
-                LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
-                WHERE sp.Slug = %s
-            """, (id_or_slug,))
+            pid_cand = str(id_or_slug).replace('sp-', '')
+            if pid_cand.isdigit():
+                p = query_one("""
+                    SELECT sp.*, dm.TenDanhMuc
+                    FROM sanpham sp
+                    LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
+                    WHERE sp.MaSanPham = %s
+                """, (int(pid_cand),))
+            else:
+                p = query_one("""
+                    SELECT sp.*, dm.TenDanhMuc
+                    FROM sanpham sp
+                    LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
+                    WHERE sp.TenSanPham = %s
+                """, (id_or_slug,))
 
         if not p:
             return jsonify({'success': False, 'message': 'Không tìm thấy sản phẩm.'}), 404
@@ -121,8 +130,8 @@ def get_product(id_or_slug):
         prod_dict = {
             'MaSanPham': actual_id,
             'TenSanPham': p['TenSanPham'],
-            'Slug': p['Slug'] or f"sp-{actual_id}",
-            'CatSlug': p['CatSlug'] or 'nhan-kim-cuong',
+            'Slug': f"sp-{actual_id}",
+            'CatSlug': str(p.get('MaDanhMuc', 1)),
             'TenDanhMuc': p['TenDanhMuc'] or 'Trang Sức',
             'ChatLieu': p.get('ChatLieu') or 'Vàng 18K',
             'PhongCach': p.get('PhongCach') or 'Sang trọng',
@@ -149,13 +158,12 @@ def create_product():
     if not name:
         return jsonify({'success': False, 'message': 'Vui lòng cung cấp tên sản phẩm.'}), 400
 
-    slug = data.get('Slug') or name.lower().replace(' ', '-').replace('/', '-')
-    cat_slug = data.get('CatSlug', '')
     cat_id = 1
-    if cat_slug:
-        cat_row = query_one("SELECT MaDanhMuc FROM danhmuc WHERE Slug = %s", (cat_slug,))
-        if cat_row:
-            cat_id = cat_row['MaDanhMuc']
+    if data.get('MaDanhMuc'):
+        try:
+            cat_id = int(data['MaDanhMuc'])
+        except (ValueError, TypeError):
+            pass
 
     base_price = float(data.get('GiaCoSo') or 20000000)
     material = data.get('ChatLieu', 'Kim Cương GIA')
@@ -168,9 +176,9 @@ def create_product():
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO sanpham (TenSanPham, Slug, MaDanhMuc, ChatLieu, PhongCach, DoiTuong, GiaCoSo, MoTaChiTiet, LaNoiBat, TrangThai, NgayTao)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'DangBan', NOW())
-        """, (name, slug, cat_id, material, style, audience, base_price, desc, is_featured))
+            INSERT INTO sanpham (TenSanPham, MaDanhMuc, ChatLieu, PhongCach, DoiTuong, GiaCoSo, MoTaChiTiet, LaNoiBat, TrangThai, NgayTao)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'DangBan', NOW())
+        """, (name, cat_id, material, style, audience, base_price, desc, is_featured))
         new_id = cursor.lastrowid
 
         gallery = data.get('gallery') or []
@@ -215,13 +223,12 @@ def update_product(product_id):
     if not name:
         return jsonify({'success': False, 'message': 'Vui lòng cung cấp tên sản phẩm.'}), 400
 
-    slug = data.get('Slug') or name.lower().replace(' ', '-').replace('/', '-')
-    cat_slug = data.get('CatSlug', '')
     cat_id = 1
-    if cat_slug:
-        cat_row = query_one("SELECT MaDanhMuc FROM danhmuc WHERE Slug = %s", (cat_slug,))
-        if cat_row:
-            cat_id = cat_row['MaDanhMuc']
+    if data.get('MaDanhMuc'):
+        try:
+            cat_id = int(data['MaDanhMuc'])
+        except (ValueError, TypeError):
+            pass
 
     base_price = float(data.get('GiaCoSo') or 20000000)
     material = data.get('ChatLieu', 'Kim Cương GIA')
@@ -235,10 +242,10 @@ def update_product(product_id):
     try:
         cursor.execute("""
             UPDATE sanpham 
-            SET TenSanPham = %s, Slug = %s, MaDanhMuc = %s, ChatLieu = %s, PhongCach = %s,
+            SET TenSanPham = %s, MaDanhMuc = %s, ChatLieu = %s, PhongCach = %s,
                 DoiTuong = %s, GiaCoSo = %s, MoTaChiTiet = %s, LaNoiBat = %s, NgayCapNhat = NOW()
             WHERE MaSanPham = %s
-        """, (name, slug, cat_id, material, style, audience, base_price, desc, is_featured, product_id))
+        """, (name, cat_id, material, style, audience, base_price, desc, is_featured, product_id))
 
         gallery = data.get('gallery') or []
         main_img = data.get('HinhAnhChinh')

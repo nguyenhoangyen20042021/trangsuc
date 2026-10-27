@@ -28,15 +28,14 @@ def create_category():
     if not name:
         return jsonify({'success': False, 'message': 'Vui lòng nhập tên danh mục.'}), 400
 
-    slug = data.get('Slug') or name.lower().replace(' ', '-')
     desc = data.get('MoTa', '')
     parent_id = data.get('MaDanhMucCha') or None
 
     try:
         rowcount, last_id = execute("""
-            INSERT INTO danhmuc (TenDanhMuc, Slug, MaDanhMucCha, MoTa)
-            VALUES (%s, %s, %s, %s)
-        """, (name, slug, parent_id, desc))
+            INSERT INTO danhmuc (TenDanhMuc, MaDanhMucCha, MoTa)
+            VALUES (%s, %s, %s)
+        """, (name, parent_id, desc))
         return jsonify({'success': True, 'message': 'Tạo danh mục mới thành công.', 'id': last_id})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -46,13 +45,12 @@ def update_category(cat_id):
     """Update category information."""
     data = request.get_json() or {}
     name = data.get('TenDanhMuc', '').strip()
-    slug = data.get('Slug') or name.lower().replace(' ', '-')
     desc = data.get('MoTa', '')
 
     try:
         execute("""
-            UPDATE danhmuc SET TenDanhMuc = %s, Slug = %s, MoTa = %s WHERE MaDanhMuc = %s
-        """, (name, slug, desc, cat_id))
+            UPDATE danhmuc SET TenDanhMuc = %s, MoTa = %s WHERE MaDanhMuc = %s
+        """, (name, desc, cat_id))
         return jsonify({'success': True, 'message': 'Cập nhật danh mục thành công.'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
