@@ -17,14 +17,10 @@ def get_categories():
                 c_cnt = query_one("SELECT COUNT(*) AS cnt FROM sanpham WHERE MaDanhMuc = %s", (child['MaDanhMuc'],))
                 child['SoLuongSP'] = c_cnt['cnt'] if c_cnt else 0
                 child_cnt_total += child['SoLuongSP']
-                if not child.get('AnhDaiDien'):
-                    child['AnhDaiDien'] = p.get('AnhDaiDien') or 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'
 
             count_row = query_one("SELECT COUNT(*) AS cnt FROM sanpham WHERE MaDanhMuc = %s", (p['MaDanhMuc'],))
             direct_cnt = count_row['cnt'] if count_row else 0
             p['SoLuongSP'] = direct_cnt + child_cnt_total
-            if not p.get('AnhDaiDien'):
-                p['AnhDaiDien'] = 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'
         return jsonify({'success': True, 'data': clean_rows(parents)})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

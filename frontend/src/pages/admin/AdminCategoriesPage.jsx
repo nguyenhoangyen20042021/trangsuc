@@ -29,7 +29,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  CloudUpload as UploadIcon,
   KeyboardArrowDown as ExpandMoreIcon,
   KeyboardArrowUp as ExpandLessIcon,
   SubdirectoryArrowRight as SubdirectoryArrowRightIcon,
@@ -57,15 +56,13 @@ export const AdminCategoriesPage = () => {
   const [search, setSearch] = useState('');
   const [expandedCatIds, setExpandedCatIds] = useState({});
 
-  // Dialog State
+  // Single Unified Dialog State
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
-  const [isChildMode, setIsChildMode] = useState(false);
   const [formData, setFormData] = useState({
     TenDanhMuc: '',
     MaDanhMucCha: '',
-    MoTa: '',
-    AnhDaiDien: ''
+    MoTa: ''
   });
 
   // Refresh categories from backend
@@ -115,7 +112,6 @@ export const AdminCategoriesPage = () => {
         if (matchParent || matchingChildren.length > 0) {
           return {
             ...cat,
-            // If parent matched, keep all children; if only children matched, keep matched children
             children: matchParent ? cat.children : matchingChildren
           };
         }
@@ -143,46 +139,27 @@ export const AdminCategoriesPage = () => {
     setExpandedCatIds(newState);
   };
 
-  // Open Dialog to Add Parent Category
-  const handleOpenAddParent = () => {
+  // Open Unified Dialog to Add (default to main category or specific parent)
+  const handleOpenAdd = (parentId = '') => {
     setEditingCat(null);
-    setIsChildMode(false);
     setFormData({
       TenDanhMuc: '',
-      MaDanhMucCha: '',
-      MoTa: '',
-      AnhDaiDien: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80'
+      MaDanhMucCha: parentId ? String(parentId) : '',
+      MoTa: ''
     });
-    setOpenDialog(true);
-  };
-
-  // Open Dialog to Add Subcategory
-  const handleOpenAddChild = (parentCat = null) => {
-    setEditingCat(null);
-    setIsChildMode(true);
-    const parentId = parentCat ? parentCat.MaDanhMuc : (categories[0]?.MaDanhMuc || '');
-    setFormData({
-      TenDanhMuc: '',
-      MaDanhMucCha: parentId,
-      MoTa: '',
-      AnhDaiDien: parentCat?.AnhDaiDien || ''
-    });
-    // Auto expand this parent row so user sees new subcategory
     if (parentId) {
       setExpandedCatIds(prev => ({ ...prev, [parentId]: true }));
     }
     setOpenDialog(true);
   };
 
-  // Open Dialog to Edit Category (Parent or Child)
-  const handleOpenEdit = (cat, isChild = false, parentId = null) => {
+  // Open Unified Dialog to Edit
+  const handleOpenEdit = (cat, parentId = '') => {
     setEditingCat(cat);
-    setIsChildMode(isChild);
     setFormData({
       TenDanhMuc: cat.TenDanhMuc || '',
-      MaDanhMucCha: isChild ? (cat.MaDanhMucCha || parentId || '') : '',
-      MoTa: cat.MoTa || '',
-      AnhDaiDien: cat.AnhDaiDien || ''
+      MaDanhMucCha: cat.MaDanhMucCha ? String(cat.MaDanhMucCha) : (parentId ? String(parentId) : ''),
+      MoTa: cat.MoTa || ''
     });
     setOpenDialog(true);
   };
@@ -214,11 +191,11 @@ export const AdminCategoriesPage = () => {
       return;
     }
 
+    const parentId = formData.MaDanhMucCha ? Number(formData.MaDanhMucCha) : null;
     const payload = {
       TenDanhMuc: trimmedName,
       MoTa: formData.MoTa.trim(),
-      AnhDaiDien: formData.AnhDaiDien.trim() || undefined,
-      MaDanhMucCha: formData.MaDanhMucCha ? Number(formData.MaDanhMucCha) : null
+      MaDanhMucCha: parentId
     };
 
     try {
@@ -230,9 +207,9 @@ export const AdminCategoriesPage = () => {
         notify(`Đã tạo danh mục mới "${trimmedName}"!`, 'success');
       }
 
-      // If added a subcategory, ensure its parent is expanded
-      if (payload.MaDanhMucCha) {
-        setExpandedCatIds(prev => ({ ...prev, [payload.MaDanhMucCha]: true }));
+      // If added under a parent category, ensure parent is expanded
+      if (parentId) {
+        setExpandedCatIds(prev => ({ ...prev, [parentId]: true }));
       }
 
       await loadCategories();
@@ -277,27 +254,22 @@ export const AdminCategoriesPage = () => {
           </Stack>
         </Box>
 
-        {/* Action Buttons */}
-        <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<SubdirectoryArrowRightIcon />}
-            onClick={() => handleOpenAddChild()}
-            sx={{ borderRadius: 20, px: 2.5, fontWeight: 700, textTransform: 'none' }}
-          >
-            Thêm Danh Mục Con
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenAddParent}
-            sx={{ borderRadius: 20, px: 3, fontWeight: 700, textTransform: 'none', boxShadow: '0 4px 14px rgba(139, 58, 72, 0.25)' }}
-          >
-            Thêm Danh Mục Chính
-          </Button>
-        </Stack>
+        {/* Single Action Button to Add Category */}
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenAdd('')}
+          sx={{
+            borderRadius: 20,
+            px: 3,
+            fontWeight: 700,
+            textTransform: 'none',
+            boxShadow: '0 4px 14px rgba(139, 58, 72, 0.25)'
+          }}
+        >
+          Thêm Danh Mục
+        </Button>
       </Box>
 
       {/* 2. Search & Expand Controls Toolbar */}
@@ -355,18 +327,17 @@ export const AdminCategoriesPage = () => {
         </Stack>
       </Paper>
 
-      {/* 3. Main Hierarchical Category Table */}
+      {/* 3. Main Hierarchical Category Table (NO Image Column) */}
       <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.08)', bgcolor: '#FFFFFF', overflow: 'hidden' }}>
         <TableContainer>
           <Table>
             <TableHead sx={{ bgcolor: '#F9FAFB' }}>
               <TableRow>
                 <TableCell sx={{ width: 48, fontWeight: 700 }} align="center" />
-                <TableCell sx={{ fontWeight: 700, width: 75 }}>Ảnh</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Tên Danh Mục Chính</TableCell>
-                <TableCell sx={{ fontWeight: 700, width: 100 }}>Mã Số</TableCell>
+                <TableCell sx={{ fontWeight: 700, width: 110 }}>Mã Số</TableCell>
                 <TableCell sx={{ fontWeight: 700, width: 180 }}>Danh Mục Con</TableCell>
-                <TableCell sx={{ fontWeight: 700, width: 130 }}>Sản Phẩm</TableCell>
+                <TableCell sx={{ fontWeight: 700, width: 140 }}>Sản Phẩm</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Mô Tả</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 700, width: 160 }}>Thao Tác</TableCell>
               </TableRow>
@@ -375,13 +346,13 @@ export const AdminCategoriesPage = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                     Đang tải dữ liệu danh mục...
                   </TableCell>
                 </TableRow>
               ) : filteredCategories.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                     {search ? `Không tìm thấy danh mục nào phù hợp với từ khóa "${search}".` : 'Chưa có danh mục nào trong hệ thống. Bấm nút "Thêm Danh Mục" để tạo mới.'}
                   </TableCell>
                 </TableRow>
@@ -402,7 +373,7 @@ export const AdminCategoriesPage = () => {
                         }}
                       >
                         {/* Expand / Collapse Icon */}
-                        <TableCell align="center" sx={{ py: 1.5 }}>
+                        <TableCell align="center" sx={{ py: 1.8 }}>
                           <Tooltip title={isExpanded ? 'Thu gọn danh mục con' : `Xem ${childCount} danh mục con`}>
                             <IconButton
                               size="small"
@@ -418,42 +389,25 @@ export const AdminCategoriesPage = () => {
                           </Tooltip>
                         </TableCell>
 
-                        {/* Thumbnail */}
-                        <TableCell sx={{ py: 1.5 }}>
-                          <Box
-                            component="img"
-                            src={cat.AnhDaiDien || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'}
-                            alt={cat.TenDanhMuc}
-                            sx={{
-                              width: 46,
-                              height: 46,
-                              borderRadius: 2,
-                              objectFit: 'cover',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                              border: '1px solid rgba(0,0,0,0.06)'
-                            }}
-                          />
-                        </TableCell>
-
                         {/* Category Name */}
-                        <TableCell sx={{ fontWeight: 700, color: 'text.primary', py: 1.5 }}>
+                        <TableCell sx={{ fontWeight: 700, color: 'text.primary', py: 1.8 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                             {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 22, color: 'primary.main' } })}
-                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#2C1F20' }}>
                               {cat.TenDanhMuc}
                             </Typography>
                           </Box>
                         </TableCell>
 
                         {/* ID */}
-                        <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem', py: 1.5 }}>
+                        <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem', py: 1.8 }}>
                           <Typography variant="caption" sx={{ bgcolor: '#F0F0F0', px: 1, py: 0.4, borderRadius: 1, fontWeight: 600 }}>
                             #{cat.MaDanhMuc}
                           </Typography>
                         </TableCell>
 
                         {/* Subcategory Count Chip (Click to toggle) */}
-                        <TableCell sx={{ py: 1.5 }}>
+                        <TableCell sx={{ py: 1.8 }}>
                           <Tooltip title="Nhấn để xem / đóng danh mục con">
                             <Chip
                               icon={<HierarchyIcon sx={{ fontSize: '14px !important' }} />}
@@ -472,7 +426,7 @@ export const AdminCategoriesPage = () => {
                         </TableCell>
 
                         {/* Total Product Count */}
-                        <TableCell sx={{ py: 1.5 }}>
+                        <TableCell sx={{ py: 1.8 }}>
                           <Chip
                             label={`${cat.SoLuongSP || 0} sản phẩm`}
                             size="small"
@@ -486,32 +440,32 @@ export const AdminCategoriesPage = () => {
                         </TableCell>
 
                         {/* Description */}
-                        <TableCell sx={{ maxWidth: 280, color: 'text.secondary', fontSize: '0.85rem', py: 1.5 }}>
-                          <Typography variant="body2" noWrap title={cat.MoTa || ''} sx={{ fontSize: '0.85rem' }}>
+                        <TableCell sx={{ maxWidth: 320, color: 'text.secondary', fontSize: '0.85rem', py: 1.8 }}>
+                          <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
                             {cat.MoTa || '—'}
                           </Typography>
                         </TableCell>
 
                         {/* Actions */}
-                        <TableCell align="center" sx={{ py: 1.5 }}>
+                        <TableCell align="center" sx={{ py: 1.8 }}>
                           <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'center' }}>
                             <Tooltip title="Thêm danh mục con vào mục này">
                               <IconButton
                                 size="small"
                                 sx={{ color: '#2E7D32', bgcolor: 'rgba(46, 125, 50, 0.08)', '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.16)' } }}
-                                onClick={() => handleOpenAddChild(cat)}
+                                onClick={() => handleOpenAdd(cat.MaDanhMuc)}
                               >
                                 <AddIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
 
-                            <Tooltip title="Chỉnh sửa danh mục chính">
-                              <IconButton size="small" color="primary" onClick={() => handleOpenEdit(cat, false)}>
+                            <Tooltip title="Chỉnh sửa danh mục">
+                              <IconButton size="small" color="primary" onClick={() => handleOpenEdit(cat)}>
                                 <EditIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
 
-                            <Tooltip title="Xóa danh mục chính">
+                            <Tooltip title="Xóa danh mục">
                               <IconButton size="small" color="error" onClick={() => handleDelete(cat.MaDanhMuc, cat.TenDanhMuc, false, childCount)}>
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -522,7 +476,7 @@ export const AdminCategoriesPage = () => {
 
                       {/* SUBCATEGORIES EXPANDABLE ROW */}
                       <TableRow>
-                        <TableCell colSpan={8} sx={{ p: 0, borderBottom: isExpanded ? '1px solid rgba(0,0,0,0.12)' : 'none' }}>
+                        <TableCell colSpan={7} sx={{ p: 0, borderBottom: isExpanded ? '1px solid rgba(0,0,0,0.12)' : 'none' }}>
                           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                             <Box
                               sx={{
@@ -557,7 +511,7 @@ export const AdminCategoriesPage = () => {
                                   variant="contained"
                                   color="primary"
                                   startIcon={<AddIcon />}
-                                  onClick={() => handleOpenAddChild(cat)}
+                                  onClick={() => handleOpenAdd(cat.MaDanhMuc)}
                                   sx={{
                                     borderRadius: 15,
                                     px: 2,
@@ -585,7 +539,7 @@ export const AdminCategoriesPage = () => {
                                     <Button
                                       size="small"
                                       color="primary"
-                                      onClick={() => handleOpenAddChild(cat)}
+                                      onClick={() => handleOpenAdd(cat.MaDanhMuc)}
                                       sx={{ fontWeight: 700, textTransform: 'none' }}
                                     >
                                       Thêm ngay
@@ -635,7 +589,7 @@ export const AdminCategoriesPage = () => {
                                             />
                                           </TableCell>
 
-                                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem', maxWidth: 300 }}>
+                                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem', maxWidth: 350 }}>
                                             {sub.MoTa || '—'}
                                           </TableCell>
 
@@ -645,7 +599,7 @@ export const AdminCategoriesPage = () => {
                                                 <IconButton
                                                   size="small"
                                                   color="primary"
-                                                  onClick={() => handleOpenEdit(sub, true, cat.MaDanhMuc)}
+                                                  onClick={() => handleOpenEdit(sub, cat.MaDanhMuc)}
                                                 >
                                                   <EditIcon sx={{ fontSize: 17 }} />
                                                 </IconButton>
@@ -681,7 +635,7 @@ export const AdminCategoriesPage = () => {
         </TableContainer>
       </Paper>
 
-      {/* 4. Unified Dialog for Adding / Editing Category or Subcategory */}
+      {/* 4. Single Unified Dialog for Adding / Editing Category */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
@@ -690,9 +644,7 @@ export const AdminCategoriesPage = () => {
         PaperProps={{ sx: { borderRadius: 3, p: 0.5 } }}
       >
         <DialogTitle sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, pb: 1 }}>
-          {editingCat
-            ? (isChildMode ? 'Cập Nhật Danh Mục Con' : 'Cập Nhật Danh Mục Chính')
-            : (isChildMode ? 'Thêm Danh Mục Con Mới' : 'Thêm Danh Mục Chính Mới')}
+          {editingCat ? 'Cập Nhật Danh Mục' : 'Thêm Danh Mục Mới'}
         </DialogTitle>
 
         <Divider />
@@ -700,18 +652,14 @@ export const AdminCategoriesPage = () => {
         <form onSubmit={handleSave}>
           <DialogContent sx={{ pt: 2.5 }}>
             <Stack spacing={2.5}>
-              {/* Category Type / Parent Selector */}
+              {/* Parent Category Selector */}
               <TextField
                 select
                 fullWidth
-                label="Cấp bậc danh mục"
-                value={formData.MaDanhMucCha || ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData({ ...formData, MaDanhMucCha: val });
-                  setIsChildMode(Boolean(val));
-                }}
-                helperText={formData.MaDanhMucCha ? 'Danh mục con sẽ hiển thị nằm dưới danh mục chính đã chọn.' : 'Danh mục chính độc lập ở cấp cao nhất trên thanh menu điều hướng.'}
+                label="Danh mục cha (Cấp bậc danh mục)"
+                value={formData.MaDanhMucCha}
+                onChange={(e) => setFormData({ ...formData, MaDanhMucCha: e.target.value })}
+                helperText={formData.MaDanhMucCha ? 'Danh mục con sẽ hiển thị trực thuộc danh mục chính đã chọn.' : 'Để trống / chọn cấp cao nhất nếu muốn tạo danh mục chính độc lập trên thanh điều hướng.'}
               >
                 <MenuItem value="" sx={{ fontWeight: 700, color: '#8B3A48' }}>
                   ⭐ Là Danh Mục Chính (Cấp Cao Nhất)
@@ -720,7 +668,7 @@ export const AdminCategoriesPage = () => {
                 {categories.map((c) => (
                   <MenuItem
                     key={c.MaDanhMuc}
-                    value={c.MaDanhMuc}
+                    value={String(c.MaDanhMuc)}
                     disabled={editingCat && editingCat.MaDanhMuc === c.MaDanhMuc}
                     sx={{ pl: 3 }}
                   >
@@ -733,68 +681,19 @@ export const AdminCategoriesPage = () => {
               <TextField
                 required
                 fullWidth
-                label={isChildMode ? 'Tên danh mục con' : 'Tên danh mục chính'}
-                placeholder={isChildMode ? 'VD: Nhẫn Cầu Hôn Solitaire, Vòng Tay Tennis...' : 'VD: Nhẫn Kim Cương, Dây Chuyền & Mặt Dây...'}
+                label="Tên danh mục"
+                placeholder="VD: Nhẫn Kim Cương, Dây Chuyền Vàng Ý, Bông Tai Halo..."
                 value={formData.TenDanhMuc}
                 onChange={(e) => setFormData({ ...formData, TenDanhMuc: e.target.value })}
               />
-
-              {/* Thumbnail / Image Upload */}
-              <Box>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1 }}>
-                  Ảnh đại diện danh mục {isChildMode ? '(tùy chọn)' : '(khuyến nghị có)'}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<UploadIcon />}
-                    component="label"
-                    sx={{ borderRadius: 2, textTransform: 'none' }}
-                  >
-                    Tải ảnh từ máy tính
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            setFormData(prev => ({ ...prev, AnhDaiDien: ev.target.result }));
-                            notify('Đã tải ảnh danh mục từ máy tính thành công!', 'success');
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </Button>
-                  {formData.AnhDaiDien && (
-                    <Box
-                      component="img"
-                      src={formData.AnhDaiDien}
-                      alt="Preview"
-                      sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)' }}
-                    />
-                  )}
-                </Box>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Hoặc dán URL ảnh đại diện"
-                  value={formData.AnhDaiDien}
-                  onChange={(e) => setFormData({ ...formData, AnhDaiDien: e.target.value })}
-                />
-              </Box>
 
               {/* Description */}
               <TextField
                 fullWidth
                 multiline
-                rows={2.5}
+                rows={3}
                 label="Mô tả danh mục"
-                placeholder="Mô tả ngắn gọn về đặc điểm trang sức, phong cách hoặc bộ sưu tập..."
+                placeholder="Mô tả ngắn gọn về đặc điểm trang sức, phong cách thiết kế hoặc bộ sưu tập..."
                 value={formData.MoTa}
                 onChange={(e) => setFormData({ ...formData, MoTa: e.target.value })}
               />
@@ -811,7 +710,7 @@ export const AdminCategoriesPage = () => {
               color="primary"
               sx={{ borderRadius: 20, px: 3, fontWeight: 700, textTransform: 'none' }}
             >
-              {editingCat ? 'Lưu Thay Đổi' : (isChildMode ? 'Tạo Danh Mục Con' : 'Tạo Danh Mục Chính')}
+              {editingCat ? 'Lưu Thay Đổi' : 'Tạo Danh Mục'}
             </Button>
           </DialogActions>
         </form>
