@@ -39,7 +39,9 @@ import {
   getStoredProducts,
   fetchProducts,
   getStoredVouchers,
-  fetchVouchers
+  fetchVouchers,
+  getStoredCategories,
+  fetchCategories
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -47,10 +49,12 @@ export const HomePage = () => {
   const { notify } = useAuth();
   const [products, setProducts] = React.useState(getStoredProducts);
   const [vouchers, setVouchers] = React.useState(getStoredVouchers);
+  const [categories, setCategories] = React.useState(getStoredCategories);
 
   React.useEffect(() => {
     fetchProducts().then(data => { if (Array.isArray(data)) setProducts(data); });
     fetchVouchers().then(data => { if (Array.isArray(data)) setVouchers(data); });
+    fetchCategories().then(data => { if (Array.isArray(data)) setCategories(data); });
   }, []);
 
   const featuredProducts = products.filter(p => p.LaNoiBat === 1).slice(0, 4);
@@ -397,8 +401,8 @@ export const HomePage = () => {
               <CardMedia
                 component="img"
                 className="bento-img"
-                image={MOCK_CATEGORIES[0]?.AnhDaiDien}
-                alt={MOCK_CATEGORIES[0]?.TenDanhMuc}
+                image={(categories[0]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80'}
+                alt={(categories[0]?.TenDanhMuc) || 'Nhẫn Kim Cương'}
                 sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
               />
               <Box
@@ -422,10 +426,10 @@ export const HomePage = () => {
                   sx={{ bgcolor: 'rgba(212, 175, 55, 0.9)', color: '#2C1F20', fontWeight: 700, width: 'fit-content', mb: 1, fontSize: '0.68rem' }}
                 />
                 <Typography variant="h4" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1 }}>
-                  {MOCK_CATEGORIES[0]?.TenDanhMuc}
+                  {(categories[0]?.TenDanhMuc) || 'Nhẫn Kim Cương Quý Phái'}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)', maxWidth: 460, mb: 2, display: { xs: 'none', sm: 'block' } }}>
-                  {MOCK_CATEGORIES[0]?.MoTa}
+                  {(categories[0]?.MoTa) || 'Tuyệt tác nhẫn đính hôn và nhẫn cưới giác cắt hoàn mỹ tôn vinh phong thái thượng lưu'}
                 </Typography>
                 <Typography variant="subtitle2" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
                   Khám phá toàn bộ thiết kế <ArrowForwardIcon sx={{ fontSize: 16 }} />
@@ -459,8 +463,8 @@ export const HomePage = () => {
                 <CardMedia
                   component="img"
                   className="bento-img"
-                  image={MOCK_CATEGORIES[1]?.AnhDaiDien}
-                  alt={MOCK_CATEGORIES[1]?.TenDanhMuc}
+                  image={(categories[1]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80'}
+                  alt={(categories[1]?.TenDanhMuc) || 'Dây Chuyền Quý Phái'}
                   sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
                 />
                 <Box
@@ -480,7 +484,7 @@ export const HomePage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <NecklaceProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
                     <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                      {MOCK_CATEGORIES[1]?.TenDanhMuc}
+                      {(categories[1]?.TenDanhMuc) || 'Dây Chuyền Quý Phái'}
                     </Typography>
                   </Box>
                   <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
@@ -511,8 +515,8 @@ export const HomePage = () => {
                 <CardMedia
                   component="img"
                   className="bento-img"
-                  image={MOCK_CATEGORIES[2]?.AnhDaiDien}
-                  alt={MOCK_CATEGORIES[2]?.TenDanhMuc}
+                  image={(categories[2]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=800&auto=format&fit=crop&q=80'}
+                  alt={(categories[2]?.TenDanhMuc) || 'Vòng Tay Tennis'}
                   sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
                 />
                 <Box
@@ -532,7 +536,7 @@ export const HomePage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <BraceletProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
                     <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                      {MOCK_CATEGORIES[2]?.TenDanhMuc}
+                      {(categories[2]?.TenDanhMuc) || 'Vòng Tay Tennis'}
                     </Typography>
                   </Box>
                   <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
@@ -566,8 +570,8 @@ export const HomePage = () => {
               <CardMedia
                 component="img"
                 className="bento-img"
-                image={MOCK_CATEGORIES[3]?.AnhDaiDien}
-                alt={MOCK_CATEGORIES[3]?.TenDanhMuc}
+                image={(categories[3]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80'}
+                alt={(categories[3]?.TenDanhMuc) || 'Bông Tai Nữ Hoàng'}
                 sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
               />
               <Box
@@ -585,7 +589,7 @@ export const HomePage = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                  {MOCK_CATEGORIES[3]?.TenDanhMuc}
+                  {(categories[3]?.TenDanhMuc) || 'Bông Tai Nữ Hoàng'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
                   Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
@@ -617,8 +621,8 @@ export const HomePage = () => {
               <CardMedia
                 component="img"
                 className="bento-img"
-                image={MOCK_CATEGORIES[4]?.AnhDaiDien}
-                alt={MOCK_CATEGORIES[4]?.TenDanhMuc}
+                image={(categories[4]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&auto=format&fit=crop&q=80'}
+                alt={(categories[4]?.TenDanhMuc) || 'Bộ Sưu Tập Hoàng Gia'}
                 sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
               />
               <Box
@@ -636,7 +640,7 @@ export const HomePage = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                  {MOCK_CATEGORIES[4]?.TenDanhMuc}
+                  {(categories[4]?.TenDanhMuc) || 'BST Hoàng Gia Đá Quý'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
                   Xem tuyệt phẩm đá quý <ArrowForwardIcon sx={{ fontSize: 13 }} />

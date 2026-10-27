@@ -1,4 +1,11 @@
 {
+  "name": "trangsuc-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint"
+  },
   "dependencies": {
     "puppeteer-core": "^25.16.0"
   }

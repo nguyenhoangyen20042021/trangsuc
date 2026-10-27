@@ -29,7 +29,7 @@ import {
 } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { MOCK_PRODUCTS, formatCurrency } from '../services/api';
+import { getStoredProducts, formatCurrency } from '../services/api';
 
 const QUICK_QUESTIONS = [
   'Nhẫn kim cầu hôn dưới 30tr',
@@ -42,14 +42,17 @@ export const FloatingChatWidget = () => {
   const [hasNewMessage, setHasNewMessage] = useState(true);
   const { addToCart } = useCart();
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'ai',
-      text: 'Chào Quý khách! Tôi là trợ lý AI Stylist của LUNA BELLE. Quý khách cần tư vấn chọn trang sức hay tìm quà tặng phù hợp không ạ?',
-      products: [MOCK_PRODUCTS[0]]
-    }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    const prods = getStoredProducts();
+    return [
+      {
+        id: 1,
+        sender: 'ai',
+        text: 'Chào Quý khách! Tôi là trợ lý AI Stylist của LUNA BELLE. Quý khách cần tư vấn chọn trang sức hay tìm quà tặng phù hợp không ạ?',
+        products: prods && prods.length > 0 ? [prods[0]] : []
+      }
+    ];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatBoxRef = useRef(null);
@@ -73,22 +76,23 @@ export const FloatingChatWidget = () => {
     setLoading(true);
 
     setTimeout(() => {
+      const allProds = getStoredProducts();
       let aiResponse = '';
       let recommended = [];
 
       const q = query.toLowerCase();
       if (q.includes('cầu hôn') || q.includes('dưới 30') || q.includes('nhẫn')) {
         aiResponse = 'Mẫu nhẫn **Solitaire Eternal Grace** (Vàng Trắng 18K & Kim cương GIA 4.5 ly) giá 28.500.000₫ đang là kiệt tác cầu hôn số 1 được ưa chuộng nhất!';
-        recommended = [MOCK_PRODUCTS[0]];
+        recommended = allProds.slice(0, 1);
       } else if (q.includes('mệnh kim') || q.includes('phong thủy')) {
         aiResponse = 'Mệnh Kim rất tương hợp với sắc trắng sáng của Kim cương và Vàng trắng hoặc ánh vàng kim Nam Hải của Ngọc trai South Sea!';
-        recommended = [MOCK_PRODUCTS[0], MOCK_PRODUCTS[3]];
+        recommended = allProds.slice(0, 2);
       } else if (q.includes('dây chuyền') || q.includes('dạ hội')) {
         aiResponse = 'Dây chuyền mặt tim Moissanite nước D kết hợp cùng Vòng tay Tennis Bạch kim sẽ tôn vinh trọn vẹn nét quý phái của bạn!';
-        recommended = [MOCK_PRODUCTS[1]];
+        recommended = allProds.length > 1 ? [allProds[1]] : allProds.slice(0, 1);
       } else {
         aiResponse = 'LUNA BELLE có đầy đủ các bộ sưu tập kim cương thiên nhiên kiểm định GIA và Moissanite cao cấp. Bạn có thể xem ngay gợi ý bên dưới hoặc mở trang Tư vấn AI chi tiết nhé!';
-        recommended = [MOCK_PRODUCTS[0], MOCK_PRODUCTS[2]];
+        recommended = allProds.slice(0, 2);
       }
 
       setMessages(prev => [
@@ -97,7 +101,7 @@ export const FloatingChatWidget = () => {
           id: Date.now() + 1,
           sender: 'ai',
           text: aiResponse,
-          products: recommended
+          products: recommended.filter(Boolean)
         }
       ]);
       setLoading(false);
@@ -196,11 +200,11 @@ export const FloatingChatWidget = () => {
                       </Paper>
 
                       {/* Product mini cards */}
-                      {m.products && m.products.length > 0 && (
+                      {m.products && m.products.filter(Boolean).length > 0 && (
                         <Stack spacing={1} sx={{ mt: 1 }}>
-                          {m.products.map(p => (
+                          {m.products.filter(Boolean).map(p => (
                             <Card
-                              key={p.MaSanPham}
+                              key={p.MaSanPham || Math.random()}
                               sx={{
                                 display: 'flex',
                                 p: 1,
@@ -212,21 +216,21 @@ export const FloatingChatWidget = () => {
                             >
                               <CardMedia
                                 component="img"
-                                image={p.HinhAnhChinh}
-                                alt={p.TenSanPham}
+                                image={p.HinhAnhChinh || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'}
+                                alt={p.TenSanPham || 'Sản phẩm'}
                                 sx={{ width: 50, height: 50, borderRadius: 1.5, objectFit: 'cover' }}
                               />
                               <Box sx={{ flex: 1 }}>
                                 <Typography
                                   component={Link}
-                                  to={`/product/${p.MaSanPham}`}
+                                  to={`/product/${p.MaSanPham || ''}`}
                                   variant="caption"
                                   sx={{ fontWeight: 700, display: 'block', lineHeight: 1.2, color: 'text.primary', textDecoration: 'none' }}
                                 >
-                                  {p.TenSanPham}
+                                  {p.TenSanPham || 'Trang sức cao cấp'}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: 'primary.dark', fontWeight: 700 }}>
-                                  {formatCurrency(p.GiaMin || p.GiaCoSo)}
+                                  {formatCurrency(p.GiaMin || p.GiaCoSo || 0)}
                                 </Typography>
                                 <Box sx={{ mt: 0.5 }}>
                                   <Button

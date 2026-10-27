@@ -43,7 +43,7 @@ export const AiConsultantPage = () => {
       id: 1,
       sender: 'ai',
       text: 'Kính chào Quý khách! Tôi là AI Stylist – Chuyên gia tư vấn trang sức cao cấp của LUNA BELLE. Tôi có thể hỗ trợ Quý khách chọn mẫu nhẫn đính hôn, trang sức dự tiệc, hoặc gợi ý đá quý hợp bản mệnh và ngân sách. Quý khách đang tìm kiếm phong cách trang sức nào hôm nay?',
-      products: [MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]]
+      products: getStoredProducts().slice(0, 2)
     }
   ]);
 
@@ -204,9 +204,9 @@ export const AiConsultantPage = () => {
                             </Typography>
                           </Box>
                           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                            {msg.products.map((prod) => (
+                            {msg.products.filter(Boolean).map((prod) => (
                               <Card
-                                key={prod.MaSanPham}
+                                key={prod.MaSanPham || Math.random()}
                                 sx={{
                                   display: 'flex',
                                   width: { xs: '100%', sm: 260 },
@@ -218,8 +218,8 @@ export const AiConsultantPage = () => {
                                 <CardMedia
                                   component="img"
                                   sx={{ width: 85, height: '100%', objectFit: 'cover' }}
-                                  image={prod.HinhAnhChinh}
-                                  alt={prod.TenSanPham}
+                                  image={prod.HinhAnhChinh || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'}
+                                  alt={prod.TenSanPham || 'Sản phẩm'}
                                 />
                                 <CardContent sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
                                   <Typography
