@@ -33,8 +33,6 @@ import { AllJewelryProductIcon, getCategoryProductIcon } from '../components/ico
 import { useSearchParams, Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import {
-  MOCK_PRODUCTS,
-  MOCK_CATEGORIES,
   formatCurrency,
   getStoredProducts,
   fetchProducts,
@@ -64,8 +62,8 @@ export const ProductsPage = () => {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   useEffect(() => {
-    fetchProducts().then(data => { if (data && data.length) setProducts(data); });
-    fetchCategories().then(data => { if (data && data.length) setCategories(data); });
+    fetchProducts().then(data => { if (Array.isArray(data)) setProducts(data); });
+    fetchCategories().then(data => { if (Array.isArray(data)) setCategories(data); });
   }, []);
 
   // Synchronize when URL category changes
@@ -97,10 +95,11 @@ export const ProductsPage = () => {
 
       // Category
       if (selectedCategory !== 'all') {
-        const matchesSlug = product.CatSlug === selectedCategory;
-        const parentCategory = categories.find(c => c.children?.some(sub => sub.Slug === selectedCategory));
-        const matchesParent = parentCategory && product.CatSlug === parentCategory.Slug;
-        if (!matchesSlug && !matchesParent) return false;
+        const matchesCategory = String(product.MaDanhMuc) === String(selectedCategory) ||
+          product.TenDanhMuc === selectedCategory;
+        const parentCategory = categories.find(c => String(c.MaDanhMuc) === String(selectedCategory) || c.TenDanhMuc === selectedCategory);
+        const matchesParent = parentCategory && (String(product.MaDanhMucCha) === String(parentCategory.MaDanhMuc) || product.TenDanhMuc === parentCategory.TenDanhMuc);
+        if (!matchesCategory && !matchesParent) return false;
       }
 
       // Material
@@ -134,7 +133,7 @@ export const ProductsPage = () => {
       if (sortBy === 'bestseller') return b.TongBan - a.TongBan;
       return b.MaSanPham - a.MaSanPham; // newest
     });
-  }, [queryParam, selectedCategory, selectedMaterial, selectedStyle, selectedAudience, priceRange, sortBy]);
+  }, [products, categories, queryParam, selectedCategory, selectedMaterial, selectedStyle, selectedAudience, priceRange, sortBy]);
 
   const pageSize = 8;
   const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
@@ -175,12 +174,12 @@ export const ProductsPage = () => {
           />
           {categories.map((cat) => (
             <FormControlLabel
-              key={cat.Slug}
-              value={cat.Slug}
+              key={cat.MaDanhMuc}
+              value={String(cat.MaDanhMuc)}
               control={<Radio size="small" color="primary" />}
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 16, color: selectedCategory === cat.Slug ? 'primary.main' : '#B76E79' } })}
+                  {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 16, color: selectedCategory === String(cat.MaDanhMuc) ? 'primary.main' : '#B76E79' } })}
                   <span>{cat.TenDanhMuc}</span>
                 </Box>
               }

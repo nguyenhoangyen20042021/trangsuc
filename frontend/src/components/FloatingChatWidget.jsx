@@ -219,7 +219,7 @@ export const FloatingChatWidget = () => {
                               <Box sx={{ flex: 1 }}>
                                 <Typography
                                   component={Link}
-                                  to={`/product/${p.Slug || p.MaSanPham}`}
+                                  to={`/product/${p.MaSanPham}`}
                                   variant="caption"
                                   sx={{ fontWeight: 700, display: 'block', lineHeight: 1.2, color: 'text.primary', textDecoration: 'none' }}
                                 >

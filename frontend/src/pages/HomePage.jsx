@@ -49,8 +49,8 @@ export const HomePage = () => {
   const [vouchers, setVouchers] = React.useState(getStoredVouchers);
 
   React.useEffect(() => {
-    fetchProducts().then(data => { if (data && data.length) setProducts(data); });
-    fetchVouchers().then(data => { if (data && data.length) setVouchers(data); });
+    fetchProducts().then(data => { if (Array.isArray(data)) setProducts(data); });
+    fetchVouchers().then(data => { if (Array.isArray(data)) setVouchers(data); });
   }, []);
 
   const featuredProducts = products.filter(p => p.LaNoiBat === 1).slice(0, 4);
@@ -669,11 +669,21 @@ export const HomePage = () => {
         </Box>
 
         <Grid container spacing={3.5}>
-          {featuredProducts.map((product) => (
-            <Grid key={product.MaSanPham} size={{ xs: 12, sm: 6, md: 3 }}>
-              <ProductCard product={product} />
+          {featuredProducts.length > 0 ? (
+            featuredProducts.map((product) => (
+              <Grid key={product.MaSanPham} size={{ xs: 12, sm: 6, md: 3 }}>
+                <ProductCard product={product} />
+              </Grid>
+            ))
+          ) : (
+            <Grid size={{ xs: 12 }}>
+              <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, bgcolor: '#FFFFFF', border: '1px dashed rgba(183,110,121,0.2)' }}>
+                <Typography variant="body1" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                  Bộ sưu tập mới đang được chế tác tinh xảo. Quý khách vui lòng quay lại sau!
+                </Typography>
+              </Paper>
             </Grid>
-          ))}
+          )}
         </Grid>
       </Container>
 

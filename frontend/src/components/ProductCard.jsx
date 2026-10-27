@@ -27,7 +27,7 @@ export const ProductCard = ({ product }) => {
   return (
     <Card
       component={Link}
-      to={`/product/${product.Slug || product.MaSanPham}`}
+      to={`/product/${product.MaSanPham}`}
       sx={{
         display: 'flex',
         flexDirection: 'column',

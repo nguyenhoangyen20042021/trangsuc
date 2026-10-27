@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -46,7 +46,7 @@ import {
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { MOCK_CATEGORIES } from '../services/api';
+import { fetchCategories, getStoredCategories } from '../services/api';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -59,6 +59,13 @@ export const Navbar = () => {
   const [categoryMenuAnchor, setCategoryMenuAnchor] = useState(null);
   const [activeParentCat, setActiveParentCat] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [navCategories, setNavCategories] = useState(getStoredCategories);
+
+  useEffect(() => {
+    fetchCategories().then(data => {
+      if (Array.isArray(data)) setNavCategories(data);
+    });
+  }, []);
 
   const navScrollRef = useRef(null);
 
@@ -81,7 +88,7 @@ export const Navbar = () => {
       setCategoryMenuAnchor(event.currentTarget);
       setActiveParentCat(cat);
     } else {
-      navigate(`/products?category=${cat.Slug}`);
+      navigate(`/products?category=${cat.MaDanhMuc || cat.TenDanhMuc}`);
     }
   };
 
@@ -488,8 +495,8 @@ export const Navbar = () => {
                   TẤT CẢ TRANG SỨC
                 </Button>
 
-                {MOCK_CATEGORIES.map((cat) => {
-                  const isActive = location.search.includes(cat.Slug);
+                {navCategories.map((cat) => {
+                  const isActive = location.search.includes(String(cat.MaDanhMuc));
                   return (
                     <React.Fragment key={cat.MaDanhMuc}>
                       <Box component="span" sx={{ width: '1px', height: 16, bgcolor: 'rgba(197, 168, 128, 0.4)', flexShrink: 0 }} />
@@ -599,7 +606,7 @@ export const Navbar = () => {
           <>
             <MenuItem
               component={Link}
-              to={`/products?category=${activeParentCat.Slug}`}
+              to={`/products?category=${activeParentCat.MaDanhMuc || activeParentCat.TenDanhMuc}`}
               onClick={() => setCategoryMenuAnchor(null)}
               sx={{ fontWeight: 700, color: '#8B3A48', borderBottom: '1px dashed rgba(197, 168, 128, 0.25)' }}
             >
@@ -612,12 +619,12 @@ export const Navbar = () => {
               <MenuItem
                 key={sub.MaDanhMuc}
                 component={Link}
-                to={`/products?category=${sub.Slug}`}
+                to={`/products?category=${sub.MaDanhMuc || sub.TenDanhMuc}`}
                 onClick={() => setCategoryMenuAnchor(null)}
                 sx={{ fontSize: '0.88rem', py: 1 }}
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
-                  {getCategoryProductIcon(sub.Slug, { sx: { fontSize: 17, color: '#B76E79' } })}
+                  {getCategoryProductIcon(sub.TenDanhMuc, { sx: { fontSize: 17, color: '#B76E79' } })}
                 </ListItemIcon>
                 {sub.TenDanhMuc}
               </MenuItem>
@@ -684,11 +691,11 @@ export const Navbar = () => {
           </ListItem>
 
           {/* Categories in Drawer with Product Icons */}
-          {MOCK_CATEGORIES.map(cat => (
-            <ListItem key={cat.Slug} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton component={Link} to={`/products?category=${cat.Slug}`} onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
+          {navCategories.map(cat => (
+            <ListItem key={cat.MaDanhMuc} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton component={Link} to={`/products?category=${cat.MaDanhMuc || cat.TenDanhMuc}`} onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
                 <ListItemIcon sx={{ minWidth: 32 }}>
-                  {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 18, color: '#D4AF37' } })}
+                  {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 18, color: '#D4AF37' } })}
                 </ListItemIcon>
                 <ListItemText primary={cat.TenDanhMuc} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }} />
               </ListItemButton>

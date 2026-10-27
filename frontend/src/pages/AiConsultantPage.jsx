@@ -224,7 +224,7 @@ export const AiConsultantPage = () => {
                                 <CardContent sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
                                   <Typography
                                     component={Link}
-                                    to={`/product/${prod.Slug || prod.MaSanPham}`}
+                                    to={`/product/${prod.MaSanPham}`}
                                     variant="caption"
                                     sx={{
                                       fontWeight: 700,

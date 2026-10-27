@@ -27,7 +27,6 @@ import {
 } from '@mui/icons-material';
 import { getCategoryProductIcon } from '../../components/icons/ProductIcons';
 import {
-  MOCK_CATEGORIES,
   getStoredCategories,
   fetchCategories,
   createCategory,
@@ -42,14 +41,14 @@ export const AdminCategoriesPage = () => {
 
   useEffect(() => {
     fetchCategories().then(data => {
-      if (data && data.length) setCategories(data);
+      if (Array.isArray(data)) setCategories(data);
     });
   }, []);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
   const [formData, setFormData] = useState({
     TenDanhMuc: '',
-    Slug: '',
     MoTa: '',
     AnhDaiDien: ''
   });
@@ -58,7 +57,6 @@ export const AdminCategoriesPage = () => {
     setEditingCat(null);
     setFormData({
       TenDanhMuc: '',
-      Slug: '',
       MoTa: '',
       AnhDaiDien: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80'
     });
@@ -69,7 +67,6 @@ export const AdminCategoriesPage = () => {
     setEditingCat(cat);
     setFormData({
       TenDanhMuc: cat.TenDanhMuc,
-      Slug: cat.Slug,
       MoTa: cat.MoTa || '',
       AnhDaiDien: cat.AnhDaiDien || ''
     });
@@ -91,17 +88,12 @@ export const AdminCategoriesPage = () => {
       return;
     }
 
-    const slug = formData.Slug.trim() || formData.TenDanhMuc.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
     if (editingCat) {
-      const updatedCat = await updateCategory(editingCat.MaDanhMuc, { ...formData, Slug: slug });
+      const updatedCat = await updateCategory(editingCat.MaDanhMuc, formData);
       setCategories(prev => prev.map(c => (c.MaDanhMuc === editingCat.MaDanhMuc ? updatedCat : c)));
       notify(`Đã cập nhật danh mục "${formData.TenDanhMuc}"!`, 'success');
     } else {
-      const newCat = await createCategory({
-        ...formData,
-        Slug: slug
-      });
+      const newCat = await createCategory(formData);
       setCategories(prev => [...prev, newCat]);
       notify(`Đã thêm danh mục mới "${formData.TenDanhMuc}"!`, 'success');
     }
@@ -116,7 +108,7 @@ export const AdminCategoriesPage = () => {
             Quản Lý Danh Mục Trang Sức
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-            Cấu hình danh mục cha - con hiển thị trên thanh điều hướng website LUNA BELLE.
+            Cấu hình danh mục trang sức hiển thị trên hệ thống LUNA BELLE.
           </Typography>
         </Box>
 
@@ -138,7 +130,7 @@ export const AdminCategoriesPage = () => {
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Ảnh Đại Diện</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Tên Danh Mục</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Đường Dẫn Slug</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Mã Danh Mục</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Danh Mục Con</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Mô Tả</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
@@ -146,49 +138,57 @@ export const AdminCategoriesPage = () => {
             </TableHead>
 
             <TableBody>
-              {categories.map((cat) => (
-                <TableRow key={cat.MaDanhMuc} hover>
-                  <TableCell>
-                    <Box
-                      component="img"
-                      src={cat.AnhDaiDien}
-                      alt={cat.TenDanhMuc}
-                      sx={{ width: 50, height: 50, borderRadius: 2, objectFit: 'cover' }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {getCategoryProductIcon(cat.Slug, { sx: { fontSize: 20, color: 'primary.main' } })}
-                      <span>{cat.TenDanhMuc}</span>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                    /{cat.Slug}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={`${cat.children?.length || 0} danh mục con`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                      sx={{ fontWeight: 600 }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: 300, color: 'text.secondary', fontSize: '0.85rem' }}>
-                    {cat.MoTa}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-                      <IconButton size="small" color="primary" onClick={() => handleOpenEdit(cat)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDelete(cat.MaDanhMuc, cat.TenDanhMuc)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
+              {categories.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                    Chưa có danh mục nào trong hệ thống. Bấm nút "Thêm Danh Mục" để tạo mới.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                categories.map((cat) => (
+                  <TableRow key={cat.MaDanhMuc} hover>
+                    <TableCell>
+                      <Box
+                        component="img"
+                        src={cat.AnhDaiDien}
+                        alt={cat.TenDanhMuc}
+                        sx={{ width: 50, height: 50, borderRadius: 2, objectFit: 'cover' }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 20, color: 'primary.main' } })}
+                        <span>{cat.TenDanhMuc}</span>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                      #{cat.MaDanhMuc}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={`${cat.children?.length || 0} danh mục con`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 300, color: 'text.secondary', fontSize: '0.85rem' }}>
+                      {cat.MoTa || '—'}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
+                        <IconButton size="small" color="primary" onClick={() => handleOpenEdit(cat)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleDelete(cat.MaDanhMuc, cat.TenDanhMuc)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -208,13 +208,6 @@ export const AdminCategoriesPage = () => {
                 label="Tên danh mục"
                 value={formData.TenDanhMuc}
                 onChange={(e) => setFormData({ ...formData, TenDanhMuc: e.target.value })}
-              />
-              <TextField
-                fullWidth
-                label="Đường dẫn tĩnh (Slug)"
-                value={formData.Slug}
-                placeholder="Tự động tạo theo tên nếu để trống"
-                onChange={(e) => setFormData({ ...formData, Slug: e.target.value })}
               />
               <Box>
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>

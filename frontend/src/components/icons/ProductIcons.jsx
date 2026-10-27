@@ -55,15 +55,15 @@ export const LuxurySparkleIcon = (props) => <AutoAwesomeOutlined {...props} />;
 export const LuxuryGiaIcon = (props) => <WorkspacePremiumOutlined {...props} />;
 
 /**
- * Helper to dynamically return the standard product icon based on category slug
+ * Helper to dynamically return the standard product icon based on category name
  */
-export const getCategoryProductIcon = (slug, props = {}) => {
-  if (!slug) return <AllJewelryProductIcon {...props} />;
-  const s = slug.toLowerCase();
-  if (s.includes('nhan')) return <RingProductIcon {...props} />;
-  if (s.includes('day-chuyen') || s.includes('mat-day')) return <NecklaceProductIcon {...props} />;
-  if (s.includes('vong') || s.includes('lac-tay')) return <BraceletProductIcon {...props} />;
-  if (s.includes('bong-tai') || s.includes('hoa-tai')) return <EarringsProductIcon {...props} />;
-  if (s.includes('hoang-gia') || s.includes('vuong-mien') || s.includes('crown')) return <RoyalCrownProductIcon {...props} />;
+export const getCategoryProductIcon = (nameOrKey, props = {}) => {
+  if (!nameOrKey) return <AllJewelryProductIcon {...props} />;
+  const s = String(nameOrKey).toLowerCase();
+  if (s.includes('nhan') || s.includes('nhẫn')) return <RingProductIcon {...props} />;
+  if (s.includes('day') || s.includes('dây') || s.includes('chuyen') || s.includes('chuyền') || s.includes('mat') || s.includes('mặt')) return <NecklaceProductIcon {...props} />;
+  if (s.includes('vong') || s.includes('vòng') || s.includes('lac') || s.includes('lắc')) return <BraceletProductIcon {...props} />;
+  if (s.includes('bong') || s.includes('bông') || s.includes('hoa')) return <EarringsProductIcon {...props} />;
+  if (s.includes('hoang') || s.includes('hoàng') || s.includes('gia') || s.includes('vuong') || s.includes('vương') || s.includes('crown')) return <RoyalCrownProductIcon {...props} />;
   return <AllJewelryProductIcon {...props} />;
 };

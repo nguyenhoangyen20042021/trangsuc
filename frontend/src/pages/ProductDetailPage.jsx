@@ -53,7 +53,7 @@ export const ProductDetailPage = () => {
 
   const [product, setProduct] = useState(() => {
     const all = getStoredProducts();
-    return all.find(p => p.Slug === id || String(p.MaSanPham) === String(id)) || null;
+    return all.find(p => String(p.MaSanPham) === String(id)) || null;
   });
   const [loading, setLoading] = useState(!product);
   const [activeImage, setActiveImage] = useState(() => product?.HinhAnhChinh || '');
@@ -65,7 +65,7 @@ export const ProductDetailPage = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const initialFind = getStoredProducts().find(p => p.Slug === id || String(p.MaSanPham) === String(id));
+    const initialFind = getStoredProducts().find(p => String(p.MaSanPham) === String(id));
     if (initialFind) {
       setProduct(initialFind);
       setActiveImage(initialFind.HinhAnhChinh || (initialFind.gallery && initialFind.gallery[0]) || '');
@@ -181,7 +181,7 @@ export const ProductDetailPage = () => {
           <MuiLink component={Link} to="/products" color="inherit" sx={{ fontSize: '0.86rem' }}>
             Sản Phẩm
           </MuiLink>
-          <MuiLink component={Link} to={`/products?category=${product.CatSlug}`} color="inherit" sx={{ fontSize: '0.86rem' }}>
+          <MuiLink component={Link} to={`/products?category=${product.MaDanhMuc || ''}`} color="inherit" sx={{ fontSize: '0.86rem' }}>
             {product.TenDanhMuc}
           </MuiLink>
           <Typography color="primary" sx={{ fontSize: '0.86rem', fontWeight: 600 }}>

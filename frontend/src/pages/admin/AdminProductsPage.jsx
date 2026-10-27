@@ -44,8 +44,6 @@ import {
   getCategoryProductIcon
 } from '../../components/icons/ProductIcons';
 import {
-  MOCK_PRODUCTS,
-  MOCK_CATEGORIES,
   formatCurrency,
   getStoredProducts,
   fetchProducts,
@@ -67,10 +65,10 @@ export const AdminProductsPage = () => {
 
   useEffect(() => {
     fetchProducts().then(data => {
-      if (data && data.length) setProducts(data);
+      if (Array.isArray(data)) setProducts(data);
     });
     fetchCategories().then(data => {
-      if (data && data.length) setCategories(data);
+      if (Array.isArray(data)) setCategories(data);
     });
   }, []);
 
@@ -83,7 +81,7 @@ export const AdminProductsPage = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
     TenSanPham: '',
-    CatSlug: 'nhan-kim-cuong',
+    MaDanhMuc: '',
     GiaCoSo: 20000000,
     ChatLieu: 'Vàng 18K & Kim Cương',
     PhongCach: 'Sang trọng',
@@ -100,7 +98,7 @@ export const AdminProductsPage = () => {
     setEditingProduct(null);
     setFormData({
       TenSanPham: '',
-      CatSlug: 'nhan-kim-cuong',
+      MaDanhMuc: '',
       GiaCoSo: 20000000,
       ChatLieu: 'Vàng 18K & Kim Cương',
       PhongCach: 'Sang trọng',
@@ -124,7 +122,7 @@ export const AdminProductsPage = () => {
     setEditingProduct(prod);
     setFormData({
       TenSanPham: prod.TenSanPham,
-      CatSlug: prod.CatSlug || 'nhan-kim-cuong',
+      MaDanhMuc: prod.MaDanhMuc || '',
       GiaCoSo: prod.GiaMin || prod.GiaCoSo,
       ChatLieu: prod.ChatLieu || 'Kim Cương GIA',
       PhongCach: prod.PhongCach || 'Sang trọng',
@@ -318,7 +316,7 @@ export const AdminProductsPage = () => {
       return;
     }
 
-    const catObj = categories.find(c => c.Slug === formData.CatSlug) || MOCK_CATEGORIES.find(c => c.Slug === formData.CatSlug);
+    const catObj = categories.find(c => String(c.MaDanhMuc) === String(formData.MaDanhMuc));
     const categoryName = catObj ? catObj.TenDanhMuc : 'Trang Sức Cao Cấp';
 
     // Calculate price range and total inventory from variants
@@ -383,7 +381,7 @@ export const AdminProductsPage = () => {
 
   const filtered = products.filter(p => {
     const matchSearch = p.TenSanPham.toLowerCase().includes(search.toLowerCase());
-    const matchCat = filterCat === 'all' || p.CatSlug === filterCat;
+    const matchCat = filterCat === 'all' || String(p.MaDanhMuc) === String(filterCat);
     return matchSearch && matchCat;
   });
 
@@ -438,8 +436,8 @@ export const AdminProductsPage = () => {
           sx={{ minWidth: 200 }}
         >
           <MenuItem value="all">Tất cả danh mục</MenuItem>
-          {MOCK_CATEGORIES.map(c => (
-            <MenuItem key={c.Slug} value={c.Slug}>{c.TenDanhMuc}</MenuItem>
+          {categories.map(c => (
+            <MenuItem key={c.MaDanhMuc} value={String(c.MaDanhMuc)}>{c.TenDanhMuc}</MenuItem>
           ))}
         </TextField>
       </Paper>
@@ -462,7 +460,14 @@ export const AdminProductsPage = () => {
             </TableHead>
 
             <TableBody>
-              {filtered.map((prod) => (
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                    Chưa có sản phẩm nào. Bấm "Thêm Sản Phẩm Mới" để bắt đầu.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((prod) => (
                 <TableRow key={prod.MaSanPham} hover>
                   <TableCell>
                     <Box
@@ -496,7 +501,7 @@ export const AdminProductsPage = () => {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                      {getCategoryProductIcon(prod.CatSlug, { sx: { fontSize: 16, color: 'primary.main' } })}
+                      {getCategoryProductIcon(prod.TenDanhMuc, { sx: { fontSize: 16, color: 'primary.main' } })}
                       <span>{prod.TenDanhMuc}</span>
                     </Box>
                   </TableCell>
@@ -532,7 +537,8 @@ export const AdminProductsPage = () => {
                     </Stack>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -596,12 +602,16 @@ export const AdminProductsPage = () => {
                       select
                       fullWidth
                       label="Danh mục trang sức"
-                      value={formData.CatSlug}
-                      onChange={(e) => setFormData({ ...formData, CatSlug: e.target.value })}
+                      value={formData.MaDanhMuc || ''}
+                      onChange={(e) => setFormData({ ...formData, MaDanhMuc: e.target.value })}
                     >
-                      {MOCK_CATEGORIES.map(c => (
-                        <MenuItem key={c.Slug} value={c.Slug}>{c.TenDanhMuc}</MenuItem>
-                      ))}
+                      {categories.length === 0 ? (
+                        <MenuItem value="" disabled>Chưa có danh mục nào (Hãy tạo danh mục trước)</MenuItem>
+                      ) : (
+                        categories.map(c => (
+                          <MenuItem key={c.MaDanhMuc} value={c.MaDanhMuc}>{c.TenDanhMuc}</MenuItem>
+                        ))
+                      )}
                     </TextField>
                   </Grid>
 
