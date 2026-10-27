@@ -167,6 +167,17 @@ export const fetchCategories = async () => {
 };
 
 export const createCategory = async (catData) => {
+  try {
+    const res = await apiClient.post('/categories', catData);
+    if (res.data?.success) {
+      const fresh = await fetchCategories();
+      return fresh;
+    }
+  } catch (e) {
+    console.warn('Could not post to /api/categories:', e.message);
+  }
+
+  // Local storage fallback
   const current = getStoredCategories();
   const newCat = {
     ...catData,
@@ -174,41 +185,83 @@ export const createCategory = async (catData) => {
     children: [],
     SoLuongSP: 0
   };
-  const updated = [...current, newCat];
-  setLocal(STORAGE_KEYS.CATEGORIES, updated);
 
-  try {
-    await apiClient.post('/categories', newCat);
-  } catch (e) {
-    console.warn('Could not post to /api/categories:', e.message);
+  let updated;
+  if (catData.MaDanhMucCha) {
+    const parentId = Number(catData.MaDanhMucCha);
+    updated = current.map(c => {
+      if (c.MaDanhMuc === parentId) {
+        return {
+          ...c,
+          children: [...(c.children || []), newCat]
+        };
+      }
+      return c;
+    });
+  } else {
+    updated = [...current, newCat];
   }
+
+  setLocal(STORAGE_KEYS.CATEGORIES, updated);
   return newCat;
 };
 
 export const updateCategory = async (catId, catData) => {
-  const current = getStoredCategories();
-  const updated = current.map(c => (c.MaDanhMuc === catId ? { ...c, ...catData } : c));
-  setLocal(STORAGE_KEYS.CATEGORIES, updated);
-
   try {
-    await apiClient.put(`/categories/${catId}`, catData);
+    const res = await apiClient.put(`/categories/${catId}`, catData);
+    if (res.data?.success) {
+      const fresh = await fetchCategories();
+      return fresh;
+    }
   } catch (e) {
     console.warn(`Could not put to /api/categories/${catId}:`, e.message);
   }
+
+  // Local storage fallback
+  const current = getStoredCategories();
+  const updated = current.map(c => {
+    if (c.MaDanhMuc === catId) {
+      return { ...c, ...catData };
+    }
+    if (c.children && c.children.some(ch => ch.MaDanhMuc === catId)) {
+      return {
+        ...c,
+        children: c.children.map(ch => (ch.MaDanhMuc === catId ? { ...ch, ...catData } : ch))
+      };
+    }
+    return c;
+  });
+  setLocal(STORAGE_KEYS.CATEGORIES, updated);
   return updated.find(c => c.MaDanhMuc === catId);
 };
 
 export const deleteCategory = async (catId) => {
-  const current = getStoredCategories();
-  const updated = current.filter(c => c.MaDanhMuc !== catId);
-  setLocal(STORAGE_KEYS.CATEGORIES, updated);
-
   try {
-    await apiClient.delete(`/categories/${catId}`);
+    const res = await apiClient.delete(`/categories/${catId}`);
+    if (res.data?.success) {
+      await fetchCategories();
+      return { success: true };
+    } else {
+      return { success: false, message: res.data?.message || 'Không thể xóa danh mục.' };
+    }
   } catch (e) {
+    const msg = e.response?.data?.message;
+    if (msg) {
+      return { success: false, message: msg };
+    }
     console.warn(`Could not delete /api/categories/${catId}:`, e.message);
   }
-  return true;
+
+  // Local storage fallback
+  const current = getStoredCategories();
+  const updated = current
+    .filter(c => c.MaDanhMuc !== catId)
+    .map(c => ({
+      ...c,
+      children: (c.children || []).filter(ch => ch.MaDanhMuc !== catId)
+    }));
+  setLocal(STORAGE_KEYS.CATEGORIES, updated);
+  return { success: true };
 };
 
 // ==================== ORDERS CRUD ====================

@@ -136,7 +136,7 @@ export const AdminProductsPage = () => {
         ? prod.bienthe.map(v => ({ ...v }))
         : [
             {
-              MaBienThe: Date.now(),
+              MaBienThe: (prod.MaSanPham || 1) * 100 + 1,
               TenBienThe: 'Tiêu Chuẩn',
               GiaBan: prod.GiaMin || prod.GiaCoSo,
               SoLuongTonKho: prod.TongTonKho || 15
@@ -316,7 +316,16 @@ export const AdminProductsPage = () => {
       return;
     }
 
-    const catObj = categories.find(c => String(c.MaDanhMuc) === String(formData.MaDanhMuc));
+    let catObj = categories.find(c => String(c.MaDanhMuc) === String(formData.MaDanhMuc));
+    if (!catObj) {
+      for (const c of categories) {
+        const sub = (c.children || []).find(ch => String(ch.MaDanhMuc) === String(formData.MaDanhMuc));
+        if (sub) {
+          catObj = sub;
+          break;
+        }
+      }
+    }
     const categoryName = catObj ? catObj.TenDanhMuc : 'Trang Sức Cao Cấp';
 
     // Calculate price range and total inventory from variants
@@ -381,7 +390,13 @@ export const AdminProductsPage = () => {
 
   const filtered = products.filter(p => {
     const matchSearch = p.TenSanPham.toLowerCase().includes(search.toLowerCase());
-    const matchCat = filterCat === 'all' || String(p.MaDanhMuc) === String(filterCat);
+    let matchCat = filterCat === 'all' || String(p.MaDanhMuc) === String(filterCat);
+    if (!matchCat && filterCat !== 'all') {
+      const parentCat = categories.find(c => String(c.MaDanhMuc) === String(filterCat));
+      if (parentCat && parentCat.children) {
+        matchCat = parentCat.children.some(ch => String(ch.MaDanhMuc) === String(p.MaDanhMuc));
+      }
+    }
     return matchSearch && matchCat;
   });
 
@@ -433,12 +448,19 @@ export const AdminProductsPage = () => {
           size="small"
           value={filterCat}
           onChange={(e) => setFilterCat(e.target.value)}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 240 }}
         >
           <MenuItem value="all">Tất cả danh mục</MenuItem>
-          {categories.map(c => (
-            <MenuItem key={c.MaDanhMuc} value={String(c.MaDanhMuc)}>{c.TenDanhMuc}</MenuItem>
-          ))}
+          {categories.flatMap(c => [
+            <MenuItem key={c.MaDanhMuc} value={String(c.MaDanhMuc)} sx={{ fontWeight: 700, color: '#8B3A48' }}>
+              {c.TenDanhMuc}
+            </MenuItem>,
+            ...(c.children || []).map(sub => (
+              <MenuItem key={sub.MaDanhMuc} value={String(sub.MaDanhMuc)} sx={{ pl: 3.5, fontSize: '0.85rem', color: 'text.secondary' }}>
+                ↳ {sub.TenDanhMuc}
+              </MenuItem>
+            ))
+          ])}
         </TextField>
       </Paper>
 
@@ -608,9 +630,16 @@ export const AdminProductsPage = () => {
                       {categories.length === 0 ? (
                         <MenuItem value="" disabled>Chưa có danh mục nào (Hãy tạo danh mục trước)</MenuItem>
                       ) : (
-                        categories.map(c => (
-                          <MenuItem key={c.MaDanhMuc} value={c.MaDanhMuc}>{c.TenDanhMuc}</MenuItem>
-                        ))
+                        categories.flatMap(c => [
+                          <MenuItem key={c.MaDanhMuc} value={c.MaDanhMuc} sx={{ fontWeight: 700, color: '#8B3A48' }}>
+                            {c.TenDanhMuc}
+                          </MenuItem>,
+                          ...(c.children || []).map(sub => (
+                            <MenuItem key={sub.MaDanhMuc} value={sub.MaDanhMuc} sx={{ pl: 4, color: 'text.secondary', fontSize: '0.9rem' }}>
+                              ↳ {sub.TenDanhMuc}
+                            </MenuItem>
+                          ))
+                        ])
                       )}
                     </TextField>
                   </Grid>

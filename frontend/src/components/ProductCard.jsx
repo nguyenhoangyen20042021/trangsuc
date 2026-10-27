@@ -15,9 +15,9 @@ import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../services/api';
 
 export const ProductCard = ({ product }) => {
-  if (!product) return null;
-
   const { addToCart } = useCart();
+
+  if (!product) return null;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();

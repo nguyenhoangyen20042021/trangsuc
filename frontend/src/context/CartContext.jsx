@@ -10,7 +10,7 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem('lb_cart');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
+      try { return JSON.parse(saved); } catch { return []; }
     }
     return [
       {
