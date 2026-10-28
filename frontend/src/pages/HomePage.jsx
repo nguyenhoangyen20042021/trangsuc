@@ -9,33 +9,23 @@ import {
   CardMedia,
   Stack,
   Chip,
-  Paper,
-  Divider
+  Paper
 } from '@mui/material';
 import {
   ArrowForward as ArrowForwardIcon,
   ContentCopy as CopyIcon,
-  AutoAwesome as SparkleIcon,
-  HandymanOutlined as CraftIcon
+  AutoAwesome as SparkleIcon
 } from '@mui/icons-material';
 import {
   RingProductIcon,
   NecklaceProductIcon,
-  BraceletProductIcon,
-  EarringsProductIcon,
-  RoyalCrownProductIcon,
-  AllJewelryProductIcon,
   OrderTrackingProductIcon,
   LuxurySparkleIcon,
-  LuxuryGiaIcon,
-  getCategoryProductIcon
+  LuxuryGiaIcon
 } from '../components/icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import {
-  MOCK_PRODUCTS,
-  MOCK_CATEGORIES,
-  MOCK_VOUCHERS,
   getStoredProducts,
   fetchProducts,
   getStoredVouchers,
@@ -58,7 +48,6 @@ export const HomePage = () => {
   }, []);
 
   const featuredProducts = products.filter(p => p.LaNoiBat === 1).slice(0, 4);
-  const bestsellers = [...products].sort((a, b) => b.TongBan - a.TongBan).slice(0, 4);
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -376,10 +365,10 @@ export const HomePage = () => {
           </Typography>
         </Box>
 
-        {/* Bento Grid Layout */}
+        {/* Collections Showcase Layout - 2 Components */}
         <Grid container spacing={3}>
-          {/* Bento Item 1: Large Featured (Nhẫn Kim Cương) */}
-          <Grid size={{ xs: 12, md: 7 }}>
+          {/* Item 1: Nhẫn Kim Cương Quý Phái */}
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card
               component={Link}
               to="/products?category=nhan-kim-cuong"
@@ -438,131 +427,22 @@ export const HomePage = () => {
             </Card>
           </Grid>
 
-          {/* Bento Item 2 & 3: Right Column Stack */}
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Stack spacing={3} sx={{ height: '100%' }}>
-              {/* Item 2: Dây Chuyền */}
-              <Card
-                component={Link}
-                to="/products?category=day-chuyen-mat-day"
-                sx={{
-                  display: 'block',
-                  position: 'relative',
-                  height: { xs: 220, md: 206 },
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                  textDecoration: 'none',
-                  border: '1px solid rgba(197, 168, 128, 0.2)',
-                  transition: 'all 0.4s ease',
-                  '&:hover': {
-                    boxShadow: '0 12px 30px rgba(183,110,121,0.15)',
-                    '& .bento-img': { transform: 'scale(1.06)' }
-                  }
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  className="bento-img"
-                  image={(categories[1]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80'}
-                  alt={(categories[1]?.TenDanhMuc) || 'Dây Chuyền Quý Phái'}
-                  sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    boxSizing: 'border-box',
-                    background: 'linear-gradient(to top, rgba(20, 10, 12, 0.9) 0%, rgba(20, 10, 12, 0.4) 60%, rgba(20, 10, 12, 0.05) 100%)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    p: 3
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <NecklaceProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
-                    <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                      {(categories[1]?.TenDanhMuc) || 'Dây Chuyền Quý Phái'}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
-                    Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
-                  </Typography>
-                </Box>
-              </Card>
-
-              {/* Item 3: Vòng Tay */}
-              <Card
-                component={Link}
-                to="/products?category=vong-tay-lac"
-                sx={{
-                  display: 'block',
-                  position: 'relative',
-                  height: { xs: 220, md: 206 },
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                  textDecoration: 'none',
-                  border: '1px solid rgba(197, 168, 128, 0.2)',
-                  transition: 'all 0.4s ease',
-                  '&:hover': {
-                    boxShadow: '0 12px 30px rgba(183,110,121,0.15)',
-                    '& .bento-img': { transform: 'scale(1.06)' }
-                  }
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  className="bento-img"
-                  image={(categories[2]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=800&auto=format&fit=crop&q=80'}
-                  alt={(categories[2]?.TenDanhMuc) || 'Vòng Tay Tennis'}
-                  sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    boxSizing: 'border-box',
-                    background: 'linear-gradient(to top, rgba(20, 10, 12, 0.9) 0%, rgba(20, 10, 12, 0.4) 60%, rgba(20, 10, 12, 0.05) 100%)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    p: 3
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <BraceletProductIcon sx={{ color: '#F3E5AB', fontSize: 20 }} />
-                    <Typography variant="h6" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                      {(categories[2]?.TenDanhMuc) || 'Vòng Tay Tennis'}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
-                    Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
-                  </Typography>
-                </Box>
-              </Card>
-            </Stack>
-          </Grid>
-
-          {/* Bento Item 4: Bông Tai */}
+          {/* Item 2: Dây Chuyền & Mặt Dây */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Card
               component={Link}
-              to="/products?category=bong-tai"
+              to="/products?category=day-chuyen-mat-day"
               sx={{
                 display: 'block',
                 position: 'relative',
-                height: { xs: 240, md: 280 },
+                height: { xs: 320, md: 440 },
                 borderRadius: 4,
                 overflow: 'hidden',
                 textDecoration: 'none',
                 border: '1px solid rgba(197, 168, 128, 0.2)',
                 transition: 'all 0.4s ease',
                 '&:hover': {
-                  boxShadow: '0 12px 30px rgba(183,110,121,0.15)',
+                  boxShadow: '0 16px 40px rgba(183,110,121,0.18)',
                   '& .bento-img': { transform: 'scale(1.06)' }
                 }
               }}
@@ -570,8 +450,8 @@ export const HomePage = () => {
               <CardMedia
                 component="img"
                 className="bento-img"
-                image={(categories[3]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80'}
-                alt={(categories[3]?.TenDanhMuc) || 'Bông Tai Nữ Hoàng'}
+                image={(categories[1]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80'}
+                alt={(categories[1]?.TenDanhMuc) || 'Dây Chuyền Quý Phái'}
                 sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
               />
               <Box
@@ -581,69 +461,27 @@ export const HomePage = () => {
                   width: '100%',
                   height: '100%',
                   boxSizing: 'border-box',
-                  background: 'linear-gradient(to top, rgba(20, 10, 12, 0.9) 0%, rgba(20, 10, 12, 0.4) 60%, rgba(20, 10, 12, 0.05) 100%)',
+                  background: 'linear-gradient(to top, rgba(20, 10, 12, 0.92) 0%, rgba(20, 10, 12, 0.4) 55%, rgba(20, 10, 12, 0.05) 100%)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
-                  p: 3
+                  p: { xs: 3, md: 4 }
                 }}
               >
-                <Typography variant="h5" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                  {(categories[3]?.TenDanhMuc) || 'Bông Tai Nữ Hoàng'}
+                <Chip
+                  icon={<NecklaceProductIcon sx={{ fontSize: '15px !important', color: '#2C1F20 !important' }} />}
+                  label="KIỆT TÁC ÁNH SÁNG"
+                  size="small"
+                  sx={{ bgcolor: 'rgba(212, 175, 55, 0.9)', color: '#2C1F20', fontWeight: 700, width: 'fit-content', mb: 1, fontSize: '0.68rem' }}
+                />
+                <Typography variant="h4" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1 }}>
+                  {(categories[1]?.TenDanhMuc) || 'Dây Chuyền & Mặt Dây'}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
-                  Xem ngay <ArrowForwardIcon sx={{ fontSize: 13 }} />
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)', maxWidth: 460, mb: 2, display: { xs: 'none', sm: 'block' } }}>
+                  {(categories[1]?.MoTa) || 'Dây chuyền vàng 18K và bạch kim đính kim cương tôn vinh vẻ đẹp thanh lịch quý phái'}
                 </Typography>
-              </Box>
-            </Card>
-          </Grid>
-
-          {/* Bento Item 5: Bộ Sưu Tập Hoàng Gia */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card
-              component={Link}
-              to="/products?category=bo-suu-tap-hoang-gia"
-              sx={{
-                display: 'block',
-                position: 'relative',
-                height: { xs: 240, md: 280 },
-                borderRadius: 4,
-                overflow: 'hidden',
-                textDecoration: 'none',
-                border: '1px solid rgba(197, 168, 128, 0.2)',
-                transition: 'all 0.4s ease',
-                '&:hover': {
-                  boxShadow: '0 12px 30px rgba(183,110,121,0.15)',
-                  '& .bento-img': { transform: 'scale(1.06)' }
-                }
-              }}
-            >
-              <CardMedia
-                component="img"
-                className="bento-img"
-                image={(categories[4]?.AnhDaiDien) || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&auto=format&fit=crop&q=80'}
-                alt={(categories[4]?.TenDanhMuc) || 'Bộ Sưu Tập Hoàng Gia'}
-                sx={{ height: '100%', width: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
-              />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  boxSizing: 'border-box',
-                  background: 'linear-gradient(to top, rgba(20, 10, 12, 0.9) 0%, rgba(20, 10, 12, 0.4) 60%, rgba(20, 10, 12, 0.05) 100%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  p: 3
-                }}
-              >
-                <Typography variant="h5" sx={{ color: '#FFFFFF', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>
-                  {(categories[4]?.TenDanhMuc) || 'BST Hoàng Gia Đá Quý'}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, fontWeight: 600 }}>
-                  Xem tuyệt phẩm đá quý <ArrowForwardIcon sx={{ fontSize: 13 }} />
+                <Typography variant="subtitle2" sx={{ color: '#F3E5AB', display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
+                  Khám phá toàn bộ thiết kế <ArrowForwardIcon sx={{ fontSize: 16 }} />
                 </Typography>
               </Box>
             </Card>
@@ -691,98 +529,7 @@ export const HomePage = () => {
         </Grid>
       </Container>
 
-      {/* 5. Editorial Artisanal Craftsmanship Spotlight */}
-      <Container maxWidth="lg" sx={{ mt: 13 }}>
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 3, md: 6 },
-            borderRadius: 5,
-            bgcolor: '#FFFFFF',
-            border: '1px solid rgba(197, 168, 128, 0.25)',
-            boxShadow: '0 12px 40px rgba(183, 110, 121, 0.08)'
-          }}
-        >
-          <Grid container spacing={6} sx={{ alignItems: 'center' }}>
-            {/* Visual Frame Left */}
-            <Grid size={{ xs: 12, md: 5.5 }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                  height: { xs: 300, md: 440 }
-                }}
-              >
-                <Box
-                  component="img"
-                  src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&auto=format&fit=crop&q=80"
-                  alt="Nghệ thuật kim hoàn LUNA BELLE"
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                    p: 2,
-                    bgcolor: 'rgba(30, 20, 22, 0.85)',
-                    backdropFilter: 'blur(8px)',
-                    borderRadius: 2.5,
-                    border: '1px solid rgba(212, 175, 55, 0.3)'
-                  }}
-                >
-                  <Typography variant="body2" sx={{ color: '#F3E5AB', fontStyle: 'italic', fontFamily: "'Playfair Display', serif" }}>
-                    "Mỗi món trang sức không chỉ là vàng ròng và đá quý, mà là biểu tượng của khoảnh khắc thiêng liêng nhất trong cuộc đời bạn."
-                  </Typography>
-                </Box>
-              </Box>
-            </Grid>
-
-            {/* Editorial Content Right */}
-            <Grid size={{ xs: 12, md: 6.5 }}>
-              <Chip label="NGHỆ THUẬT CHẾ TÁC BẬC THẦY" size="small" sx={{ bgcolor: 'rgba(212, 175, 55, 0.12)', color: '#8B3A48', fontWeight: 700, mb: 2 }} />
-              
-              <Typography variant="h3" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 2.5, color: '#2C1F20' }}>
-                Đỉnh Cao Nghệ Thuật Kim Hoàn Thủ Công
-              </Typography>
-
-              <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.85, mb: 3.5 }}>
-                Tại xưởng chế tác LUNA BELLE, từng chiếc nhẫn, sợi dây chuyền và vòng tay đều trải qua hơn 40 công đoạn hoàn thiện thủ công nghiêm ngặt dưới kính hiển vi chuyên dụng.
-              </Typography>
-
-              <Stack spacing={2.5}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                  <CraftIcon sx={{ color: '#D4AF37', mt: 0.3 }} />
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>
-                      Chuẩn Giác Cắt Round Brilliant 57 Giác Đối Xứng
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      Hội tụ ánh sáng tối đa, tạo nên hiệu ứng Hearts & Arrows rực lửa hoàn mỹ.
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                  <LuxuryGiaIcon sx={{ color: '#B76E79', mt: 0.3, fontSize: 24 }} />
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2C1F20' }}>
-                      Vàng Ý 750 (18K) Đúc Đặc Tinh Khiết
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      Không pha tạp chất, phủ 3 lớp Rhodium bạch kim chống oxy hóa và giữ màu sáng bóng vĩnh viễn.
-                    </Typography>
-                  </Box>
-                </Box>
-              </Stack>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Container>
-
-      {/* 6. Special Voucher Privileges */}
+      {/* 5. Special Voucher Privileges */}
       <Container maxWidth="lg" sx={{ mt: 12 }}>
         <Paper
           elevation={0}
@@ -841,28 +588,6 @@ export const HomePage = () => {
             </Grid>
           </Grid>
         </Paper>
-      </Container>
-
-      {/* 7. Bestsellers */}
-      <Container maxWidth="lg" sx={{ mt: 12 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 4.5 }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#B76E79', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-              MOST COVETED PIECES
-            </Typography>
-            <Typography variant="h3" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mt: 0.8 }}>
-              Xu Hướng Lựa Chọn Của Khách Hàng
-            </Typography>
-          </Box>
-        </Box>
-
-        <Grid container spacing={3.5}>
-          {bestsellers.map((product) => (
-            <Grid key={product.MaSanPham} size={{ xs: 12, sm: 6, md: 3 }}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
       </Container>
     </Box>
   );
