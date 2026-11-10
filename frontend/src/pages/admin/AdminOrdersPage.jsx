@@ -54,8 +54,8 @@ const INITIAL_ORDERS = [
     address: '456 Lê Lợi, Bến Thành, Quận 1, TP. HCM',
     total: 45000000,
     date: '26/10/2026 11:20',
-    paymentMethod: 'VietQR Chuyển khoản',
-    paymentStatus: 'DaThanhToan',
+    paymentMethod: 'COD (Tiền mặt khi nhận hàng)',
+    paymentStatus: 'ChuaThanhToan',
     status: 'DaXacNhan',
     items: [
       { name: 'Vòng Tay Tennis Diamond Riviera Sparkle', variant: 'Cỡ 16cm - Bạch Kim Pt950', qty: 1, price: 45000000 }
@@ -69,7 +69,7 @@ const INITIAL_ORDERS = [
     address: '12 Thảo Điền, TP. Thủ Đức, TP. HCM',
     total: 16800000,
     date: '25/10/2026 16:10',
-    paymentMethod: 'VNPAY Online',
+    paymentMethod: 'COD (Tiền mặt khi nhận hàng)',
     paymentStatus: 'DaThanhToan',
     status: 'DaGiao',
     items: [

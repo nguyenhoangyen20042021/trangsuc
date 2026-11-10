@@ -141,7 +141,7 @@ export const Footer = () => {
             © {new Date().getFullYear()} LUNA BELLE ELITE JEWELRY. Mọi quyền được bảo lưu.
           </Typography>
           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Hỗ trợ thanh toán: VNPay · Visa · Mastercard · Chuyển khoản · COD
+            Phương thức thanh toán: Thanh toán khi nhận hàng (COD)
           </Typography>
         </Box>
       </Container>

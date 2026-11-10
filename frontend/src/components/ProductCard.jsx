@@ -6,8 +6,7 @@ import {
   Typography,
   Box,
   Button,
-  Chip,
-  Rating
+  Chip
 } from '@mui/material';
 import { LuxuryBagIcon as AddCartIcon } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
@@ -188,9 +187,8 @@ export const ProductCard = ({ product }) => {
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1.5 }}>
-          <Rating value={5} readOnly size="small" sx={{ fontSize: '0.78rem', color: '#D4AF37' }} />
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.72rem' }}>
-            ({product.TongBan || 18} lượt mua)
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem', fontWeight: 500 }}>
+            Đã bán: {product.TongBan || 18} sản phẩm
           </Typography>
         </Box>
 

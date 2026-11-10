@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Chip,
-  Rating,
   Tabs,
   Tab,
   Paper,
@@ -28,9 +27,7 @@ import {
   FavoriteBorder as FavoriteBorderIcon,
   Add as AddIcon,
   Remove as RemoveIcon,
-  CheckCircle as CheckIcon,
-  Send as SendIcon,
-  RateReview as ReviewIcon
+  CheckCircle as CheckIcon
 } from '@mui/icons-material';
 import {
   LuxuryBagIcon as CartIcon,
@@ -91,45 +88,6 @@ export const ProductDetailPage = () => {
 
     return () => { isMounted = false; };
   }, [id]);
-
-  // Reviews state & form
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      author: 'Nguyễn Phương Thảo',
-      rating: 5,
-      date: '2 ngày trước',
-      content: 'Nhẫn ở ngoài sáng và lấp lánh hơn cả trong hình! Đóng gói hộp nhung rất cao cấp, có đầy đủ thẻ kiểm định và khăn lau. Rất hài lòng!'
-    },
-    {
-      id: 2,
-      author: 'Trần Hoàng Minh',
-      rating: 5,
-      date: '1 tuần trước',
-      content: 'Mình mua tặng bạn gái nhân dịp kỷ niệm. Bạn gái mình khen nức nở giác cắt và độ tinh xảo của chấu giữ kim cương. Nhân viên tư vấn rất nhiệt tình!'
-    }
-  ]);
-  const [newReviewAuthor, setNewReviewAuthor] = useState(currentUser?.HoTen || '');
-  const [newReviewRating, setNewReviewRating] = useState(5);
-  const [newReviewContent, setNewReviewContent] = useState('');
-
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    if (!newReviewContent.trim()) {
-      notify('Vui lòng nhập nội dung nhận xét!', 'warning');
-      return;
-    }
-    const newRev = {
-      id: Date.now(),
-      author: newReviewAuthor.trim() || 'Khách Hàng VIP',
-      rating: newReviewRating,
-      date: 'Vừa xong',
-      content: newReviewContent.trim()
-    };
-    setReviews([newRev, ...reviews]);
-    setNewReviewContent('');
-    notify('Cảm ơn Quý khách đã gửi nhận xét đánh giá sản phẩm!', 'success');
-  };
 
   if (loading && !product) {
     return (
@@ -266,15 +224,8 @@ export const ProductDetailPage = () => {
                 </Typography>
               </Box>
 
-              {/* Rating & Sold count */}
+              {/* Product Status & Sold count */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Rating value={5} readOnly size="small" sx={{ color: '#D4AF37' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', ml: 0.5 }}>
-                    5.0
-                  </Typography>
-                </Box>
-                <Divider orientation="vertical" flexItem />
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   <strong>{product.TongBan || 24}</strong> Lượt mua thành công
                 </Typography>
@@ -468,7 +419,6 @@ export const ProductDetailPage = () => {
           >
             <Tab label="Mô Tả Tuyệt Phẩm" sx={{ fontWeight: 600, fontSize: '0.95rem' }} />
             <Tab label="Thông Số Kỹ Thuật" sx={{ fontWeight: 600, fontSize: '0.95rem' }} />
-            <Tab label={`Đánh Giá Khách Hàng (${reviews.length})`} sx={{ fontWeight: 600, fontSize: '0.95rem' }} />
           </Tabs>
 
           {/* Tab 0: Description */}
@@ -513,98 +463,6 @@ export const ProductDetailPage = () => {
                 </Table>
               </TableContainer>
             </Paper>
-          )}
-
-          {/* Tab 2: Reviews & Add Review Form */}
-          {activeTab === 2 && (
-            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Form Gửi Nhận Xét Mới */}
-              <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3, bgcolor: '#FFFDFD', border: '1px solid rgba(183,110,121,0.2)' }}>
-                <Typography variant="h6" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1, color: '#2C1F20' }}>
-                  Viết Nhận Xét & Đánh Giá Của Bạn
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-                  Chia sẻ cảm nhận về độ tinh xảo, giác cắt kim cương và dịch vụ giao hàng để giúp người mua sau có thêm thông tin hữu ích!
-                </Typography>
-
-                <Box component="form" onSubmit={handleReviewSubmit}>
-                  <Grid container spacing={2.5}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        required
-                        fullWidth
-                        size="small"
-                        label="Họ và tên của bạn"
-                        value={newReviewAuthor}
-                        onChange={(e) => setNewReviewAuthor(e.target.value)}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', gap: 1.5 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                          Mức độ hài lòng:
-                        </Typography>
-                        <Rating
-                          value={newReviewRating}
-                          onChange={(e, val) => setNewReviewRating(val || 5)}
-                          sx={{ color: '#D4AF37' }}
-                        />
-                      </Box>
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        required
-                        fullWidth
-                        multiline
-                        rows={3}
-                        placeholder="Nêu cảm nhận chi tiết của bạn về sản phẩm trang sức này..."
-                        value={newReviewContent}
-                        onChange={(e) => setNewReviewContent(e.target.value)}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<SendIcon />}
-                        sx={{ borderRadius: 20, px: 3.5, fontWeight: 700 }}
-                      >
-                        Gửi Đánh Giá Ngay
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Paper>
-
-              {/* Danh Sách Các Đánh Giá Hiện Có */}
-              <Paper elevation={0} sx={{ p: 4, borderRadius: 3, bgcolor: '#FFFFFF', border: '1px solid rgba(183,110,121,0.12)' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 3, color: 'primary.dark' }}>
-                  Nhận Xét Từ Khách Hàng Thực Tế ({reviews.length})
-                </Typography>
-
-                <Stack spacing={3}>
-                  {reviews.map((rev, index) => (
-                    <React.Fragment key={rev.id}>
-                      <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Rating value={rev.rating} readOnly size="small" sx={{ color: '#D4AF37' }} />
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{rev.author}</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.disabled' }}>{rev.date}</Typography>
-                        </Box>
-                        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1, lineHeight: 1.7 }}>
-                          {rev.content}
-                        </Typography>
-                      </Box>
-                      {index < reviews.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </Stack>
-              </Paper>
-            </Box>
           )}
         </Box>
 

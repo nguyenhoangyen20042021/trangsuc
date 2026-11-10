@@ -7,7 +7,8 @@ import {
   Button,
   Divider,
   Stack,
-  Chip
+  Chip,
+  Grid
 } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
@@ -114,7 +115,7 @@ export const OrderSuccessPage = () => {
                 <strong>Người nhận:</strong> {orderData.formData.fullName} ({orderData.formData.phone})
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <strong>Phương thức thanh toán:</strong> {orderData.formData.paymentMethod}
+                <strong>Phương thức thanh toán:</strong> {orderData.formData.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : orderData.formData.paymentMethod}
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <strong>Địa chỉ giao:</strong> {orderData.formData.address}
