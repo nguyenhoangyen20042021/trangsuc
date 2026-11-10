@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -18,10 +18,11 @@ import {
 import {
   Store as StoreIcon,
   Payments as CodIcon,
-  Lock as LockIcon
+  Lock as LockIcon,
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
-import { OrderTrackingProductIcon, LuxuryGiaIcon } from '../components/icons/ProductIcons';
-import { useNavigate } from 'react-router-dom';
+import { OrderTrackingProductIcon, LuxuryGiaIcon, LuxuryBagIcon } from '../components/icons/ProductIcons';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, createOrder } from '../services/api';
@@ -42,6 +43,19 @@ export const CheckoutPage = () => {
     paymentMethod: 'COD' // COD | VNPAY | BANK
   });
 
+  // Sync customer information when authentication state changes
+  useEffect(() => {
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: prev.fullName || currentUser.HoTen || '',
+        phone: prev.phone || currentUser.SoDienThoai || '',
+        email: prev.email || currentUser.Email || '',
+        address: prev.address || currentUser.DiaChi || ''
+      }));
+    }
+  }, [currentUser]);
+
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
@@ -51,6 +65,10 @@ export const CheckoutPage = () => {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    if (!Array.isArray(cart) || cart.length === 0) {
+      notify('Giỏ hàng trống, vui lòng chọn sản phẩm!', 'warning');
+      return;
+    }
     if (!formData.fullName || !formData.phone || !formData.address) {
       notify('Vui lòng điền đầy đủ thông tin giao hàng bắt buộc!', 'warning');
       return;
@@ -58,6 +76,13 @@ export const CheckoutPage = () => {
 
     setLoading(true);
     try {
+      const safeItems = cart.map(it => ({
+        TenSanPham: it?.TenSanPham || 'Trang sức kim hoàn',
+        TenBienThe: it?.TenBienThe || '',
+        SoLuong: Number(it?.SoLuong) || 1,
+        GiaBan: Number(it?.GiaBan) || 0
+      }));
+
       const newOrder = await createOrder({
         userId: currentUser?.MaNguoiDung || 3,
         fullName: formData.fullName,
@@ -65,35 +90,97 @@ export const CheckoutPage = () => {
         email: formData.email,
         address: formData.address,
         notes: formData.notes,
-        subtotal,
-        shippingFee,
-        discountAmount,
-        finalTotal,
+        subtotal: Number(subtotal) || 0,
+        shippingFee: Number(shippingFee) || 0,
+        discountAmount: Number(discountAmount) || 0,
+        finalTotal: Number(finalTotal) || 0,
         paymentMethod: formData.paymentMethod,
-        items: cart.map(it => ({
-          TenSanPham: it.TenSanPham,
-          TenBienThe: it.TenBienThe,
-          SoLuong: it.SoLuong,
-          GiaBan: it.GiaBan
-        }))
+        items: safeItems
       });
-      const orderId = newOrder.id;
+
+      const orderId = newOrder?.id || `LB${Math.floor(100000 + Math.random() * 900000)}`;
       clearCart();
       setLoading(false);
       navigate(`/order-success/${orderId}`, {
         state: {
           orderId,
           formData,
-          finalTotal,
-          items: cart
+          finalTotal: Number(finalTotal) || 0,
+          items: safeItems
         }
       });
-    } catch (e) {
-      console.error('Order creation error:', e);
+    } catch (err) {
+      console.error('Order creation error:', err);
       setLoading(false);
       notify('Đã có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại!', 'error');
     }
   };
+
+  // If cart is empty, show a luxury friendly empty cart notice instead of a blank/crashing screen
+  if (!Array.isArray(cart) || cart.length === 0) {
+    return (
+      <Box sx={{ py: 10, pb: 16, textAlign: 'center' }}>
+        <Container maxWidth="sm">
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 4, sm: 6 },
+              borderRadius: 4,
+              border: '1px dashed rgba(183, 110, 121, 0.35)',
+              bgcolor: '#FFFFFF',
+              boxShadow: '0 10px 40px rgba(183, 110, 121, 0.08)'
+            }}
+          >
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                bgcolor: 'rgba(183, 110, 121, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3,
+                color: 'primary.main'
+              }}
+            >
+              <LuxuryBagIcon sx={{ fontSize: 40 }} />
+            </Box>
+            <Typography variant="h4" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, mb: 1.5, color: '#2C1F20' }}>
+              Giỏ Hàng Đang Trống
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4, lineHeight: 1.7 }}>
+              Quý khách hiện chưa có sản phẩm nào trong giỏ hàng để tiến hành thanh toán. Vui lòng khám phá các kiệt tác kim cương & trang sức cao cấp để chọn món trang sức yêu thích nhé.
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                component={Link}
+                to="/products"
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{ borderRadius: 30, px: 3.5, py: 1.2, fontWeight: 700 }}
+              >
+                Khám Phá Trang Sức
+              </Button>
+              <Button
+                component={Link}
+                to="/"
+                variant="outlined"
+                color="primary"
+                size="large"
+                startIcon={<ArrowBackIcon />}
+                sx={{ borderRadius: 30, px: 3, py: 1.2, fontWeight: 600 }}
+              >
+                Về Trang Chủ
+              </Button>
+            </Stack>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ py: 5, pb: 12 }}>

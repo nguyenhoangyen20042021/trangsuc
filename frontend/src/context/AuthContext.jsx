@@ -1,11 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('lb_user');
-    return saved ? JSON.parse(saved) : {
+    try {
+      const saved = localStorage.getItem('lb_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading lb_user from localStorage:', e);
+    }
+    return {
       MaNguoiDung: 3,
       TenDangNhap: 'khachhang',
       HoTen: 'Lê Hoàng Yến Nhi',

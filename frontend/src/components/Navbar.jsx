@@ -30,11 +30,6 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import {
-  RingProductIcon,
-  NecklaceProductIcon,
-  BraceletProductIcon,
-  EarringsProductIcon,
-  RoyalCrownProductIcon,
   AllJewelryProductIcon,
   OrderTrackingProductIcon,
   LuxuryBagIcon,

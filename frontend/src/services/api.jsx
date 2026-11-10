@@ -21,8 +21,9 @@ export const MOCK_PRODUCTS = [];
 export const MOCK_VOUCHERS = [];
 
 export const formatCurrency = (val) => {
-  if (val == null) return '0 ₫';
-  return Number(val).toLocaleString('vi-VN') + ' ₫';
+  const num = Number(val);
+  if (val == null || isNaN(num)) return '0 ₫';
+  return num.toLocaleString('vi-VN') + ' ₫';
 };
 
 // ==========================================

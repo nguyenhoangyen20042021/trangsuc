@@ -8,9 +8,14 @@ export const CartProvider = ({ children }) => {
   const { notify } = useAuth();
 
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('lb_cart');
-    if (saved) {
-      try { return JSON.parse(saved); } catch { return []; }
+    try {
+      const saved = localStorage.getItem('lb_cart');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      return [];
     }
     return [
       {
@@ -108,9 +113,10 @@ export const CartProvider = ({ children }) => {
     notify('Đã hủy áp dụng mã giảm giá', 'info');
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.SoLuong, 0);
-  const subtotal = cart.reduce((sum, item) => sum + item.GiaBan * item.SoLuong, 0);
-  const discountAmount = appliedVoucher ? appliedVoucher.GiaTriGiam : 0;
+  const safeCart = Array.isArray(cart) ? cart : [];
+  const cartCount = safeCart.reduce((sum, item) => sum + (Number(item?.SoLuong) || 0), 0);
+  const subtotal = safeCart.reduce((sum, item) => sum + (Number(item?.GiaBan) || 0) * (Number(item?.SoLuong) || 0), 0);
+  const discountAmount = appliedVoucher ? (Number(appliedVoucher?.GiaTriGiam) || 0) : 0;
   const shippingFee = subtotal >= 2000000 || subtotal === 0 ? 0 : 50000;
   const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
