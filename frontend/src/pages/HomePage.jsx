@@ -371,7 +371,7 @@ export const HomePage = () => {
           <Grid size={{ xs: 12, md: 6 }}>
             <Card
               component={Link}
-              to="/products?category=nhan-kim-cuong"
+              to={categories[0]?.MaDanhMuc ? `/products?category=${categories[0].MaDanhMuc}` : '/products'}
               sx={{
                 display: 'block',
                 position: 'relative',
@@ -431,7 +431,7 @@ export const HomePage = () => {
           <Grid size={{ xs: 12, md: 6 }}>
             <Card
               component={Link}
-              to="/products?category=day-chuyen-mat-day"
+              to={categories[1]?.MaDanhMuc ? `/products?category=${categories[1].MaDanhMuc}` : '/products'}
               sx={{
                 display: 'block',
                 position: 'relative',

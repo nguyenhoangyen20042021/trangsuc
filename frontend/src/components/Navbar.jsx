@@ -17,7 +17,8 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
-  ListItemIcon
+  ListItemIcon,
+  Collapse
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -59,13 +60,40 @@ export const Navbar = () => {
   const [categoryMenuAnchor, setCategoryMenuAnchor] = useState(null);
   const [activeParentCat, setActiveParentCat] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [expandedMobileCats, setExpandedMobileCats] = useState({});
   const [navCategories, setNavCategories] = useState(getStoredCategories);
 
   useEffect(() => {
+    // Initial fetch from backend API
     fetchCategories().then(data => {
       if (Array.isArray(data)) setNavCategories(data);
     });
+
+    // Reactive event listeners for real-time category updates across tabs & components
+    const handleCatsUpdated = (e) => {
+      if (Array.isArray(e.detail)) {
+        setNavCategories(e.detail);
+      } else {
+        fetchCategories().then(data => {
+          if (Array.isArray(data)) setNavCategories(data);
+        });
+      }
+    };
+
+    window.addEventListener('categories-updated', handleCatsUpdated);
+    window.addEventListener('storage', handleCatsUpdated);
+    return () => {
+      window.removeEventListener('categories-updated', handleCatsUpdated);
+      window.removeEventListener('storage', handleCatsUpdated);
+    };
   }, []);
+
+  const toggleMobileCat = (catId) => {
+    setExpandedMobileCats(prev => ({
+      ...prev,
+      [catId]: !prev[catId]
+    }));
+  };
 
   const navScrollRef = useRef(null);
 
@@ -319,13 +347,15 @@ export const Navbar = () => {
                     onClose={() => setUserMenuAnchor(null)}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    PaperProps={{
-                      sx: {
-                        mt: 1.5,
-                        minWidth: 220,
-                        borderRadius: 3,
-                        boxShadow: '0 12px 36px rgba(0,0,0,0.1)',
-                        border: '1px solid rgba(197, 168, 128, 0.25)'
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          mt: 1.5,
+                          minWidth: 220,
+                          borderRadius: 3,
+                          boxShadow: '0 12px 36px rgba(0,0,0,0.1)',
+                          border: '1px solid rgba(197, 168, 128, 0.25)'
+                        }
                       }
                     }}
                   >
@@ -496,12 +526,21 @@ export const Navbar = () => {
                 </Button>
 
                 {navCategories.map((cat) => {
-                  const isActive = location.search.includes(String(cat.MaDanhMuc));
+                  const isActive =
+                    location.search.includes(`category=${cat.MaDanhMuc}`) ||
+                    (cat.children && cat.children.some(ch => location.search.includes(`category=${ch.MaDanhMuc}`))) ||
+                    location.search.includes(encodeURIComponent(cat.TenDanhMuc));
+
                   return (
                     <React.Fragment key={cat.MaDanhMuc}>
                       <Box component="span" sx={{ width: '1px', height: 16, bgcolor: 'rgba(197, 168, 128, 0.4)', flexShrink: 0 }} />
                       <Button
                         onClick={(e) => handleOpenCatMenu(e, cat)}
+                        onMouseEnter={(e) => {
+                          if (cat.children && cat.children.length > 0) {
+                            handleOpenCatMenu(e, cat);
+                          }
+                        }}
                         endIcon={cat.children?.length > 0 ? <ArrowDownIcon sx={{ fontSize: 14, ml: -0.2 }} /> : null}
                         sx={{
                           color: isActive ? '#B76E79' : '#2C1F20',
@@ -592,13 +631,16 @@ export const Navbar = () => {
         anchorEl={categoryMenuAnchor}
         open={Boolean(categoryMenuAnchor)}
         onClose={() => setCategoryMenuAnchor(null)}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            minWidth: 240,
-            borderRadius: 3,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-            border: '1px solid rgba(197, 168, 128, 0.25)'
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 1,
+              minWidth: 260,
+              borderRadius: 3,
+              boxShadow: '0 12px 36px rgba(0,0,0,0.12)',
+              border: '1px solid rgba(197, 168, 128, 0.25)',
+              py: 0.8
+            }
           }
         }}
       >
@@ -606,27 +648,41 @@ export const Navbar = () => {
           <>
             <MenuItem
               component={Link}
-              to={`/products?category=${activeParentCat.MaDanhMuc || activeParentCat.TenDanhMuc}`}
+              to={`/products?category=${activeParentCat.MaDanhMuc}`}
               onClick={() => setCategoryMenuAnchor(null)}
-              sx={{ fontWeight: 700, color: '#8B3A48', borderBottom: '1px dashed rgba(197, 168, 128, 0.25)' }}
+              sx={{ fontWeight: 700, color: '#8B3A48', borderBottom: '1px dashed rgba(197, 168, 128, 0.25)', py: 1.2 }}
             >
               <ListItemIcon sx={{ minWidth: 28 }}>
                 <LuxurySparkleIcon sx={{ fontSize: 17, color: '#8B3A48' }} />
               </ListItemIcon>
-              Xem tất cả {activeParentCat.TenDanhMuc}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <span>Xem tất cả {activeParentCat.TenDanhMuc}</span>
+                {activeParentCat.SoLuongSP > 0 && (
+                  <Typography variant="caption" sx={{ color: 'text.secondary', ml: 1, fontWeight: 500 }}>
+                    ({activeParentCat.SoLuongSP})
+                  </Typography>
+                )}
+              </Box>
             </MenuItem>
             {activeParentCat.children?.map((sub) => (
               <MenuItem
                 key={sub.MaDanhMuc}
                 component={Link}
-                to={`/products?category=${sub.MaDanhMuc || sub.TenDanhMuc}`}
+                to={`/products?category=${sub.MaDanhMuc}`}
                 onClick={() => setCategoryMenuAnchor(null)}
-                sx={{ fontSize: '0.88rem', py: 1 }}
+                sx={{ fontSize: '0.88rem', py: 1, '&:hover': { bgcolor: 'rgba(183, 110, 121, 0.06)' } }}
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
                   {getCategoryProductIcon(sub.TenDanhMuc, { sx: { fontSize: 17, color: '#B76E79' } })}
                 </ListItemIcon>
-                {sub.TenDanhMuc}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <span>{sub.TenDanhMuc}</span>
+                  {sub.SoLuongSP > 0 && (
+                    <Typography variant="caption" sx={{ color: 'text.secondary', ml: 1 }}>
+                      {sub.SoLuongSP}
+                    </Typography>
+                  )}
+                </Box>
               </MenuItem>
             ))}
           </>
@@ -638,7 +694,7 @@ export const Navbar = () => {
         anchor="left"
         open={mobileDrawerOpen}
         onClose={() => setMobileDrawerOpen(false)}
-        PaperProps={{ sx: { width: 300, p: 2.5 } }}
+        slotProps={{ paper: { sx: { width: 300, p: 2.5 } } }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
           <AllJewelryProductIcon sx={{ color: '#D4AF37', fontSize: 24 }} />
@@ -680,44 +736,98 @@ export const Navbar = () => {
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
               <ListItemIcon sx={{ minWidth: 32 }}><AllJewelryProductIcon sx={{ fontSize: 18, color: '#B76E79' }} /></ListItemIcon>
-              <ListItemText primary="Trang Chủ" primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemText primary="Trang Chủ" slotProps={{ primary: { fontWeight: 600 } }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/products" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
               <ListItemIcon sx={{ minWidth: 32 }}><AllJewelryProductIcon sx={{ fontSize: 18, color: '#B76E79' }} /></ListItemIcon>
-              <ListItemText primary="Tất Cả Sản Phẩm" primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemText primary="Tất Cả Sản Phẩm" slotProps={{ primary: { fontWeight: 600 } }} />
             </ListItemButton>
           </ListItem>
 
-          {/* Categories in Drawer with Product Icons */}
-          {navCategories.map(cat => (
-            <ListItem key={cat.MaDanhMuc} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton component={Link} to={`/products?category=${cat.MaDanhMuc || cat.TenDanhMuc}`} onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 18, color: '#D4AF37' } })}
-                </ListItemIcon>
-                <ListItemText primary={cat.TenDanhMuc} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {/* Categories in Drawer with Product Icons & Expandable Subcategories */}
+          {navCategories.map(cat => {
+            const hasChildren = cat.children && cat.children.length > 0;
+            const isExpanded = Boolean(expandedMobileCats[cat.MaDanhMuc]);
+
+            return (
+              <Box key={cat.MaDanhMuc} sx={{ mb: 0.5 }}>
+                <ListItem disablePadding sx={{ display: 'flex' }}>
+                  <ListItemButton
+                    component={Link}
+                    to={`/products?category=${cat.MaDanhMuc}`}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    sx={{ borderRadius: 2, flexGrow: 1 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {getCategoryProductIcon(cat.TenDanhMuc, { sx: { fontSize: 18, color: '#D4AF37' } })}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={cat.TenDanhMuc}
+                      slotProps={{ primary: { fontSize: '0.9rem', fontWeight: 600 } }}
+                    />
+                  </ListItemButton>
+                  {hasChildren && (
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleMobileCat(cat.MaDanhMuc)}
+                      sx={{ color: '#8B3A48', mr: 0.5 }}
+                    >
+                      <ArrowDownIcon
+                        sx={{
+                          fontSize: 18,
+                          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s'
+                        }}
+                      />
+                    </IconButton>
+                  )}
+                </ListItem>
+                {hasChildren && (
+                  <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                    <List disablePadding sx={{ pl: 3, pt: 0.5 }}>
+                      {cat.children.map(sub => (
+                        <ListItem key={sub.MaDanhMuc} disablePadding sx={{ mb: 0.3 }}>
+                          <ListItemButton
+                            component={Link}
+                            to={`/products?category=${sub.MaDanhMuc}`}
+                            onClick={() => setMobileDrawerOpen(false)}
+                            sx={{ borderRadius: 1.5, py: 0.6 }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 26 }}>
+                              {getCategoryProductIcon(sub.TenDanhMuc, { sx: { fontSize: 15, color: '#B76E79' } })}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={sub.TenDanhMuc}
+                              slotProps={{ primary: { fontSize: '0.82rem', color: 'text.secondary' } }}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                )}
+              </Box>
+            );
+          })}
 
           <ListItem disablePadding sx={{ mb: 0.5, mt: 1 }}>
             <ListItemButton component={Link} to="/ai-consultant" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2, bgcolor: 'rgba(212, 175, 55, 0.08)' }}>
               <ListItemIcon sx={{ minWidth: 32 }}><LuxurySparkleIcon sx={{ color: '#D4AF37', fontSize: 19 }} /></ListItemIcon>
-              <ListItemText primary="Tư Vấn AI Stylist" primaryTypographyProps={{ fontWeight: 700, color: '#8B3A48' }} />
+              <ListItemText primary="Tư Vấn AI Stylist" slotProps={{ primary: { fontWeight: 700, color: '#8B3A48' } }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/order-tracking" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
               <ListItemIcon sx={{ minWidth: 32 }}><OrderTrackingProductIcon sx={{ fontSize: 18, color: '#8B3A48' }} /></ListItemIcon>
-              <ListItemText primary="Tra Cứu Đơn Hàng" primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemText primary="Tra Cứu Đơn Hàng" slotProps={{ primary: { fontWeight: 600 } }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton component={Link} to="/cart" onClick={() => setMobileDrawerOpen(false)} sx={{ borderRadius: 2 }}>
               <ListItemIcon sx={{ minWidth: 32 }}><LuxuryBagIcon sx={{ fontSize: 18, color: '#8B3A48' }} /></ListItemIcon>
-              <ListItemText primary={`Giỏ Hàng (${cartCount})`} primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemText primary={`Giỏ Hàng (${cartCount})`} slotProps={{ primary: { fontWeight: 600 } }} />
             </ListItemButton>
           </ListItem>
         </List>

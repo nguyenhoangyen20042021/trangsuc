@@ -9,7 +9,7 @@ def get_products():
     """Retrieve full list of products with category and variant information."""
     try:
         sql = """
-            SELECT sp.*, dm.TenDanhMuc
+            SELECT sp.*, dm.TenDanhMuc, dm.MaDanhMucCha
             FROM sanpham sp
             LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
             ORDER BY sp.NgayTao DESC, sp.MaSanPham DESC
@@ -49,6 +49,8 @@ def get_products():
                 'MaSanPham': pid,
                 'TenSanPham': p['TenSanPham'],
                 'Slug': f"sp-{pid}",
+                'MaDanhMuc': p.get('MaDanhMuc'),
+                'MaDanhMucCha': p.get('MaDanhMucCha'),
                 'CatSlug': str(p.get('MaDanhMuc', 1)),
                 'TenDanhMuc': p['TenDanhMuc'] or 'Trang Sức',
                 'ChatLieu': p.get('ChatLieu') or 'Vàng 18K',
@@ -78,7 +80,7 @@ def get_product(id_or_slug):
         is_id = str(id_or_slug).isdigit()
         if is_id:
             p = query_one("""
-                SELECT sp.*, dm.TenDanhMuc
+                SELECT sp.*, dm.TenDanhMuc, dm.MaDanhMucCha
                 FROM sanpham sp
                 LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
                 WHERE sp.MaSanPham = %s
@@ -87,14 +89,14 @@ def get_product(id_or_slug):
             pid_cand = str(id_or_slug).replace('sp-', '')
             if pid_cand.isdigit():
                 p = query_one("""
-                    SELECT sp.*, dm.TenDanhMuc
+                    SELECT sp.*, dm.TenDanhMuc, dm.MaDanhMucCha
                     FROM sanpham sp
                     LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
                     WHERE sp.MaSanPham = %s
                 """, (int(pid_cand),))
             else:
                 p = query_one("""
-                    SELECT sp.*, dm.TenDanhMuc
+                    SELECT sp.*, dm.TenDanhMuc, dm.MaDanhMucCha
                     FROM sanpham sp
                     LEFT JOIN danhmuc dm ON sp.MaDanhMuc = dm.MaDanhMuc
                     WHERE sp.TenSanPham = %s
@@ -131,6 +133,8 @@ def get_product(id_or_slug):
             'MaSanPham': actual_id,
             'TenSanPham': p['TenSanPham'],
             'Slug': f"sp-{actual_id}",
+            'MaDanhMuc': p.get('MaDanhMuc'),
+            'MaDanhMucCha': p.get('MaDanhMucCha'),
             'CatSlug': str(p.get('MaDanhMuc', 1)),
             'TenDanhMuc': p['TenDanhMuc'] or 'Trang Sức',
             'ChatLieu': p.get('ChatLieu') or 'Vàng 18K',

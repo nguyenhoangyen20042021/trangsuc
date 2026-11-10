@@ -7,8 +7,14 @@ export const apiClient = axios.create({
   },
 });
 
-// Initial Data (Đồng bộ sạch sẽ với DB wed_trang_suc sau khi xóa data mẫu)
-export const MOCK_CATEGORIES = [];
+// Initial Data (Đồng bộ sạch sẽ với DB wed_trang_suc)
+export const MOCK_CATEGORIES = [
+  { MaDanhMuc: 1, TenDanhMuc: 'Nhẫn Kim Cương & Nhẫn Cưới', children: [] },
+  { MaDanhMuc: 2, TenDanhMuc: 'Dây Chuyền & Mặt Dây', children: [] },
+  { MaDanhMuc: 3, TenDanhMuc: 'Vòng Tay & Lắc', children: [] },
+  { MaDanhMuc: 4, TenDanhMuc: 'Bông Tai Quý Phái', children: [] },
+  { MaDanhMuc: 5, TenDanhMuc: 'Bộ Sưu Tập Hoàng Gia', children: [] }
+];
 
 export const MOCK_PRODUCTS = [];
 
@@ -159,6 +165,9 @@ export const fetchCategories = async () => {
     const res = await apiClient.get('/categories');
     if (res.data?.success && Array.isArray(res.data.data)) {
       setLocal(STORAGE_KEYS.CATEGORIES, res.data.data);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('categories-updated', { detail: res.data.data }));
+      }
       return res.data.data;
     }
   } catch (err) {
@@ -204,6 +213,7 @@ export const createCategory = async (catData) => {
   }
 
   setLocal(STORAGE_KEYS.CATEGORIES, updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('categories-updated', { detail: updated }));
   return newCat;
 };
 
@@ -233,6 +243,7 @@ export const updateCategory = async (catId, catData) => {
     return c;
   });
   setLocal(STORAGE_KEYS.CATEGORIES, updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('categories-updated', { detail: updated }));
   return updated.find(c => c.MaDanhMuc === catId);
 };
 
@@ -262,6 +273,7 @@ export const deleteCategory = async (catId) => {
       children: (c.children || []).filter(ch => ch.MaDanhMuc !== catId)
     }));
   setLocal(STORAGE_KEYS.CATEGORIES, updated);
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('categories-updated', { detail: updated }));
   return { success: true };
 };
 

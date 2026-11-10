@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Container, Grid, Typography, Link as MuiLink, TextField, Button, Divider, Stack } from '@mui/material';
 import { Phone as PhoneIcon, Email as EmailIcon, LocationOn as LocationIcon } from '@mui/icons-material';
 import { AllJewelryProductIcon, LuxuryGiaIcon, RingProductIcon } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
+import { getStoredCategories, fetchCategories } from '../services/api';
 
 export const Footer = () => {
+  const [categories, setCategories] = useState(getStoredCategories);
+
+  useEffect(() => {
+    fetchCategories().then(data => {
+      if (Array.isArray(data)) setCategories(data);
+    });
+
+    const handleCatsUpdated = (e) => {
+      if (Array.isArray(e.detail)) setCategories(e.detail);
+    };
+    window.addEventListener('categories-updated', handleCatsUpdated);
+    return () => window.removeEventListener('categories-updated', handleCatsUpdated);
+  }, []);
   return (
     <Box sx={{ bgcolor: '#6B3A3A', color: '#FFFFFF', pt: 8, pb: 4, mt: 'auto', borderTop: '2px solid rgba(212, 175, 55, 0.4)' }}>
       <Container maxWidth="lg">
@@ -39,21 +53,16 @@ export const Footer = () => {
               DÒNG TRANG SỨC
             </Typography>
             <Stack spacing={1.2}>
-              <MuiLink component={Link} to="/products?category=nhan-kim-cuong" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}>
-                Nhẫn Kim Cương
-              </MuiLink>
-              <MuiLink component={Link} to="/products?category=day-chuyen-mat-day" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}>
-                Dây Chuyền Quý Phái
-              </MuiLink>
-              <MuiLink component={Link} to="/products?category=vong-tay-lac" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}>
-                Vòng Tay Tennis
-              </MuiLink>
-              <MuiLink component={Link} to="/products?category=bong-tai" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}>
-                Bông Tai Nữ Hoàng
-              </MuiLink>
-              <MuiLink component={Link} to="/products?category=bo-suu-tap-hoang-gia" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}>
-                BST Hoàng Gia Đá Quý
-              </MuiLink>
+              {categories.slice(0, 5).map((cat) => (
+                <MuiLink
+                  key={cat.MaDanhMuc}
+                  component={Link}
+                  to={`/products?category=${cat.MaDanhMuc}`}
+                  sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', '&:hover': { color: '#D4AF37' } }}
+                >
+                  {cat.TenDanhMuc}
+                </MuiLink>
+              ))}
             </Stack>
           </Grid>
 
