@@ -12,7 +12,8 @@ import {
   Button,
   Divider,
   Stack,
-  Alert
+  Alert,
+  Chip
 } from '@mui/material';
 import {
   Store as StoreIcon,

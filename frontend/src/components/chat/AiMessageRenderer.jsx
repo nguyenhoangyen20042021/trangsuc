@@ -197,7 +197,7 @@ const LuxuryAiProductItem = ({ productRef, fullProducts }) => {
 
         {/* Product Info */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
             {displayId && (
               <Chip
                 label={`Mã SP: #${displayId}`}
@@ -306,7 +306,7 @@ const LuxuryAdvisoryBox = ({ text, onCopyVoucher, copiedVoucher }) => {
         position: 'relative'
       }}
     >
-      <Stack direction="row" spacing={1.2} alignItems="flex-start">
+      <Stack direction="row" spacing={1.2} sx={{ alignItems: 'flex-start' }}>
         <Box
           sx={{
             width: 28,
@@ -351,7 +351,7 @@ const LuxuryVipOfferBox = ({ text, onCopyVoucher, copiedVoucher }) => {
         position: 'relative'
       }}
     >
-      <Stack direction="row" spacing={1.5} alignItems="flex-start">
+      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
         <Box
           sx={{
             width: 32,
@@ -430,7 +430,7 @@ export const AiMessageRenderer = ({
     >
       {/* Stylist Header Badge */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.8, pb: 1.2, borderBottom: '1px solid rgba(212, 175, 55, 0.12)' }}>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           <Box
             sx={{
               width: 8,
