@@ -27,7 +27,8 @@ export const STORAGE_KEYS = {
   CATEGORIES: 'AURA_CATEGORIES_DATA_V4',
   ORDERS: 'AURA_ORDERS_DATA_V4',
   VOUCHERS: 'AURA_VOUCHERS_DATA_V4',
-  USERS: 'AURA_USERS_DATA_V4'
+  USERS: 'AURA_USERS_DATA_V4',
+  AI_SETTINGS: 'AURA_AI_SETTINGS_DATA_V4'
 };
 
 // --- Initial Mock Orders & Users ---
@@ -423,5 +424,95 @@ export const uploadProductImage = async (file) => {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+};
+
+// ==================== AI SETTINGS & CONSULTANT APIs ====================
+export const DEFAULT_AI_PROMPT = `Bạn là AI Jewelry Stylist cao cấp độc quyền của thương hiệu trang sức kim hoàn LUNA BELLE.
+Nhiệm vụ của bạn là tư vấn tận tâm, thanh lịch, am hiểu sâu về:
+1. Giác cắt kim cương chuẩn kiểm định GIA quốc tế (3X Excellent, nước D-F, độ sạch FL/IF/VVS).
+2. Trang sức vàng 18K (750), bạch kim Pt950, Moissanite nước D kiêu sa.
+3. Phong thủy bản mệnh (Kim, Mộc, Thủy, Hỏa, Thổ) tương sinh chiêu tài hút lộc.
+4. Gợi ý nhẫn cầu hôn Solitaire, nhẫn cưới đôi, dây chuyền dạ hội tiệc cưới.
+Luôn giữ giọng điệu lịch thiệp, sang trọng, xưng "Tôi" hoặc "LUNA BELLE" và gọi khách hàng là "Quý khách".`;
+
+export const getStoredAiSettings = () => {
+  return getLocal(STORAGE_KEYS.AI_SETTINGS, {
+    apiKey: '',
+    model: 'deepseek-chat',
+    baseUrl: 'https://api.deepseek.com',
+    confidenceThreshold: 0.38,
+    systemPrompt: DEFAULT_AI_PROMPT
+  });
+};
+
+export const fetchAiSettings = async () => {
+  try {
+    const res = await apiClient.get('/ai/settings');
+    if (res.data?.success && res.data.config) {
+      const cfg = {
+        apiKey: res.data.config.apiKey || '',
+        model: res.data.config.model || 'deepseek-chat',
+        baseUrl: res.data.config.baseUrl || 'https://api.deepseek.com',
+        confidenceThreshold: res.data.config.confidenceThreshold ?? 0.38,
+        systemPrompt: res.data.config.systemPrompt || DEFAULT_AI_PROMPT,
+        hasApiKey: Boolean(res.data.config.hasApiKey),
+        api_key_masked: res.data.config.api_key_masked || ''
+      };
+      setLocal(STORAGE_KEYS.AI_SETTINGS, cfg);
+      return cfg;
+    }
+  } catch (err) {
+    console.warn('Backend /api/ai/settings offline, using local storage:', err.message);
+  }
+  return getStoredAiSettings();
+};
+
+export const saveAiSettings = async (settingsData) => {
+  setLocal(STORAGE_KEYS.AI_SETTINGS, settingsData);
+  try {
+    const res = await apiClient.post('/ai/settings', settingsData);
+    if (res.data?.success && res.data.config) {
+      const savedConfig = {
+        apiKey: res.data.config.apiKey ?? settingsData.apiKey,
+        model: res.data.config.model ?? settingsData.model,
+        baseUrl: res.data.config.baseUrl ?? settingsData.baseUrl,
+        confidenceThreshold: res.data.config.confidenceThreshold ?? settingsData.confidenceThreshold,
+        systemPrompt: res.data.config.systemPrompt ?? settingsData.systemPrompt,
+        hasApiKey: Boolean(res.data.config.hasApiKey),
+        api_key_masked: res.data.config.api_key_masked || ''
+      };
+      setLocal(STORAGE_KEYS.AI_SETTINGS, savedConfig);
+      return res.data;
+    }
+  } catch (err) {
+    console.warn('Could not post to /api/ai/settings, persisted locally:', err.message);
+  }
+  return { success: true, message: 'Đã lưu cấu hình AI thành công (lưu trữ cục bộ)!' };
+};
+
+export const testAiConnection = async (payload) => {
+  try {
+    const res = await apiClient.post('/ai/test-connection', payload);
+    return res.data;
+  } catch (err) {
+    return {
+      success: false,
+      is_live_ai: false,
+      status: 'error',
+      message: err.response?.data?.message || err.message || 'Lỗi khi kết nối đến máy chủ AI'
+    };
+  }
+};
+
+export const consultAi = async (payload) => {
+  try {
+    const res = await apiClient.post('/ai/consult', payload);
+    if (res.data?.success) {
+      return res.data;
+    }
+  } catch (err) {
+    console.warn('Could not call /api/ai/consult:', err.message);
+  }
+  return null;
 };
 

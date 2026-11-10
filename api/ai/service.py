@@ -14,44 +14,89 @@ from db import query_all
 SETTINGS_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'deepseek_settings.json')
 MODEL_CACHE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'intent_classifier.joblib')
 
-# =================================================================
-# 1. CẤU HÌNH DEEPSEEK (API KEY & MODEL SELECTION)
-# =================================================================
+DEFAULT_SYSTEM_PROMPT = """Bạn là AI Jewelry Stylist cao cấp độc quyền của thương hiệu trang sức kim hoàn LUNA BELLE.
+Nhiệm vụ của bạn là tư vấn tận tâm, thanh lịch, am hiểu sâu về:
+1. Giác cắt kim cương chuẩn kiểm định GIA quốc tế (3X Excellent, nước D-F, độ sạch FL/IF/VVS).
+2. Trang sức vàng 18K (750), bạch kim Pt950, Moissanite nước D kiêu sa.
+3. Phong thủy bản mệnh (Kim, Mộc, Thủy, Hỏa, Thổ) tương sinh chiêu tài hút lộc.
+4. Gợi ý nhẫn cầu hôn Solitaire, nhẫn cưới đôi, dây chuyền dạ hội tiệc cưới.
+Luôn giữ giọng điệu lịch thiệp, sang trọng, xưng "Tôi" hoặc "LUNA BELLE" và gọi khách hàng là "Quý khách"."""
 
 def get_deepseek_config():
     """Lấy cấu hình DeepSeek từ settings file hoặc config.py."""
     api_key = Config.DEEPSEEK_API_KEY
     base_url = Config.DEEPSEEK_BASE_URL
     model = Config.DEEPSEEK_MODEL
+    confidence_threshold = 0.38
+    system_prompt = DEFAULT_SYSTEM_PROMPT
 
     normalized_settings = os.path.abspath(SETTINGS_FILE)
     if os.path.exists(normalized_settings):
         try:
             with open(normalized_settings, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                api_key = data.get('api_key', api_key)
-                base_url = data.get('base_url', base_url)
-                model = data.get('model', model)
+                if 'api_key' in data:
+                    api_key = data.get('api_key', '')
+                elif 'apiKey' in data:
+                    api_key = data.get('apiKey', '')
+
+                if 'base_url' in data:
+                    base_url = data.get('base_url', '')
+                elif 'baseUrl' in data:
+                    base_url = data.get('baseUrl', '')
+
+                if 'model' in data:
+                    model = data.get('model', model)
+
+                if 'confidence_threshold' in data:
+                    confidence_threshold = float(data['confidence_threshold'])
+                elif 'confidenceThreshold' in data:
+                    confidence_threshold = float(data['confidenceThreshold'])
+
+                if 'system_prompt' in data and data['system_prompt']:
+                    system_prompt = data['system_prompt']
+                elif 'systemPrompt' in data and data['systemPrompt']:
+                    system_prompt = data['systemPrompt']
         except Exception as e:
             print(f"Error reading deepseek_settings.json: {e}")
 
     return {
-        'api_key': api_key.strip(),
-        'base_url': base_url.strip().rstrip('/'),
-        'model': model.strip()
+        'api_key': (api_key or '').strip(),
+        'base_url': (base_url or 'https://api.deepseek.com').strip().rstrip('/'),
+        'model': (model or 'deepseek-chat').strip(),
+        'confidence_threshold': confidence_threshold,
+        'system_prompt': system_prompt
     }
 
-def save_deepseek_config(api_key, model='deepseek-chat', base_url='https://api.deepseek.com'):
+def save_deepseek_config(api_key, model='deepseek-chat', base_url='https://api.deepseek.com', confidence_threshold=0.38, system_prompt=None):
     """Lưu cấu hình DeepSeek vào file settings."""
+    if system_prompt is None or not str(system_prompt).strip():
+        system_prompt = DEFAULT_SYSTEM_PROMPT
+
+    try:
+        conf_val = round(float(confidence_threshold), 2)
+    except (ValueError, TypeError):
+        conf_val = 0.38
+
     data = {
-        'api_key': api_key.strip(),
-        'model': model.strip(),
-        'base_url': base_url.strip().rstrip('/')
+        'api_key': (api_key or '').strip(),
+        'model': (model or 'deepseek-chat').strip(),
+        'base_url': (base_url or 'https://api.deepseek.com').strip().rstrip('/'),
+        'confidence_threshold': conf_val,
+        'system_prompt': system_prompt.strip()
     }
     normalized_settings = os.path.abspath(SETTINGS_FILE)
+    os.makedirs(os.path.dirname(normalized_settings), exist_ok=True)
     with open(normalized_settings, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+    # Cập nhật Config bộ nhớ tạm tức thì
+    Config.DEEPSEEK_API_KEY = data['api_key']
+    Config.DEEPSEEK_BASE_URL = data['base_url']
+    Config.DEEPSEEK_MODEL = data['model']
+
     return data
+
 
 
 # =================================================================
@@ -300,7 +345,7 @@ Quý khách đang tìm kiếm món trang sức cho bản thân hay làm quà t�
 
     return "Chào quý khách, AURA hân hạnh được phục vụ bạn!", []
 
-def build_deepseek_system_prompt(products):
+def build_deepseek_system_prompt(products, custom_prompt=None):
     """Tạo System Prompt chi tiết với toàn bộ danh mục sản phẩm từ MySQL cho DeepSeek."""
     catalog_lines = []
     for p in products:
@@ -310,19 +355,18 @@ def build_deepseek_system_prompt(products):
         )
     catalog_text = "\n".join(catalog_lines)
 
-    return f"""Bạn là AuraStylist - Cố vấn kim hoàn cao cấp của thương hiệu trang sức thượng lưu AURA Haute Joaillerie (Việt Nam).
-Khách hàng đặt câu hỏi chuyên sâu, so sánh, tư vấn thiết kế hoặc câu hỏi mở KHÔNG CÓ TRONG FORM CỐ ĐỊNH.
-Mô hình Machine Learning (Logistic Regression) đã xác định câu hỏi này cần sự suy luận tự nhiên của DeepSeek LLM.
-Nhiệm vụ của bạn là đưa ra lời khuyên quý phái, chân thành, sắc bén và am hiểu sâu sắc về đá quý kim hoàn.
+    base_prompt = (custom_prompt or '').strip() or DEFAULT_SYSTEM_PROMPT
 
-DANH MỤC TRANG SỨC THỰC TẾ TRONG CỬA HÀNG AURA:
+    return f"""{base_prompt}
+
+DANH MỤC TRANG SỨC THỰC TẾ TRONG CỬA HÀNG LUNA BELLE:
 {catalog_text}
 
 QUY TẮC PHỤC VỤ KHÁCH HÀNG:
 1. Hãy đề cập các mẫu trang sức có tên chính xác trong danh mục trên nếu phù hợp với nội dung câu hỏi.
 2. Tiêu chuẩn kim cương: 100% GIA kiểm định quốc tế, giác cắt Excellent, nước màu D-F siêu trắng.
 3. Hậu mãi & Voucher: Bảo hành làm mới & đánh bóng miễn phí trọn đời, miễn phí vận chuyển từ 5 triệu, mã ưu đãi AURA2026 giảm 10%.
-4. Giọng văn: Quý tộc, trang nhã, ân cần ("Kính chào quý khách", "AURA rất hân hạnh được đồng hành...", "chúc quý khách...").
+4. Giọng văn: Quý tộc, trang nhã, ân cần ("Kính chào quý khách", "LUNA BELLE rất hân hạnh được đồng hành...", "chúc quý khách...").
 5. Định dạng Markdown rõ ràng, thêm emoji trang sức tinh tế (💎, 💍, ✨, 👑).
 """
 
@@ -347,14 +391,14 @@ def deepseek_local_simulator(user_msg, products, context_dict, model_name, has_k
     if context_dict and (context_dict.get('budget') or context_dict.get('style')):
         context_note = f" với ngân sách {context_dict.get('budget', '')} và phong cách {context_dict.get('style', '')}"
 
-    reply = f"""Kính chào quý khách! Tôi là **AuraStylist - Trợ lý kim hoàn DeepSeek AI**.
-Mô hình **Logistic Regression Intent Classifier** đã phân tích câu hỏi của quý khách (*"{user_msg}"*{context_note}) là câu hỏi chuyên sâu mang tính tư vấn cá nhân hóa (không thuộc form sẵn có).
+    reply = f"""Kính chào quý khách! Tôi là **LUNA BELLE Stylist - Cố vấn kim hoàn DeepSeek AI**.
+Mô hình **Logistic Regression Intent Classifier** đã phân tích câu hỏi của quý khách (*"{user_msg}"*{context_note}) là yêu cầu tư vấn chuyên sâu mang tính cá nhân hóa cao.
 
 💎 **GÓC NHÌN & LỜI KHUYÊN TỪ DEEPSEEK AI:**
-- Khi lựa chọn trang sức cao cấp theo yêu cầu đặc biệt, AURA khuyên bạn nên tập trung vào ba tiêu chí: **Độ tinh khiết kim loại quý (Vàng 18K/Bạch kim Pt950)**, **Giác cắt đối xứng hoàn mỹ (Excellent Cut)** và **Ý nghĩa phong thủy hòa hợp với bản mệnh của chủ nhân**.
-- Đối với nhu cầu độc bản của bạn, những tuyệt tác chế tác thủ công nạm kim cương tự nhiên và đá quý của AURA sẽ là sự lựa chọn sang trọng vượt thời gian.
+- Khi lựa chọn trang sức cao cấp theo yêu cầu đặc biệt, LUNA BELLE khuyên Quý khách nên tập trung vào ba tiêu chí cốt lõi: **Độ tinh khiết kim loại quý (Vàng 18K 750 / Bạch kim Pt950)**, **Giác cắt kim cương chuẩn quốc tế (3X Excellent)** và **Ý nghĩa phong thủy hòa hợp bản mệnh**.
+- Đối với nhu cầu độc bản của Quý khách, những tuyệt tác nạm kim cương tự nhiên chuẩn GIA hoặc Moissanite nước D của LUNA BELLE sẽ là sự lựa chọn sang trọng vượt thời gian.
 
-✨ Dưới đây là những mẫu trang sức tiêu biểu được đề xuất dành riêng cho bạn:"""
+✨ Dưới đây là những mẫu trang sức tiêu biểu được đề xuất dành riêng cho Quý khách:"""
 
     suggested = [p for p in products if p.get('LaNoiBat') == 1][:3]
     return {
@@ -373,6 +417,7 @@ def call_deepseek_api(user_message, products, context_dict=None):
     api_key = cfg['api_key']
     base_url = cfg['base_url']
     model = cfg['model'] or 'deepseek-chat'
+    custom_prompt = cfg.get('system_prompt')
 
     user_query = user_message.strip()
     if context_dict:
@@ -386,7 +431,7 @@ def call_deepseek_api(user_message, products, context_dict=None):
 
     if api_key:
         try:
-            system_prompt = build_deepseek_system_prompt(products)
+            system_prompt = build_deepseek_system_prompt(products, custom_prompt)
             endpoint = f"{base_url}/chat/completions"
             headers = {
                 "Authorization": f"Bearer {api_key}",
@@ -425,7 +470,7 @@ def generate_deepseek_consultation(user_message, context_dict=None):
     """
     Quy trình điều phối quyết định Intent và Response:
     1. Sử dụng mô hình Machine Learning Logistic Regression:
-       - Nếu khớp form sẵn -> Phản hồi kịch bản chuyên gia tức thì.
+       - Nếu khớp form sẵn (>= confidence_threshold) -> Phản hồi kịch bản chuyên gia tức thì.
     2. Nếu không khớp form sẵn -> Gọi DeepSeek LLM phân tích mở.
     """
     try:
@@ -442,7 +487,9 @@ def generate_deepseek_consultation(user_message, context_dict=None):
         print(f"Error fetching products for AI: {e}")
         products = []
 
-    intent_pred = predict_intent_logistic_regression(user_message)
+    cfg = get_deepseek_config()
+    threshold = float(cfg.get('confidence_threshold', 0.38))
+    intent_pred = predict_intent_logistic_regression(user_message, confidence_threshold=threshold)
 
     if intent_pred['matched']:
         intent = intent_pred['intent']

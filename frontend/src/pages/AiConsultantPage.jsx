@@ -27,7 +27,8 @@ import {
 } from '../components/icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { MOCK_PRODUCTS, getStoredProducts, formatCurrency } from '../services/api';
+import { MOCK_PRODUCTS, getStoredProducts, formatCurrency, consultAi } from '../services/api';
+import { AiMessageRenderer } from '../components/chat/AiMessageRenderer';
 
 const QUICK_PROMPTS = [
   'Tư vấn nhẫn cầu hôn dưới 30 triệu tinh xảo',
@@ -61,7 +62,7 @@ export const AiConsultantPage = () => {
     }
   }, [messages, loading]);
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const query = (textToSend || input).trim();
     if (!query) return;
 
@@ -70,7 +71,28 @@ export const AiConsultantPage = () => {
     setInput('');
     setLoading(true);
 
-    // Simulate AI consultation logic
+    try {
+      const res = await consultAi({ message: query });
+      if (res && res.success && res.reply) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            sender: 'ai',
+            text: res.reply,
+            products: res.products && res.products.length > 0 ? res.products : getStoredProducts().slice(0, 2),
+            model: res.model,
+            engine: res.engine
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.warn('Backend consult AI unavailable, fallback to local simulator:', e);
+    }
+
+    // Simulate AI consultation logic as fallback
     setTimeout(() => {
       const allProducts = getStoredProducts();
       let aiResponse = '';
@@ -101,7 +123,7 @@ export const AiConsultantPage = () => {
         }
       ]);
       setLoading(false);
-    }, 1000);
+    }, 600);
   };
 
   return (
@@ -175,27 +197,31 @@ export const AiConsultantPage = () => {
                       {isAi ? <LuxurySparkleIcon sx={{ fontSize: 20 }} /> : <LuxuryUserIcon sx={{ fontSize: 20 }} />}
                     </Avatar>
 
-                    <Box sx={{ maxWidth: { xs: '85%', sm: '75%' } }}>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2.2,
-                          borderRadius: 3,
-                          bgcolor: isAi ? '#FFFFFF' : 'primary.main',
-                          color: isAi ? 'text.primary' : '#FFFFFF',
-                          border: isAi ? '1px solid rgba(183, 110, 121, 0.15)' : 'none',
-                          boxShadow: isAi ? '0 4px 16px rgba(183,110,121,0.06)' : 'none',
-                          lineHeight: 1.7,
-                          fontSize: '0.94rem'
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-line', fontSize: '0.92rem' }}>
-                          {msg.text}
-                        </Typography>
-                      </Paper>
+                    <Box sx={{ maxWidth: { xs: '90%', sm: '82%' } }}>
+                      {isAi ? (
+                        <AiMessageRenderer message={msg} onAddToCart={addToCart} />
+                      ) : (
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 2,
+                            px: 2.5,
+                            borderRadius: 3,
+                            borderTopRightRadius: 4,
+                            background: 'linear-gradient(135deg, #2C1F20 0%, #4A3335 100%)',
+                            color: '#FFFFFF',
+                            boxShadow: '0 4px 16px rgba(44, 31, 32, 0.12)',
+                            lineHeight: 1.6
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ color: '#FFFFFF', fontSize: '0.94rem', whiteSpace: 'pre-line' }}>
+                            {msg.text}
+                          </Typography>
+                        </Paper>
+                      )}
 
-                      {/* Attached Product Recommendations */}
-                      {msg.products && msg.products.length > 0 && (
+                      {/* Attached Product Recommendations if available in payload */}
+                      {msg.products && msg.products.length > 0 && !msg.text.includes('(Mã SP:') && (
                         <Box sx={{ mt: 2 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1 }}>
                             <LuxurySparkleIcon sx={{ fontSize: 16, color: 'primary.dark' }} />

@@ -29,7 +29,8 @@ import {
 } from './icons/ProductIcons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { getStoredProducts, formatCurrency } from '../services/api';
+import { getStoredProducts, formatCurrency, consultAi } from '../services/api';
+import { AiMessageRenderer } from './chat/AiMessageRenderer';
 
 const QUICK_QUESTIONS = [
   'Nhẫn kim cầu hôn dưới 30tr',
@@ -66,7 +67,7 @@ export const FloatingChatWidget = () => {
     }
   }, [open, messages, loading]);
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const query = (textToSend || input).trim();
     if (!query) return;
 
@@ -74,6 +75,25 @@ export const FloatingChatWidget = () => {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+
+    try {
+      const res = await consultAi({ message: query });
+      if (res && res.success && res.reply) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            sender: 'ai',
+            text: res.reply,
+            products: (res.products && res.products.length > 0) ? res.products : getStoredProducts().slice(0, 1)
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.warn('Backend consult AI unavailable in widget, fallback:', e);
+    }
 
     setTimeout(() => {
       const allProds = getStoredProducts();
@@ -180,27 +200,31 @@ export const FloatingChatWidget = () => {
                       </Avatar>
                     )}
 
-                    <Box sx={{ maxWidth: '82%' }}>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2.5,
-                          bgcolor: isAi ? '#FFFFFF' : 'primary.main',
-                          color: isAi ? 'text.primary' : '#FFFFFF',
-                          border: isAi ? '1px solid rgba(183,110,121,0.15)' : 'none',
-                          boxShadow: isAi ? '0 2px 8px rgba(183,110,121,0.06)' : 'none',
-                          fontSize: '0.86rem',
-                          lineHeight: 1.5
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ fontSize: '0.86rem' }}>
-                          {m.text}
-                        </Typography>
-                      </Paper>
+                    <Box sx={{ maxWidth: '88%' }}>
+                      {isAi ? (
+                        <AiMessageRenderer message={m} compact={true} onAddToCart={addToCart} />
+                      ) : (
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2.5,
+                            borderTopRightRadius: 4,
+                            background: 'linear-gradient(135deg, #2C1F20 0%, #442E30 100%)',
+                            color: '#FFFFFF',
+                            boxShadow: '0 2px 8px rgba(44, 31, 32, 0.1)',
+                            fontSize: '0.86rem',
+                            lineHeight: 1.5
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontSize: '0.86rem', color: '#FFFFFF', whiteSpace: 'pre-line' }}>
+                            {m.text}
+                          </Typography>
+                        </Paper>
+                      )}
 
                       {/* Product mini cards */}
-                      {m.products && m.products.filter(Boolean).length > 0 && (
+                      {m.products && m.products.filter(Boolean).length > 0 && !m.text.includes('(Mã SP:') && (
                         <Stack spacing={1} sx={{ mt: 1 }}>
                           {m.products.filter(Boolean).map(p => (
                             <Card
